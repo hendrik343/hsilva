@@ -1,0 +1,7 @@
+.vercel
+node_modules
+dist
+*.tsbuildinfo
+playwright-*.png
+playwright-*.jpg
+playwright-*.jpeg
