@@ -1,151 +1,159 @@
-import { motion } from 'framer-motion'
-
-const PROJECTS = [
+const SERVICE_CARDS = [
   {
-    id: 1,
-    title: 'KARREGA',
-    category: 'Mobilidade',
-    desc: 'Plataforma de ride-hailing pensada para cidades angolanas.',
-    span: 'md:col-span-7',
-    accent: '#d73528',
+    eyebrow: '01',
+    title: 'Foundation of the new digital epoch',
+    desc: 'Design systems, websites and platforms built for companies that need trust, speed and clarity.',
+    cta: 'Contact us',
+    light: true,
   },
   {
-    id: 2,
-    title: 'Ecossistema Dashboard',
-    category: 'Analítica empresarial',
-    desc: 'Dashboards financeiros em tempo real para equipas de decisão.',
-    span: 'md:col-span-5',
-    accent: '#89aacc',
+    eyebrow: '02',
+    title: 'Dashboards for decisions that cannot wait',
+    desc: 'Operational views for HSE, finance and mobility teams with the metrics that matter.',
+    cta: 'View systems',
   },
   {
-    id: 3,
-    title: 'Bot de Trading Crypto',
-    category: 'IA / Fintech',
-    desc: 'Sistema automatizado com sinais em tempo real.',
-    span: 'md:col-span-5',
-    accent: '#7ed957',
-  },
-  {
-    id: 4,
-    title: 'H.SILVA Platform',
-    category: 'Identidade digital',
-    desc: 'Website, sistema visual e presença digital do estúdio.',
-    span: 'md:col-span-7',
-    accent: '#f0c76d',
+    eyebrow: '03',
+    title: 'Mobile products for local markets',
+    desc: 'Interfaces and workflows shaped for Angolan users, payments, operations and field teams.',
+    cta: 'Build mobile',
   },
 ]
 
-const fade = {
-  hidden: { opacity: 0, y: 32 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.25, 0.1, 0.25, 1] } },
-}
+const PROJECTS = [
+  {
+    title: 'HSE Dashboards',
+    category: 'Dashboards de HSE',
+    desc: 'Dados de saude, seguranca e ambiente convertidos em indicadores claros para decisoes rapidas.',
+    image: '/cards/hse-dashboard.png',
+  },
+  {
+    title: 'Sem Fronteiras',
+    category: 'Financiamento e confianca',
+    desc: 'Uma apresentacao visual para explicar solucoes completas, processos e resultados reais.',
+    image: '/cards/sem-fronteiras.png',
+  },
+  {
+    title: 'AI Safety Lens',
+    category: 'IA aplicada',
+    desc: 'Analise inteligente de imagens para identificar riscos, EPI, EPC e acoes no terreno.',
+    image: '/cards/ai-safety.png',
+  },
+  {
+    title: 'KARREGA',
+    category: 'Mobilidade',
+    desc: 'Ride-hailing pensado para cidades angolanas, com marca, fluxo e experiencia mobile.',
+    image: '/cards/karrega.png',
+  },
+]
 
 export default function Work() {
   return (
-    <section id="work" className="bg-bg py-16 md:py-24">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
-
-        {/* Header */}
-        <motion.div
-          className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-80px' }}
-          variants={fade}
-        >
+    <>
+      <section id="about" className="bg-bg px-4 py-20 md:px-8 md:py-28">
+        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-px bg-stroke" />
-              <span className="text-xs text-muted uppercase tracking-[0.3em]">Projetos selecionados</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-display leading-tight text-text-primary">
-              Projetos em <em className="italic">destaque</em>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-lime">O que fazemos</p>
+            <h2 className="mt-4 font-display text-5xl leading-none text-white md:text-7xl">
+              Tecnologia com contexto local.
             </h2>
-            <p className="text-sm text-muted mt-3 max-w-sm leading-relaxed">
-              Do conceito ao lançamento: produtos digitais para negócios reais em Angola.
+          </div>
+          <div className="grid gap-5 text-lg leading-8 text-white/62">
+            <p>
+              A H.SILVA cria software para empresas que precisam sair do improviso e operar com sistemas claros,
+              bonitos e confiaveis.
+            </p>
+            <p>
+              Unimos estrategia, interface, desenvolvimento e automacao para construir produtos que podem ser usados
+              no terreno, apresentados a investidores e evoluidos por equipas reais.
             </p>
           </div>
-
-          <a
-            href="mailto:geral@hsilva.ao"
-            className="group hidden md:inline-flex items-center gap-2 rounded-full border border-stroke px-6 py-3 text-sm text-muted hover:text-text-primary transition-colors duration-200 relative"
-          >
-            <span
-              className="absolute inset-[-1px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ background: 'linear-gradient(90deg,#89aacc,#4e85bf)' }}
-            />
-            <span className="relative bg-bg rounded-full px-6 py-3 -mx-6 -my-3 flex items-center gap-2">
-              Iniciar projeto <span>→</span>
-            </span>
-          </a>
-        </motion.div>
-
-        {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6">
-          {PROJECTS.map((p, i) => (
-            <motion.a
-              key={p.id}
-              href={`mailto:geral@hsilva.ao?subject=${encodeURIComponent(`Projeto H.SILVA: ${p.title}`)}`}
-              aria-label={`Falar sobre ${p.title}`}
-              className={`group relative overflow-hidden rounded-3xl bg-surface border border-stroke ${p.span} ${
-                i % 2 === 0 ? 'aspect-[4/3]' : 'aspect-[3/4]'
-              }`}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.8, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              <div
-                className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
-                style={{
-                  background:
-                    `radial-gradient(circle at 18% 18%, ${p.accent}44, transparent 28%), ` +
-                    `linear-gradient(135deg, ${p.accent}22 0%, hsl(var(--surface)) 42%, hsl(var(--bg)) 100%)`,
-                }}
-              />
-
-              <div className="absolute inset-x-8 top-8 h-px bg-white/10" />
-              <div className="absolute inset-y-8 right-8 w-px bg-white/10" />
-              <div
-                className="absolute right-8 top-8 h-16 w-16 rounded-full opacity-70 blur"
-                style={{ background: p.accent }}
-              />
-
-              {/* Halftone overlay */}
-              <div
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
-                  backgroundSize: '4px 4px',
-                }}
-              />
-
-              {/* Dark gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-bg/90 via-bg/20 to-transparent" />
-
-              {/* Bottom info */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-                <p className="text-[10px] text-muted uppercase tracking-[0.2em] mb-1">{p.category}</p>
-                <h3 className="text-lg md:text-xl font-display italic text-text-primary">{p.title}</h3>
-                <p className="mt-3 max-w-sm text-sm text-muted leading-relaxed">{p.desc}</p>
-              </div>
-
-              {/* Hover overlay */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400 bg-bg/65 backdrop-blur-md rounded-3xl z-20">
-                <div
-                  className="relative inline-flex rounded-full p-[1.5px]"
-                  style={{ background: 'linear-gradient(90deg,#89aacc,#4e85bf)' }}
-                >
-                  <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium">
-                    Falar sobre <em className="font-display italic">{p.title}</em>
-                  </div>
-                </div>
-              </div>
-            </motion.a>
-          ))}
         </div>
+      </section>
 
-      </div>
-    </section>
+      <section id="services" className="bg-bg px-4 py-10 md:px-8 md:py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex items-end justify-between gap-6">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-lime">Cards</p>
+              <h2 className="mt-3 font-display text-4xl text-white md:text-6xl">Servicos principais</h2>
+            </div>
+            <a href="mailto:geral@hsilva.ao" className="hidden rounded-full border border-white/15 px-5 py-3 text-sm text-white/70 md:inline-flex">
+              Contacto
+            </a>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {SERVICE_CARDS.map((card) => (
+              <article
+                key={card.title}
+                className={
+                  card.light
+                    ? 'min-h-[340px] rounded-[28px] bg-white p-6 text-black shadow-2xl shadow-black/20'
+                    : 'min-h-[340px] rounded-[28px] border border-white/10 bg-white/[0.04] p-6 text-white'
+                }
+              >
+                <div className="flex h-full flex-col justify-between">
+                  <div>
+                    <span className={card.light ? 'text-xs font-bold text-black/45' : 'text-xs font-bold text-lime'}>
+                      {card.eyebrow}
+                    </span>
+                    <h3 className="mt-6 text-3xl font-bold leading-[1.02] tracking-[-0.04em]">{card.title}</h3>
+                    <p className={card.light ? 'mt-5 text-sm leading-6 text-black/55' : 'mt-5 text-sm leading-6 text-white/55'}>
+                      {card.desc}
+                    </p>
+                  </div>
+                  <a
+                    href="mailto:geral@hsilva.ao"
+                    className={card.light ? 'mt-8 inline-flex w-max rounded-full bg-black px-5 py-3 text-sm font-semibold text-white' : 'mt-8 inline-flex w-max rounded-full bg-lime px-5 py-3 text-sm font-semibold text-black'}
+                  >
+                    {card.cta}
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="work" className="bg-bg px-4 py-20 md:px-8 md:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-lime">Projetos</p>
+            <h2 className="mt-3 font-display text-5xl leading-none text-white md:text-7xl">Ideias em produto.</h2>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            {PROJECTS.map((project) => (
+              <a
+                key={project.title}
+                href={`mailto:geral@hsilva.ao?subject=${encodeURIComponent(`Projeto H.SILVA: ${project.title}`)}`}
+                className="group overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.035] transition hover:border-white/25"
+              >
+                <div className="overflow-hidden bg-white/[0.03]">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    loading="lazy"
+                    draggable={false}
+                    className="w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/50">
+                      {project.category}
+                    </span>
+                    <span className="text-2xl text-lime">↗</span>
+                  </div>
+                  <h3 className="mt-8 font-display text-5xl italic leading-none text-white">{project.title}</h3>
+                  <p className="mt-5 max-w-md text-sm leading-7 text-white/58">{project.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   )
 }
