@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import LazyVideo from './LazyVideo'
 
 const PROJECTS = [
   {
@@ -8,7 +7,7 @@ const PROJECTS = [
     category: 'Mobilidade',
     desc: 'Plataforma de ride-hailing pensada para cidades angolanas.',
     span: 'md:col-span-7',
-    video: 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260507_150203_44a5bd32-516a-47ce-a077-8acbf9aa8991.mp4',
+    accent: '#d73528',
   },
   {
     id: 2,
@@ -16,7 +15,7 @@ const PROJECTS = [
     category: 'Analítica empresarial',
     desc: 'Dashboards financeiros em tempo real para equipas de decisão.',
     span: 'md:col-span-5',
-    video: 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260419_064822_f120e48a-d545-45dd-a02d-facb07829888.mp4',
+    accent: '#89aacc',
   },
   {
     id: 3,
@@ -24,7 +23,7 @@ const PROJECTS = [
     category: 'IA / Fintech',
     desc: 'Sistema automatizado com sinais em tempo real.',
     span: 'md:col-span-5',
-    video: 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260507_154543_d5b83fc1-9cea-44f3-b5e8-8f325935211a.mp4',
+    accent: '#7ed957',
   },
   {
     id: 4,
@@ -32,7 +31,7 @@ const PROJECTS = [
     category: 'Identidade digital',
     desc: 'Website, sistema visual e presença digital do estúdio.',
     span: 'md:col-span-7',
-    video: 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260507_153148_d7a3e1dd-e5d0-4ce6-8306-00d7522ecc44.mp4',
+    accent: '#f0c76d',
   },
 ]
 
@@ -96,29 +95,39 @@ export default function Work() {
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.8, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              {/* Video background */}
-              <LazyVideo
-                src={p.video}
-                wrapperClassName="absolute inset-0 h-full w-full"
-                mediaClassName="transition-transform duration-700 group-hover:scale-105"
+              <div
+                className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
+                style={{
+                  background:
+                    `radial-gradient(circle at 18% 18%, ${p.accent}44, transparent 28%), ` +
+                    `linear-gradient(135deg, ${p.accent}22 0%, hsl(var(--surface)) 42%, hsl(var(--bg)) 100%)`,
+                }}
+              />
+
+              <div className="absolute inset-x-8 top-8 h-px bg-white/10" />
+              <div className="absolute inset-y-8 right-8 w-px bg-white/10" />
+              <div
+                className="absolute right-8 top-8 h-16 w-16 rounded-full opacity-70 blur"
+                style={{ background: p.accent }}
               />
 
               {/* Halftone overlay */}
               <div
-                className="absolute inset-0 opacity-20 mix-blend-multiply"
+                className="absolute inset-0 opacity-20"
                 style={{
-                  backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
+                  backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
                   backgroundSize: '4px 4px',
                 }}
               />
 
               {/* Dark gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg/90 via-bg/20 to-transparent" />
 
               {/* Bottom info */}
               <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
                 <p className="text-[10px] text-muted uppercase tracking-[0.2em] mb-1">{p.category}</p>
                 <h3 className="text-lg md:text-xl font-display italic text-text-primary">{p.title}</h3>
+                <p className="mt-3 max-w-sm text-sm text-muted leading-relaxed">{p.desc}</p>
               </div>
 
               {/* Hover overlay */}
