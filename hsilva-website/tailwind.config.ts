@@ -5,6 +5,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Inter', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
         display: ['"Instrument Serif"', 'serif'],
       },
@@ -14,6 +15,7 @@ export default {
         'text-primary': 'hsl(var(--text))',
         muted: 'hsl(var(--muted))',
         stroke: 'hsl(var(--stroke))',
+        lime: '#d7ff00',
       },
       keyframes: {
         scrollDown: {

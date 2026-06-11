@@ -1,124 +1,141 @@
-import { useEffect, useRef, useState } from 'react'
-import { gsap } from 'gsap'
-import LazyVideo from './LazyVideo'
+import { useEffect, useState } from 'react'
+import { AnimatedText } from '@/components/ui/animated-shiny-text'
 
-const ROLES = ['software', 'mobile', 'fintech', 'digital']
-const VIDEO  = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260429_114316_1c7889ad-2885-410e-b493-98119fee0ddb.mp4'
+type FadeInProps = {
+  delay: number
+  duration: number
+  className?: string
+  children: React.ReactNode
+}
 
-export default function Hero() {
-  const [roleIdx, setRoleIdx] = useState(0)
-  const nameRef   = useRef<HTMLHeadingElement>(null)
+function FadeIn({ delay, duration, className = '', children }: FadeInProps) {
+  const [visible, setVisible] = useState(false)
 
-  /* Role cycling */
   useEffect(() => {
-    const id = setInterval(() => setRoleIdx(i => (i + 1) % ROLES.length), 2200)
-    return () => clearInterval(id)
-  }, [])
-
-  /* GSAP entrance */
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline()
-      tl.fromTo(
-        nameRef.current,
-        { opacity: 0, y: 56 },
-        { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' },
-        0.05,
-      )
-      tl.fromTo(
-        '.hero-blur-in',
-        { opacity: 0, filter: 'blur(12px)', y: 24 },
-        { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.9, stagger: 0.1, ease: 'power2.out' },
-        0.3,
-      )
-    })
-    return () => ctx.revert()
-  }, [])
+    const timer = window.setTimeout(() => setVisible(true), delay)
+    return () => window.clearTimeout(timer)
+  }, [delay])
 
   return (
-    <section
-      id="hero"
-      className="relative w-full min-h-screen flex flex-col overflow-hidden bg-bg"
+    <div
+      className={`transition-opacity ${className}`}
+      style={{
+        opacity: visible ? 1 : 0,
+        transitionDuration: `${duration}ms`,
+        transitionDelay: `${delay}ms`,
+      }}
     >
-      {/* Video background */}
-      <LazyVideo
-        src={VIDEO}
-        eager
-        wrapperClassName="absolute top-1/2 left-1/2 min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 opacity-60"
-        mediaClassName="object-cover"
+      {children}
+    </div>
+  )
+}
+
+const NAV_LINKS = ['Serviços', 'Projetos', 'Empresa', 'Contacto']
+const NAV_HREFS: Record<string, string> = {
+  'Serviços': '#services',
+  'Projetos': '#work',
+  'Empresa': '#about',
+  'Contacto': '#contact',
+}
+
+export default function Hero() {
+  return (
+    <section className="relative min-h-screen overflow-hidden bg-black text-white">
+      <video
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+        aria-hidden="true"
       />
 
-      {/* Overlays */}
-      <div className="absolute inset-0 bg-black/30" />
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-bg to-transparent" />
+      <div className="absolute inset-0 bg-black/45" aria-hidden="true" />
 
-      {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 pt-24 pb-32">
+      <div className="relative z-10 flex min-h-screen flex-col justify-between">
+        {/* Navbar */}
+        <header className="px-6 pt-6 md:px-12 lg:px-16">
+          <nav className="liquid-glass flex items-center justify-between rounded-xl px-5 py-2.5">
+            <a href="#" className="flex items-center gap-2.5">
+              <img
+                src="/hsilva-logo.jpg"
+                alt="H.SILVA"
+                className="h-8 w-8 rounded-lg object-cover"
+              />
+              <span className="text-lg font-semibold tracking-tight">H.SILVA</span>
+            </a>
 
-        {/* Eyebrow */}
-        <p className="hero-blur-in text-xs text-muted uppercase tracking-[0.3em] mb-8 select-none">
-          HUAMBO, ANGOLA
-        </p>
+            <div className="hidden items-center gap-8 text-sm text-white/75 md:flex">
+              {NAV_LINKS.map((l) => (
+                <a key={l} href={NAV_HREFS[l]} className="transition hover:text-white">
+                  {l}
+                </a>
+              ))}
+            </div>
 
-        {/* Name */}
-        <h1
-          ref={nameRef}
-          className="text-[clamp(3.5rem,12vw,8rem)] font-display italic leading-[0.9] tracking-tight text-text-primary mb-6 select-none"
-          style={{ opacity: 0 }}
-        >
-          H.SILVA
-        </h1>
+            <a href="mailto:geral@hsilva.ao">
+              <button
+                type="button"
+                className="rounded-lg bg-white px-6 py-2 text-sm font-semibold text-black transition hover:bg-gray-100"
+              >
+                Fala connosco
+              </button>
+            </a>
+          </nav>
+        </header>
 
-        {/* Role line */}
-        <p className="hero-blur-in text-base md:text-xl text-muted mb-4 select-none">
-          Estúdio de{' '}
-          <span
-            key={roleIdx}
-            className="font-display italic text-text-primary inline-block animate-role-fade-in"
-          >
-            {ROLES[roleIdx]}
-          </span>.
-        </p>
+        {/* Hero content */}
+        <div className="px-6 pb-16 md:px-12 lg:px-16 lg:pb-20">
+          <div className="mx-auto max-w-4xl">
+            <FadeIn delay={0} duration={600}>
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-lime">
+                Consultoria · HSE · ESMS · Software
+              </p>
+            </FadeIn>
 
-        {/* Description */}
-        <p className="hero-blur-in text-sm md:text-base text-muted max-w-md mb-12 leading-relaxed">
-          Criamos plataformas digitais para empresas angolanas: web, mobile,
-          fintech e automação empresarial.
-        </p>
-
-        {/* CTAs */}
-        <div className="hero-blur-in flex flex-wrap items-center justify-center gap-4">
-          {/* Primary */}
-          <a
-            href="#work"
-            className="group relative inline-flex items-center rounded-full text-sm font-medium px-7 py-3.5 bg-text-primary text-bg transition-all duration-200 hover:scale-105 hover:shadow-lg"
-          >
-            Ver projetos
-          </a>
-
-          {/* Secondary */}
-          <a
-            href="mailto:geral@hsilva.ao"
-            className="group relative inline-flex rounded-full text-sm"
-          >
-            <span
-              className="absolute inset-[-1.5px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              style={{ background: 'linear-gradient(90deg, #89aacc, #4e85bf)' }}
+            <AnimatedText
+              text="Sistemas, estratégia e conformidade para empresas que operam em Angola."
+              gradientColors="linear-gradient(90deg, #ffffff 0%, #d7ff00 40%, #ffffff 65%, #a8c7a0 100%)"
+              gradientAnimationDuration={4}
+              hoverEffect
+              className="justify-start py-0"
+              textClassName="font-normal tracking-[-0.04em] leading-tight"
             />
-            <span className="relative inline-flex items-center gap-1.5 border border-stroke bg-bg text-text-primary rounded-full px-7 py-3.5 font-medium text-sm group-hover:border-transparent transition-all duration-200 hover:scale-105">
-              Falar connosco <span className="text-muted">↗</span>
-            </span>
-          </a>
-        </div>
-      </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 hero-blur-in">
-        <span className="text-[10px] text-muted uppercase tracking-[0.3em] select-none">Descer</span>
-        <div className="w-px h-10 bg-stroke overflow-hidden relative">
-          <div
-            className="absolute top-0 left-0 right-0 h-full accent-gradient animate-scroll-down"
-          />
+            <FadeIn delay={600} duration={900} className="mt-6 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
+              H.SILVA combina consultoria ESG/ESMS, auditorias HSE e desenvolvimento
+              de software para equipas que não podem depender do improviso.
+            </FadeIn>
+
+            <FadeIn delay={1000} duration={900}>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <a href="mailto:geral@hsilva.ao">
+                  <button className="rounded-lg bg-lime px-8 py-3 text-sm font-semibold text-black transition hover:bg-lime/90">
+                    Fala connosco
+                  </button>
+                </a>
+                <a href="#services">
+                  <button className="liquid-glass rounded-lg border border-white/20 px-8 py-3 text-sm font-medium text-white transition hover:bg-white/10">
+                    Ver serviços
+                  </button>
+                </a>
+              </div>
+            </FadeIn>
+
+            <FadeIn delay={1400} duration={900}>
+              <div className="mt-10 flex flex-wrap gap-3">
+                {['IFC / Banco Mundial', 'ISO 14001', 'NEBOSH IGC', 'NIF 5001495852'].map((b) => (
+                  <span
+                    key={b}
+                    className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-medium text-white/55"
+                  >
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </FadeIn>
+          </div>
         </div>
       </div>
     </section>

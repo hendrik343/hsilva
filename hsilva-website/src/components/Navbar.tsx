@@ -1,80 +1,79 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 const LINKS = [
-  { label: 'Início',   href: '#hero' },
+  { label: 'Sobre', href: '#about' },
+  { label: 'Servicos', href: '#services' },
   { label: 'Projetos', href: '#work' },
   { label: 'Contacto', href: '#contact' },
 ]
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const [active, setActive]     = useState('Início')
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 80)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  const [open, setOpen] = useState(false)
 
   return (
-    <motion.header
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 md:pt-5 px-4 pointer-events-none"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.1 }}
-    >
-      <nav
-        className={`pointer-events-auto inline-flex items-center gap-1 rounded-full backdrop-blur-md border border-white/10 bg-surface/80 px-2 py-1.5 transition-shadow duration-300 ${
-          scrolled ? 'shadow-xl shadow-black/30' : ''
-        }`}
-      >
-        {/* Logo */}
-        <a href="#hero" className="group mr-1" aria-label="Ir para início">
-          <div
-            className="w-8 h-8 rounded-full p-[1.5px] transition-transform duration-300 group-hover:scale-110"
-            style={{ background: 'linear-gradient(135deg, #89aacc, #4e85bf)' }}
-          >
-            <div className="w-full h-full rounded-full bg-bg overflow-hidden">
-              <img src="/hsilva-logo.jpg" alt="H.SILVA" className="w-full h-full object-cover" />
-            </div>
-          </div>
+    <header className="fixed left-0 right-0 top-0 z-50 px-4 pt-4 md:px-8">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-[28px] border border-white/15 bg-black/45 px-4 py-3 shadow-2xl shadow-black/30 backdrop-blur-xl">
+        <a href="#hero" className="flex items-center gap-3" aria-label="H.SILVA inicio">
+          <img src="/hsilva-logo.jpg" alt="H.SILVA" className="h-9 w-9 rounded-full border border-cyan-400/30 object-cover" />
+          <span className="text-sm font-bold tracking-wide text-white md:text-base">H.SILVA</span>
         </a>
 
-        <div className="hidden sm:block w-px h-4 bg-stroke mx-0.5" />
+        <div className="hidden items-center gap-1 md:flex">
+          {LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="rounded-full px-4 py-2 text-sm text-white/65 transition hover:bg-white/10 hover:text-white"
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
 
-        {/* Nav links */}
-        {LINKS.map(link => (
-          <a
-            key={link.label}
-            href={link.href}
-            onClick={() => setActive(link.label)}
-            className={`relative text-xs sm:text-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2 transition-colors duration-200 ${
-              active === link.label
-                ? 'text-text-primary bg-stroke/60'
-                : 'text-muted hover:text-text-primary hover:bg-stroke/40'
-            }`}
-          >
-            {link.label}
-          </a>
-        ))}
-
-        <div className="hidden sm:block w-px h-4 bg-stroke mx-0.5" />
-
-        {/* Say hi button */}
         <a
           href="mailto:geral@hsilva.ao"
-          className="group relative inline-flex rounded-full text-xs sm:text-sm"
+          className="hidden rounded-full bg-lime px-5 py-2.5 text-sm font-semibold text-black transition hover:scale-[1.02] md:inline-flex"
         >
-          <span
-            className="absolute inset-[-1.5px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            style={{ background: 'linear-gradient(90deg, #89aacc, #4e85bf)' }}
-          />
-          <span className="relative inline-flex items-center gap-1.5 bg-surface rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-muted group-hover:text-text-primary transition-colors duration-200">
-            Falar <span className="text-[10px]">↗</span>
-          </span>
+          Iniciar Projeto
         </a>
+
+        <button
+          type="button"
+          aria-label="Abrir menu"
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white md:hidden"
+        >
+          <span className="flex flex-col gap-1.5">
+            <span className={`h-0.5 w-5 bg-current transition ${open ? 'translate-y-2 rotate-45' : ''}`} />
+            <span className={`h-0.5 w-5 bg-current transition ${open ? 'opacity-0' : ''}`} />
+            <span className={`h-0.5 w-5 bg-current transition ${open ? '-translate-y-2 -rotate-45' : ''}`} />
+          </span>
+        </button>
       </nav>
-    </motion.header>
+
+      {open ? (
+        <div className="mx-auto mt-3 max-w-6xl rounded-[24px] border border-white/10 bg-black/90 p-4 shadow-2xl shadow-black/40 backdrop-blur-xl md:hidden">
+          <div className="flex flex-col">
+            {LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="border-b border-white/10 px-2 py-4 text-sm text-white/75 last:border-0"
+              >
+                {link.label}
+              </a>
+            ))}
+            <a
+              href="mailto:geral@hsilva.ao"
+              className="mt-3 rounded-full bg-lime px-5 py-3 text-center text-sm font-semibold text-black"
+            >
+              Iniciar Projeto
+            </a>
+          </div>
+        </div>
+      ) : null}
+    </header>
   )
 }

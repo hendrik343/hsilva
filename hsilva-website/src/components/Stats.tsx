@@ -1,49 +1,24 @@
-import { motion } from 'framer-motion'
+import Reveal from './Reveal'
 
 const STATS = [
-  { value: '10+',  label: 'Projetos entregues',     sub: 'Web, mobile, fintech e automação' },
-  { value: '100%', label: 'Entrega acompanhada',    sub: 'Processo claro do início ao fim' },
-  { value: '3+',   label: 'Anos de inovação',       sub: 'Construído a partir do Huambo' },
+  { value: '10+',  label: 'projetos entregues em Angola' },
+  { value: '3+',   label: 'anos em operações de campo HSE/ESMS' },
+  { value: '3',    label: 'hospitais militares geridos em simultâneo' },
+  { value: '100%', label: 'acompanhamento do início ao encerramento' },
 ]
-
-const fade = {
-  hidden: { opacity: 0, y: 28 },
-  show:   (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.8, delay: i * 0.15, ease: [0.25, 0.1, 0.25, 1] },
-  }),
-}
 
 export default function Stats() {
   return (
-    <section className="bg-bg py-16 md:py-24 border-t border-stroke">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-6">
-          {STATS.map((s, i) => (
-            <motion.div
-              key={s.label}
-              className="flex flex-col gap-2"
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: '-60px' }}
-              custom={i}
-              variants={fade}
-            >
-              {/* Accent line */}
-              <div
-                className="w-8 h-[2px] rounded-full mb-4 accent-gradient"
-              />
-
-              <span className="text-5xl md:text-6xl font-display italic text-text-primary leading-none">
-                {s.value}
-              </span>
-              <span className="text-base font-medium text-text-primary mt-1">{s.label}</span>
-              <span className="text-sm text-muted leading-relaxed">{s.sub}</span>
-            </motion.div>
-          ))}
-        </div>
-
+    <section className="bg-bg px-4 py-10 md:px-8 md:py-14">
+      <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {STATS.map((stat, i) => (
+          <Reveal key={stat.label} delay={i * 0.08}>
+            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6">
+              <p className="font-display text-5xl italic leading-none text-lime">{stat.value}</p>
+              <p className="mt-4 text-sm leading-6 text-white/60">{stat.label}</p>
+            </div>
+          </Reveal>
+        ))}
       </div>
     </section>
   )

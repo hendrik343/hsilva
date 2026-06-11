@@ -1,19 +1,15 @@
-import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-import Work from './components/Work'
 import Stats from './components/Stats'
+import Work from './components/Work'
 import Contact from './components/Contact'
 
 export default function App() {
   return (
-    <div className="bg-bg text-text-primary min-h-screen">
-      <Navbar />
-      <main>
-        <Hero />
-        <Work />
-        <Stats />
-        <Contact />
-      </main>
+    <div className="min-h-screen bg-black text-white">
+      <Hero />
+      <Stats />
+      <Work />
+      <Contact />
     </div>
   )
 }

@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HSE Dashboard - HMRH Huambo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #07080d;
+      --panel: #0f121a;
+      --panel-2: #151927;
+      --line: rgba(255,255,255,.1);
+      --text: #f7fbff;
+      --muted: #7b86a3;
+      --header-bg: linear-gradient(135deg, #071022, #0a1730);
+      --grid-line: rgba(0,229,255,.035);
+      --page-glow: rgba(30,144,255,.2);
+      --blue: #1e90ff;
+      --cyan: #00e5ff;
+      --lime: #43ff64;
+      --amber: #ffd000;
+      --violet: #b565ff;
+      --red: #ff4267;
+      --green: #00d98f;
+    }
+
+    body.theme-light {
+      --bg: #eef3f8;
+      --panel: #ffffff;
+      --panel-2: #edf4fb;
+      --line: rgba(16,41,70,.14);
+      --text: #0b1522;
+      --muted: #64748b;
+      --header-bg: linear-gradient(135deg, #f8fbff, #e8f2ff);
+      --grid-line: rgba(30,144,255,.08);
+      --page-glow: rgba(30,144,255,.16);
+      --blue: #0b72d9;
+      --cyan: #008da8;
+      --lime: #148a2a;
+      --amber: #a07100;
+      --violet: #7a3ec8;
+      --red: #cf2448;
+      --green: #008a5b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+        radial-gradient(circle at 50% -10%, var(--page-glow), transparent 36%),
+        var(--bg);
+      background-size: 48px 48px, 48px 48px, auto, auto;
+      color: var(--text);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .page {
+      width: min(1540px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 18px 0 28px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 18px;
+      align-items: center;
+      padding: 20px 24px;
+      border: 1px solid rgba(30,144,255,.42);
+      border-radius: 18px;
+      background: var(--header-bg);
+      box-shadow: 0 0 46px rgba(30,144,255,.12);
+      margin-bottom: 16px;
+    }
+
+    .mode-toggle {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 4px;
+      gap: 4px;
+      background: rgba(255,255,255,.05);
+      justify-self: end;
+    }
+
+    .mode-btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 8px 10px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .mode-btn.active {
+      color: white;
+      background: linear-gradient(135deg, rgba(30,144,255,.75), rgba(0,229,255,.45));
+      box-shadow: 0 0 18px rgba(30,144,255,.22);
+    }
+
+    body.theme-light .mode-btn.active {
+      color: #ffffff;
+    }
+
+    h1 {
+      margin: 0 0 5px;
+      font-size: 17px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      font-family: "Orbitron", sans-serif;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .04em;
+    }
+
+    .months {
+      display: flex;
+      gap: 5px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255,255,255,.07);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .month-btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 8px 13px;
+      color: var(--muted);
+      background: transparent;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: .04em;
+      cursor: pointer;
+    }
+
+    .month-btn.active {
+      color: white;
+      background: linear-gradient(135deg, rgba(30,144,255,.32), rgba(0,229,255,.14));
+      box-shadow: 0 0 18px rgba(30,144,255,.28);
+    }
+
+    .period {
+      justify-self: end;
+      border: 1px solid rgba(30,144,255,.42);
+      color: var(--blue);
+      background: rgba(30,144,255,.08);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card, .panel {
+      background: linear-gradient(145deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card {
+      padding: 17px;
+      min-height: 118px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .11em;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 900;
+      font-family: "Orbitron", sans-serif;
+    }
+
+    .delta {
+      margin-top: 9px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .blue { color: var(--blue); }
+    .cyan { color: var(--cyan); }
+    .lime { color: var(--lime); }
+    .amber { color: var(--amber); }
+    .violet { color: var(--violet); }
+    .red { color: var(--red); }
+    .green { color: var(--green); }
+    .muted { color: var(--muted); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: .11em;
+      font-weight: 850;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .map-wrap {
+      position: relative;
+      height: 315px;
+      background: #07101d;
+    }
+
+    #siteMap {
+      height: 100%;
+      width: 100%;
+      background: #07101d;
+    }
+
+    .leaflet-container {
+      background: #07101d;
+      font-family: inherit;
+    }
+
+    .leaflet-control-attribution {
+      background: rgba(7,8,13,.72) !important;
+      color: var(--muted) !important;
+      font-size: 9px !important;
+    }
+
+    .leaflet-control-attribution a { color: var(--cyan) !important; }
+
+    .leaflet-bar a {
+      background: rgba(15,18,26,.92) !important;
+      border-bottom-color: var(--line) !important;
+      color: var(--text) !important;
+    }
+
+    .map-pin {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: 3px solid #07101d;
+      box-shadow: 0 0 0 10px rgba(30,144,255,.15), 0 0 30px rgba(30,144,255,.85);
+    }
+
+    .map-fallback {
+      height: 100%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(30,144,255,.22), transparent 9%),
+        radial-gradient(circle at 49% 48%, rgba(0,229,255,.13), transparent 20%),
+        linear-gradient(135deg, rgba(30,144,255,.08), transparent);
+    }
+
+    .map-fallback::before {
+      content: "HMRH · HUAMBO";
+      color: var(--blue);
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-shadow: 0 0 24px rgba(30,144,255,.7);
+    }
+
+    .map-note {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      z-index: 450;
+      display: grid;
+      gap: 5px;
+      max-width: 270px;
+      padding: 11px 12px;
+      border: 1px solid rgba(30,144,255,.32);
+      border-radius: 12px;
+      background: rgba(7,8,13,.82);
+      box-shadow: 0 18px 40px rgba(0,0,0,.28);
+      backdrop-filter: blur(8px);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .map-note strong {
+      color: var(--text);
+      font-size: 12px;
+      letter-spacing: .04em;
+    }
+
+    .topics {
+      padding: 14px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .topic {
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,.035);
+      color: inherit;
+      text-decoration: none;
+      transition: border-color .2s, transform .2s, background .2s;
+    }
+
+    .topic[href]:hover {
+      border-color: rgba(0,217,143,.6);
+      background: rgba(0,217,143,.06);
+      transform: translateY(-2px);
+    }
+
+    .topic-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .topic-media {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      margin-top: 11px;
+    }
+
+    .topic-media a {
+      display: block;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 1px solid rgba(0,217,143,.32);
+      background: rgba(0,217,143,.05);
+    }
+
+    .topic-media img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      transition: transform .25s;
+    }
+
+    .topic-media a:hover img {
+      transform: scale(1.04);
+    }
+
+    .topic-caption {
+      margin-top: 7px;
+      font-size: 10px;
+      color: var(--green);
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 10px;
+      font-weight: 850;
+      white-space: nowrap;
+      border: 1px solid currentColor;
+    }
+
+    .meta {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .breakdown {
+      padding: 15px;
+    }
+
+    .break-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0;
+      font-size: 13px;
+    }
+
+    .break-row:last-child { border-bottom: 0; }
+
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .chart-wrap {
+      height: 170px;
+      padding: 14px 14px 18px;
+    }
+
+    .tables {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin: 24px 0 14px;
+      white-space: nowrap;
+    }
+
+    .section-title::before, .section-title::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(90deg, transparent, rgba(255,208,0,.45), transparent);
+    }
+
+    .workforce {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 7px;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(0,229,255,.08), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,.025), transparent);
+    }
+
+    .day-name, .day {
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .day {
+      min-height: 54px;
+      border: 1px solid rgba(0,229,255,.18);
+      border-radius: 9px;
+      padding: 8px 4px 7px;
+      color: var(--text);
+      background: rgba(0,229,255,.075);
+      box-shadow: inset 0 0 18px rgba(0,229,255,.035);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .day::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.08), transparent);
+      opacity: .35;
+      transform: translateX(-80%);
+    }
+
+    .day strong {
+      display: block;
+      color: var(--cyan);
+      font-size: 17px;
+      font-family: "Orbitron", sans-serif;
+      line-height: 1;
+      text-shadow: 0 0 14px rgba(0,229,255,.5);
+    }
+
+    .day span {
+      display: block;
+      margin-top: 5px;
+      font-size: 10px;
+      color: var(--cyan);
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+
+    .day.good { background: rgba(30,144,255,.12); border-color: rgba(30,144,255,.45); }
+    .day.great { background: rgba(0,229,255,.13); border-color: rgba(0,229,255,.48); }
+    .day.peak { background: rgba(67,255,100,.12); border-color: rgba(67,255,100,.42); }
+    .day.sat { background: rgba(255,208,0,.1); border-color: rgba(255,208,0,.38); }
+    .day.event { background: rgba(181,101,255,.12); border-color: rgba(181,101,255,.45); }
+    .day.event span { color: var(--violet); }
+    .day.off { background: rgba(255,66,103,.065); border-color: rgba(255,66,103,.2); color: var(--red); }
+    .day.off strong, .day.off span { color: rgba(255,66,103,.65); text-shadow: none; }
+    .day.empty { border: 0; background: transparent; }
+
+    .cal-legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 0 18px 18px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .cal-key {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cal-key::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--blue);
+      box-shadow: 0 0 12px currentColor;
+    }
+
+    .cal-key.peak::before { background: var(--lime); }
+    .cal-key.great::before { background: var(--cyan); }
+    .cal-key.good::before { background: var(--blue); }
+    .cal-key.sat::before { background: var(--amber); }
+    .cal-key.event::before { background: var(--violet); }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: 330px 1fr 360px;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .docs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .route-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0,217,143,.45);
+      border-radius: 10px;
+      padding: 9px 12px;
+      color: var(--green);
+      background: rgba(0,217,143,.08);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .doc {
+      display: block;
+      width: 100%;
+      padding: 17px;
+      color: inherit;
+      text-decoration: none;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      transition: border-color .2s, transform .2s, background .2s;
+    }
+
+    .doc:hover {
+      border-color: rgba(255,208,0,.45);
+      background: linear-gradient(145deg, rgba(255,208,0,.08), var(--panel-2));
+      transform: translateY(-3px);
+    }
+
+    .doc h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .doc p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .doc-action {
+      display: inline-flex;
+      margin-top: 13px;
+      border: 1px solid rgba(255,208,0,.4);
+      border-radius: 999px;
+      padding: 5px 10px;
+      color: var(--amber);
+      background: rgba(255,208,0,.08);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .doc-download {
+      display: inline-flex;
+      margin-top: 13px;
+      margin-left: 8px;
+      border: 1px solid rgba(30,144,255,.4);
+      border-radius: 999px;
+      padding: 5px 10px;
+      color: var(--blue);
+      background: rgba(30,144,255,.08);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .doc-viewer {
+      margin-top: 14px;
+      margin-bottom: 18px;
+    }
+
+    .doc-frame {
+      display: block;
+      width: 100%;
+      height: min(72vh, 760px);
+      min-height: 520px;
+      border: 0;
+      background: #fff;
+    }
+
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 15px 18px;
+      background: rgba(255,255,255,.025);
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1200px) {
+      header { grid-template-columns: 1fr; }
+      .period { justify-self: start; }
+      .kpis { grid-template-columns: repeat(3, 1fr); }
+      .grid, .tables, .work-grid { grid-template-columns: 1fr; }
+      .charts, .docs { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .kpis, .workforce { grid-template-columns: 1fr 1fr; }
+      .value { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div>
+        <h1>HSE Dashboard · Hospital Militar Regional do Huambo</h1>
+        <div class="sub">HMRH · N.º Obra: 13DC - DEI/SV/2021 · VAMED Healthcare Projects · HSE: Hendrik Silva</div>
+      </div>
+      <nav class="months" id="monthButtons"></nav>
+      <div class="period" id="periodText">Mar -> Abr 2026</div>
+      <div class="mode-toggle" aria-label="Theme mode">
+        <button class="mode-btn active" id="darkModeBtn" type="button" onclick="setTheme('dark')">Dark</button>
+        <button class="mode-btn" id="lightModeBtn" type="button" onclick="setTheme('light')">Normal</button>
+      </div>
+    </header>
+
+    <section class="kpis">
+      <article class="card"><div class="label">Trabalhadores</div><div class="value lime" id="kWorkers">207</div><div class="delta" id="dWorkers">-16.5% vs Mar</div></article>
+      <article class="card"><div class="label">Testes Alcoolemia</div><div class="value cyan" id="kTests">90</div><div class="delta" id="dTests">-53.8% vs Mar</div></article>
+      <article class="card"><div class="label">Checklist HSE</div><div class="value amber" id="kChecklist">100.0%</div><div class="delta" id="dChecklist">+4.5pp vs Mar</div></article>
+      <article class="card"><div class="label">Formação Participantes</div><div class="value violet" id="kTraining">475</div><div class="delta" id="dTraining">-1.0% vs Mar</div></article>
+      <article class="card"><div class="label">Incid. Ambientais</div><div class="value blue" id="kEnv">0</div><div class="delta green" id="dEnv">Zero incidentes</div></article>
+      <article class="card"><div class="label">Positivos Alcoolemia</div><div class="value red" id="kPositive">0</div><div class="delta green" id="dPositive">100% negativos</div></article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head"><span>Mapa de Angola · HMRH</span><span>Huambo</span></div>
+        <div class="map-wrap">
+          <div id="siteMap"></div>
+          <div class="map-note">
+            <strong>Hospital Militar Regional do Huambo</strong>
+            <span>Centro operacional HSE · Província do Huambo</span>
+          </div>
+        </div>
+        <div class="panel-head"><span>Situações HSE Identificadas · Abr 2026</span></div>
+        <div class="topics">
+          <div class="topic"><div class="topic-top"><span>Máquina Multifunção - Elementos em falta</span><span class="tag red">Não resolvido</span></div><div class="meta">Aberto em 06 Fev 2026 · Responsáveis: Nelson Segunda / Leonel Luamba · Novo prazo: 06 Mai 2026</div></div>
+          <div class="topic">
+            <div class="topic-top"><span>Fossa de apoio ao WC - mau cheiro junto ao refeitório</span><span class="tag green">Resolvido</span></div>
+            <div class="meta">Aberto em 25 Mar 2026 · Responsáveis: Nelson Segunda / Leonel Luamba · Resolvido em Abr 2026</div>
+            <div class="topic-media">
+              <a href="./fotos-fossa-resolvida/fossa-wc-evidencia-01.png" target="_blank" title="Abrir foto do camião de limpeza">
+                <img src="./fotos-fossa-resolvida/fossa-wc-evidencia-01.png" alt="Camião de limpeza no estaleiro para resolução da fossa de apoio ao WC">
+              </a>
+              <a href="./fotos-fossa-resolvida/fossa-wc-evidencia-02.png" target="_blank" title="Abrir foto lateral do camião de limpeza">
+                <img src="./fotos-fossa-resolvida/fossa-wc-evidencia-02.png" alt="Camião de limpeza junto à zona de apoio ao WC">
+              </a>
+              <a href="./fotos-fossa-resolvida/fossa-wc-evidencia-03.png" target="_blank" title="Abrir foto da retirada da fossa de apoio ao WC">
+                <img src="./fotos-fossa-resolvida/fossa-wc-evidencia-03.png" alt="Retirada da fossa de apoio ao WC com camião de limpeza">
+              </a>
+            </div>
+            <div class="topic-caption">Evidência fotográfica da retirada/limpeza executada</div>
+          </div>
+          <div class="topic"><div class="topic-top"><span>Simulacro realizado na obra</span><span class="tag green">Realizado</span></div><div class="meta">07 Abr 2026 · Referenciado no Relatório Mensal HSE Nº 035</div></div>
+          <div class="topic"><div class="topic-top"><span>Manutenção de extintores e aparelhos de ar-condicionado</span><span class="tag blue">A melhorar</span></div><div class="meta">Reunião Semanal HSE Nº 114 · 24 Abr 2026</div></div>
+        </div>
+      </article>
+
+      <aside class="panel">
+        <div class="panel-head"><span id="detailTitle">Detalhes · Abr 2026</span></div>
+        <div class="breakdown" id="breakdown"></div>
+      </aside>
+    </section>
+
+    <section class="charts">
+      <article class="panel"><div class="panel-head">Trabalhadores · Set 2025 -> Abr 2026</div><div class="chart-wrap"><canvas id="workersChart"></canvas></div></article>
+      <article class="panel"><div class="panel-head">Formação · Participantes</div><div class="chart-wrap"><canvas id="trainingChart"></canvas></div></article>
+      <article class="panel"><div class="panel-head">Consumo de Água · m³</div><div class="chart-wrap"><canvas id="waterChart"></canvas></div></article>
+    </section>
+
+    <section class="tables">
+      <article class="panel">
+        <div class="panel-head"><span id="sstTitle">Indicadores SST · Mar vs Abr 2026</span></div>
+        <table><thead><tr><th>Indicador</th><th id="sstPrev">Fev</th><th id="sstCurr">Mar</th><th>Var.</th></tr></thead><tbody id="sstBody"></tbody></table>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><span id="envTitle">Ambiente & Recursos · Mar vs Abr 2026</span></div>
+        <table><thead><tr><th>Recurso</th><th id="envPrev">Fev</th><th id="envCurr">Mar</th><th>Var.</th></tr></thead><tbody id="envBody"></tbody></table>
+      </article>
+    </section>
+
+    <div class="section-title">Estaleiro · Dados Operacionais · Abr 2026</div>
+    <section class="workforce">
+      <article class="card"><div class="label">Total Efetivos</div><div class="value amber">207</div><div class="delta">10 entidades listadas no relatório</div></article>
+      <article class="card"><div class="label">Formações no Mês</div><div class="value amber">19</div><div class="delta green">475 participantes</div></article>
+      <article class="card"><div class="label">Alcoolemia</div><div class="value amber">90</div><div class="delta red">4 positivos · 86 negativos</div></article>
+    </section>
+
+    <section class="work-grid">
+      <article class="panel">
+        <div class="panel-head">Efetivos por Empresa</div>
+        <table>
+          <tbody id="companyBody"></tbody>
+        </table>
+      </article>
+      <article class="panel">
+        <div class="panel-head">Calendário HSE · Abril 2026</div>
+        <div class="calendar" id="calendar"></div>
+        <div class="cal-legend" id="calendarLegend"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head">Resumo Abril</div>
+        <div class="breakdown">
+          <div class="break-row"><span>Simulacro</span><strong class="lime">07 Abr 2026</strong></div>
+          <div class="break-row"><span>Reunião HSE Nº 113</span><strong>08 Abr 2026</strong></div>
+          <div class="break-row"><span>Ação com comunidade</span><strong>17 Abr 2026</strong></div>
+          <div class="break-row"><span>Reunião HSE Nº 114</span><strong>24 Abr 2026</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <div class="section-title">Documentos & Ficheiros</div>
+    <section class="docs">
+      <article class="panel doc" tabindex="0" onclick="openDocument('Relatório Mensal HSE Nº 035', './documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf', './documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf')" onkeydown="if(event.key==='Enter') this.click()">
+        <h3>Relatório Mensal HSE Nº 035</h3>
+        <p>Abril 2026 · Revisão 01</p>
+        <span class="doc-action">Ver aqui</span><a class="doc-download" href="./documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf" target="_blank" onclick="event.stopPropagation()">Abrir PDF</a>
+      </article>
+      <article class="panel doc" tabindex="0" onclick="openDocument('Reunião Semanal HSE Nº 113', './documentos-abril/HMRH_Reuniao_Semanal_HSE_N-113.html', './documentos-abril/HMRH_Reuniao_Semanal_HSE_N-113.docx')" onkeydown="if(event.key==='Enter') this.click()">
+        <h3>Reunião Semanal HSE Nº 113</h3>
+        <p>Data da reunião · 08 Abr 2026</p>
+        <span class="doc-action">Ver aqui</span><a class="doc-download" href="./documentos-abril/HMRH_Reuniao_Semanal_HSE_N-113.docx" download onclick="event.stopPropagation()">Baixar DOCX</a>
+      </article>
+      <article class="panel doc" tabindex="0" onclick="openDocument('Reunião Semanal HSE Nº 114', './documentos-abril/HMRH_Reuniao_Semanal_HSE_N-114.html', './documentos-abril/HMRH_Reuniao_Semanal_HSE_N-114.docx')" onkeydown="if(event.key==='Enter') this.click()">
+        <h3>Reunião Semanal HSE Nº 114</h3>
+        <p>Data da reunião · 24 Abr 2026</p>
+        <span class="doc-action">Ver aqui</span><a class="doc-download" href="./documentos-abril/HMRH_Reuniao_Semanal_HSE_N-114.docx" download onclick="event.stopPropagation()">Baixar DOCX</a>
+      </article>
+      <article class="panel doc" tabindex="0" onclick="openDocument('Simulacro', './documentos-abril/HMRH_Relatorio_Simulacro_Cenario_Emergencia.pdf', './documentos-abril/HMRH_Relatorio_Simulacro_Cenario_Emergencia.pdf')" onkeydown="if(event.key==='Enter') this.click()">
+        <h3>Simulacro</h3>
+        <p>Relatório de Simulacro · Cenário de Emergência · 07 Abr 2026</p>
+        <span class="doc-action">Ver aqui</span><a class="doc-download" href="./documentos-abril/HMRH_Relatorio_Simulacro_Cenario_Emergencia.pdf" target="_blank" onclick="event.stopPropagation()">Abrir PDF</a>
+      </article>
+      <article class="panel doc" tabindex="0" onclick="openDocument('Checklist HSE', './documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf', './documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf')" onkeydown="if(event.key==='Enter') this.click()">
+        <h3>Checklist HSE</h3>
+        <p>Resultado mensal · 100% · Excelente · Fonte: relatório mensal</p>
+        <span class="doc-action">Ver aqui</span><a class="doc-download" href="./documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf" target="_blank" onclick="event.stopPropagation()">Abrir PDF</a>
+      </article>
+      <article class="panel doc" tabindex="0" onclick="openDocument('Resíduos do Mês', './documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf', './documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf')" onkeydown="if(event.key==='Enter') this.click()">
+        <h3>Resíduos do Mês</h3>
+        <p>RCD 1.500kg · indiferenciados 180kg · Fonte: relatório mensal</p>
+        <span class="doc-action">Ver aqui</span><a class="doc-download" href="./documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf" target="_blank" onclick="event.stopPropagation()">Abrir PDF</a>
+      </article>
+    </section>
+
+    <section class="panel doc-viewer" id="docViewer">
+      <div class="panel-head">
+        <span id="docViewerTitle">Selecione um documento</span>
+        <a class="route-btn" id="docViewerLink" href="./documentos-abril/HMRH_Relatorio_Mensal_HSE_035_2026-04_REV-01.pdf" target="_blank">Abrir original</a>
+      </div>
+      <iframe class="doc-frame" id="docFrame" title="Visualizador de documentos" srcdoc="<div style='font-family:system-ui,sans-serif;padding:32px;color:#334155'><h2>Selecione um documento</h2><p>Clique num card acima para abrir a pré-visualização aqui.</p></div>"></iframe>
+    </section>
+
+    <footer>
+      <span>VAMED Healthcare Projects · Angola · PM: Fábio Seda · HSE: Hendrik Silva</span>
+      <span id="today"></span>
+    </footer>
+  </main>
+
+  <script>
+    const months = ['set','out','nov','dez','jan','fev','mar','abr'];
+    const labels = {
+      set: 'SET 2025', out: 'OUT 2025', nov: 'NOV 2025', dez: 'DEZ 2025',
+      jan: 'JAN 2026', fev: 'FEV 2026', mar: 'MAR 2026', abr: 'ABR 2026'
+    };
+    const short = { set:'Set', out:'Out', nov:'Nov', dez:'Dez', jan:'Jan', fev:'Fev', mar:'Mar', abr:'Abr' };
+    const year = { set:'2025', out:'2025', nov:'2025', dez:'2025', jan:'2026', fev:'2026', mar:'2026', abr:'2026' };
+    const data = {
+      set: {w:219, ch:98.15, t:420, p:0, f:667, i:0, acc:0, water:462, gas:1100, elec:3344},
+      out: {w:212, ch:98.11, t:362, p:3, f:671, i:0, acc:0, water:479, gas:3070, elec:1597},
+      nov: {w:221, ch:91.0,  t:300, p:3, f:383, i:0, acc:0, water:367, gas:1109, elec:7350},
+      dez: {w:208, ch:98.10, t:0,   p:0, f:587, i:0, acc:0, water:428, gas:1109, elec:2841},
+      jan: {w:182, ch:98.1,  t:0,   p:0, f:375, i:0, acc:0, water:291, gas:728,  elec:2012},
+      fev: {w:232, ch:94.3,  t:180, p:0, f:524, i:0, acc:0, water:514, gas:1038, elec:1634},
+      mar: {w:248, ch:95.5,  t:195, p:0, f:480, i:0, acc:0, water:510, gas:1050, elec:1680},
+      abr: {w:207, ch:100.0, t:90,  p:4, f:475, i:0, acc:0, water:410, gas:1020, elec:1783.2, warn:4, gasKg:0, rcdKg:1500, wasteKg:180}
+    };
+
+    const companiesByMonth = {
+      mar: [
+        ['BELO', 172], ['GUEMAKAL', 15], ['VAMED', 13], ['Estagiários', 10],
+        ['Cozinha', 12], ['CAMICUTI', 11], ['PREFANGOL', 9], ['DAR', 6]
+      ],
+      abr: [
+        ['BELO EMPREENDIMENTOS', 153], ['FAA', 21], ['VAMED', 12], ['CAMACUTI', 10],
+        ['PREFANGOL', 4], ['GUEMAKAL', 4], ['DAR', 1], ['CIPTOP', 1],
+        ['AFRILIM', 1], ['CEM', 0]
+      ]
+    };
+
+    const dailyByMonth = {
+      mar: [
+      [1,0,0],[2,215,33],[3,218,30],[4,220,28],[5,222,26],[6,218,30],[7,85,163],
+      [8,0,0],[9,216,32],[10,220,28],[11,219,29],[12,224,24],[13,218,30],[14,88,160],
+      [15,0,0],[16,213,35],[17,217,31],[18,221,27],[19,220,28],[20,216,32],[21,80,168],
+      [22,0,0],[23,219,29],[24,222,26],[25,220,28],[26,218,30],[27,215,33],[28,82,166],
+      [29,0,0],[30,220,28],[31,223,25]
+      ],
+      abr: [
+        [1,184,23], [2,185,22], [3,182,25], [4,72,135], [5,0,0],
+        [6,181,26], [7,186,21,'Simulacro realizado na obra'],
+        [8,184,23,'Reunião Semanal HSE Nº 113'], [9,185,22], [10,183,24], [11,74,133], [12,0,0],
+        [13,182,25], [14,184,23], [15,185,22], [16,183,24], [17,182,25,'Ação de interação com a comunidade'], [18,73,134], [19,0,0],
+        [20,181,26], [21,184,23], [22,183,24], [23,185,22], [24,184,23,'Reunião Semanal HSE Nº 114'], [25,72,135], [26,0,0],
+        [27,181,26,'Prazo crítico fossa WC'], [28,183,24], [29,184,23], [30,186,21]
+      ]
+    };
+
+    const fmt = n => Number.isInteger(n) ? n.toLocaleString('pt-PT') : n.toLocaleString('pt-PT', { maximumFractionDigits: 1 });
+    const pct = n => n.toFixed(1) + '%';
+    const prevMonth = m => months.indexOf(m) > 0 ? months[months.indexOf(m)-1] : null;
+
+    function delta(curr, prev, suffix, percentPoint = false) {
+      if (prev === null) return ['Primeiro mês', 'muted'];
+      if (prev === 0 && curr === 0) return ['Estável', 'muted'];
+      if (prev === 0) return ['Novo', 'green'];
+      const diff = percentPoint ? curr - prev : ((curr - prev) / prev) * 100;
+      if (Math.abs(diff) < .05) return ['Estável', 'muted'];
+      const sign = diff > 0 ? '+' : '-';
+      const cls = diff > 0 ? 'green' : 'red';
+      const unit = percentPoint ? 'pp' : '%';
+      return [`${sign}${Math.abs(diff).toFixed(1)}${unit} vs ${suffix}`, cls];
+    }
+
+    function badCountDelta(curr, prev, suffix) {
+      if (prev === null) return ['Primeiro mês', 'muted'];
+      if (curr === prev) return ['Estável', 'muted'];
+      if (prev === 0) return curr === 0 ? ['Estável', 'muted'] : [`+${curr} vs ${suffix}`, 'red'];
+      const diff = ((curr - prev) / prev) * 100;
+      return diff > 0 ? [`+${diff.toFixed(1)}% vs ${suffix}`, 'red'] : [`-${Math.abs(diff).toFixed(1)}% vs ${suffix}`, 'green'];
+    }
+
+    function setText(id, text, cls) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      if (cls) el.className = 'delta ' + cls;
+    }
+
+    function setMonth(m) {
+      const d = data[m];
+      const pm = prevMonth(m);
+      const p = pm ? data[pm] : null;
+      const pLabel = pm ? short[pm] : '';
+      document.querySelectorAll('.month-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.month === m));
+      document.getElementById('periodText').textContent = pm ? `${short[pm]} -> ${short[m]} ${year[m]}` : `${short[m]} ${year[m]}`;
+
+      document.getElementById('kWorkers').textContent = fmt(d.w);
+      document.getElementById('kTests').textContent = fmt(d.t);
+      document.getElementById('kChecklist').textContent = pct(d.ch);
+      document.getElementById('kTraining').textContent = fmt(d.f);
+      document.getElementById('kEnv').textContent = d.i;
+      document.getElementById('kPositive').textContent = d.p;
+
+      setText('dWorkers', ...delta(d.w, p ? p.w : null, pLabel));
+      setText('dTests', ...delta(d.t, p ? p.t : null, pLabel));
+      setText('dChecklist', ...delta(d.ch, p ? p.ch : null, pLabel, true));
+      setText('dTraining', ...delta(d.f, p ? p.f : null, pLabel));
+      setText('dEnv', d.i === 0 ? 'Zero incidentes' : `${d.i} incidente(s)`, d.i === 0 ? 'green' : 'red');
+      setText('dPositive', d.p === 0 ? '100% negativos' : `${d.p} positivo(s)`, d.p === 0 ? 'green' : 'red');
+
+      document.getElementById('detailTitle').textContent = `Detalhes · ${short[m]} ${year[m]}`;
+      const detailRows = [
+        ['Alcoolemia Testes', fmt(d.t)], ['Alcoolemia Positivos', d.p], ['Acidentes', d.acc],
+        ['Incid. Ambientais', d.i], ['Água (m³)', fmt(d.water)], ['Gasóleo (L)', fmt(d.gas)], ['Electricidade (kWh)', fmt(d.elec)]
+      ];
+      if (d.warn !== undefined) detailRows.push(['Advertências', d.warn]);
+      if (d.rcdKg !== undefined) detailRows.push(['RCD mensal', fmt(d.rcdKg) + ' kg']);
+      if (d.wasteKg !== undefined) detailRows.push(['Resíduos indiferenciados', fmt(d.wasteKg) + ' kg']);
+      document.getElementById('breakdown').innerHTML = detailRows.map(([a,b]) => `<div class="break-row"><span>${a}</span><strong>${b}</strong></div>`).join('');
+
+      const title = pm ? `${short[pm]} vs ${short[m]} ${year[m]}` : `${short[m]} ${year[m]}`;
+      document.getElementById('sstTitle').textContent = `Indicadores SST · ${title}`;
+      document.getElementById('envTitle').textContent = `Ambiente & Recursos · ${title}`;
+      document.getElementById('sstPrev').textContent = pm ? short[pm] : '-';
+      document.getElementById('sstCurr').textContent = short[m];
+      document.getElementById('envPrev').textContent = pm ? short[pm] : '-';
+      document.getElementById('envCurr').textContent = short[m];
+
+      buildRows('sstBody', [
+        ['Trabalhadores', p ? fmt(p.w) : '-', fmt(d.w), delta(d.w, p ? p.w : null, '')],
+        ['Testes Alcoolemia', p ? fmt(p.t) : '-', fmt(d.t), delta(d.t, p ? p.t : null, '')],
+        ['Checklist HSE', p ? pct(p.ch) : '-', pct(d.ch), delta(d.ch, p ? p.ch : null, '', true)],
+        ['Formação Part.', p ? fmt(p.f) : '-', fmt(d.f), delta(d.f, p ? p.f : null, '')],
+        ['Positivos Alc.', p ? p.p : '-', d.p, badCountDelta(d.p, p ? p.p : null, pLabel)],
+        ['Acidentes', p ? p.acc : '-', d.acc, delta(d.acc, p ? p.acc : null, '')]
+      ]);
+
+      buildRows('envBody', [
+        ['Água (m³)', p ? fmt(p.water) : '-', fmt(d.water), delta(d.water, p ? p.water : null, '')],
+        ['Gasóleo (L)', p ? fmt(p.gas) : '-', fmt(d.gas), delta(d.gas, p ? p.gas : null, '')],
+        ['Electricidade (kWh)', p ? fmt(p.elec) : '-', fmt(d.elec), delta(d.elec, p ? p.elec : null, '')],
+        ['Incid. Ambientais', p ? p.i : '-', d.i, d.i === 0 ? ['Zero', 'green'] : [`${d.i}`, 'red']]
+      ]);
+
+      updateCharts(m);
+      renderCompanies(m);
+      renderCalendar(m);
+    }
+
+    function buildRows(id, rows) {
+      document.getElementById(id).innerHTML = rows.map(([name, prev, curr, d]) =>
+        `<tr><td class="blue"><strong>${name}</strong></td><td>${prev}</td><td>${curr}</td><td><span class="${d[1]}">${d[0]}</span></td></tr>`
+      ).join('');
+    }
+
+    function openDocument(title, previewUrl, originalUrl) {
+      document.getElementById('docViewerTitle').textContent = title;
+      const frame = document.getElementById('docFrame');
+      frame.removeAttribute('srcdoc');
+      frame.src = previewUrl;
+      document.getElementById('docViewerLink').href = originalUrl || previewUrl;
+      document.getElementById('docViewer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.getElementById('monthButtons').innerHTML = months.map(m =>
+      `<button class="month-btn" data-month="${m}" onclick="setMonth('${m}')">${labels[m]}</button>`
+    ).join('');
+
+    function renderCompanies(m) {
+      const rows = companiesByMonth[m] || companiesByMonth.abr;
+      const total = rows.reduce((sum, row) => sum + row[1], 0);
+      document.getElementById('companyBody').innerHTML = rows.map(([name, n]) =>
+        `<tr><td><strong class="amber">${name}</strong></td><td>${n}</td><td>${total ? (n/total*100).toFixed(1) : '0.0'}%</td></tr>`
+      ).join('') + `<tr><td><strong>Total</strong></td><td><strong>${total}</strong></td><td><strong>100%</strong></td></tr>`;
+    }
+
+    function renderCalendar(m) {
+      const dayNames = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+      const monthIndex = m === 'abr' ? 3 : 2;
+      const firstDay = new Date(2026, monthIndex, 1).getDay();
+      const mondayOffset = (firstDay + 6) % 7;
+      const rows = dailyByMonth[m] || dailyByMonth.abr;
+      let cal = dayNames.map(d => `<div class="day-name">${d}</div>`).join('');
+      cal += '<div class="day empty"></div>'.repeat(mondayOffset);
+      rows.forEach(([d,p,x,note]) => {
+        const date = new Date(2026, monthIndex, d);
+        const isSun = date.getDay() === 0;
+        const isSat = date.getDay() === 6;
+        let label = '';
+        let cls = 'day';
+        if (typeof p === 'number') {
+          const total = p + x;
+          const rate = total ? Math.round(p / total * 100) : 0;
+          label = total ? rate + '%' : 'dom';
+          if (isSun) cls += ' off';
+          else if (isSat) cls += ' sat';
+          else if (rate >= 90) cls += ' peak';
+          else if (rate >= 85) cls += ' great';
+          else cls += ' good';
+        } else {
+          label = p || '—';
+          if (isSun) cls += ' off';
+          else if (isSat) cls += ' sat';
+          else if (p) cls += ' event';
+          else cls += ' good';
+        }
+        const title = note ? ` title="${note}"` : '';
+        cal += `<div class="${cls}"${title}><strong>${d}</strong><span>${label}</span></div>`;
+      });
+      document.getElementById('calendar').innerHTML = cal;
+      document.getElementById('calendarLegend').innerHTML = m === 'mar'
+        ? '<span class="cal-key peak">>=90% pico</span><span class="cal-key great">85-90%</span><span class="cal-key good">70-85%</span><span class="cal-key sat">Sábado</span>'
+        : '<span class="cal-key peak">>=90% pico</span><span class="cal-key great">85-90%</span><span class="cal-key good">70-85%</span><span class="cal-key sat">Sábado</span><span class="cal-key event">Eventos em tooltip</span>';
+    }
+
+    const chartLabels = ['Set 25','Out 25','Nov 25','Dez 25','Jan 26','Fev 26','Mar 26','Abr 26'];
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#7b86a3' }, grid: { color: 'rgba(255,255,255,.04)' } },
+        y: { ticks: { color: '#7b86a3' }, grid: { color: 'rgba(255,255,255,.05)' } }
+      }
+    };
+
+    function makeChart(id, key, color) {
+      const chart = new Chart(document.getElementById(id), {
+        type: 'bar',
+        data: { labels: chartLabels, datasets: [{ data: months.map(m => data[m][key]), backgroundColor: months.map(() => color), borderRadius: 7 }] },
+        options: chartOptions
+      });
+      chart.baseColor = color;
+      return chart;
+    }
+
+    const charts = {
+      workers: makeChart('workersChart', 'w', 'rgba(30,144,255,.72)'),
+      training: makeChart('trainingChart', 'f', 'rgba(181,101,255,.72)'),
+      water: makeChart('waterChart', 'water', 'rgba(0,229,255,.72)')
+    };
+
+    let siteMap = null;
+    let siteMapLayer = null;
+
+    function setTheme(mode) {
+      const theme = mode === 'light' ? 'light' : 'dark';
+      document.body.classList.toggle('theme-light', theme === 'light');
+      document.body.classList.toggle('theme-dark', theme === 'dark');
+      document.getElementById('darkModeBtn')?.classList.toggle('active', theme === 'dark');
+      document.getElementById('lightModeBtn')?.classList.toggle('active', theme === 'light');
+      localStorage.setItem('hse-theme', theme);
+      updateMapTheme(theme);
+    }
+
+    function updateMapTheme(theme) {
+      if (!siteMap || !window.L) return;
+      const url = theme === 'light'
+        ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+      if (siteMapLayer) siteMap.removeLayer(siteMapLayer);
+      siteMapLayer = L.tileLayer(url, {
+        subdomains: 'abcd',
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+      }).addTo(siteMap);
+    }
+
+    function updateCharts(active) {
+      const activeIndex = months.indexOf(active);
+      Object.values(charts).forEach(chart => {
+        chart.data.datasets[0].backgroundColor = chart.data.labels.map((_, i) => i === activeIndex ? 'rgba(255,208,0,.9)' : chart.baseColor.replace('.72', '.35'));
+        chart.update('none');
+      });
+    }
+
+    function initSiteMap() {
+      const mapEl = document.getElementById('siteMap');
+      if (!mapEl) return;
+      const hmrh = [-12.776, 15.734];
+
+      if (!window.L) {
+        mapEl.innerHTML = '<div class="map-fallback"></div>';
+        return;
+      }
+
+      siteMap = L.map(mapEl, {
+        center: hmrh,
+        zoom: 13,
+        zoomControl: true,
+        scrollWheelZoom: false
+      });
+
+      updateMapTheme(localStorage.getItem('hse-theme') || 'dark');
+
+      const pin = L.divIcon({
+        className: '',
+        html: '<div class="map-pin"></div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      L.circle(hmrh, {
+        radius: 1750,
+        color: '#00e5ff',
+        weight: 1,
+        fillColor: '#1e90ff',
+        fillOpacity: .08
+      }).addTo(siteMap);
+
+      L.marker(hmrh, { icon: pin })
+        .addTo(siteMap)
+        .bindPopup('<strong>HMRH · Huambo</strong><br>207 efetivos · 100% checklist HSE<br>Abril 2026')
+        .openPopup();
+
+      setTimeout(() => siteMap.invalidateSize(), 100);
+    }
+
+    const now = new Date();
+    document.getElementById('today').textContent = 'Sistema activo · ' + now.toLocaleDateString('pt-PT');
+    setTheme(localStorage.getItem('hse-theme') || 'dark');
+    initSiteMap();
+    setMonth('abr');
+  </script>
+</body>
+</html>

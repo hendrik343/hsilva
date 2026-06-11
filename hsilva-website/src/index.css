@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --bg: 0 0% 4%;
-  --surface: 0 0% 8%;
-  --text: 0 0% 96%;
-  --muted: 0 0% 53%;
-  --stroke: 0 0% 13%;
-  --accent: 0 0% 96%;
+  --bg: 0 0% 0%;
+  --surface: 0 0% 7%;
+  --text: 0 0% 100%;
+  --muted: 0 0% 65%;
+  --stroke: 0 0% 20%;
+  --accent: 0 0% 100%;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,9 +24,14 @@ body {
   overflow-x: hidden;
 }
 
+body::selection {
+  background: #d7ff00;
+  color: #000;
+}
+
 @layer utilities {
   .accent-gradient {
-    background: linear-gradient(90deg, #89aacc 0%, #4e85bf 100%);
+    background: linear-gradient(90deg, #d7ff00 0%, #24a8ff 100%);
   }
   .accent-gradient-border {
     background: linear-gradient(90deg, #89aacc 0%, #4e85bf 100%);
@@ -35,6 +40,61 @@ body {
   }
   .font-display {
     font-family: 'Instrument Serif', serif;
+  }
+  .liquid-glass {
+    background: rgba(0, 0, 0, 0.4);
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: none;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .liquid-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.4px;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 20%,
+      rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.1) 80%, rgba(255,255,255,0.3) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .hero-planet {
+    background:
+      radial-gradient(circle at 56% 18%, rgba(255,255,255,0.16) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 50% -20%, rgba(179, 216, 255, 0.28), transparent 33%),
+      radial-gradient(ellipse at 50% 4%, rgba(120, 155, 178, 0.7) 0%, rgba(45, 64, 72, 0.68) 24%, rgba(5, 10, 13, 0) 56%),
+      linear-gradient(180deg, #07111a 0%, #050607 68%);
+  }
+  .hero-planet::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 5.5rem;
+    width: min(86vw, 820px);
+    height: min(86vw, 820px);
+    transform: translateX(-50%);
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 36% 30%, rgba(255,255,255,0.16), transparent 10%),
+      radial-gradient(circle at 62% 44%, rgba(255,255,255,0.08), transparent 13%),
+      radial-gradient(circle at 48% 54%, rgba(120,142,151,0.22), transparent 31%),
+      linear-gradient(145deg, rgba(146,162,166,0.5), rgba(21,29,34,0.84) 58%, rgba(0,0,0,0.9));
+    box-shadow: inset -32px -42px 90px rgba(0,0,0,0.78), inset 22px 16px 42px rgba(255,255,255,0.08), 0 0 80px rgba(97,155,190,0.12);
+    opacity: 0.72;
+  }
+  .grain {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 }
 
