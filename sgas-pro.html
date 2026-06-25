@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SGAS Pro — Plataforma de Conformidade IFC / Banco Mundial</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/config.js"></script>
+<script src="/auth.js"></script>
 <style>
 :root {
   --bg: #F4F6F5;
@@ -498,9 +501,128 @@ canvas { max-width: 100%; }
 .esms-prog-track { flex:1; height:7px; background:#F3F4F6; border-radius:4px; overflow:hidden; }
 .esms-prog-fill { height:100%; border-radius:4px; transition:width 0.4s; }
 .esms-prog-val { width:28px; text-align:right; font-size:11px; font-weight:700; flex-shrink:0; }
+
+/* ── AUTH MODAL — Phase 2 ── */
+.auth-input {
+  width:100%; padding:10px 12px; border:1px solid #E5E7EB;
+  border-radius:8px; font-size:14px; margin-bottom:12px;
+  font-family:inherit; outline:none; transition:border 0.15s;
+  box-sizing:border-box; color:#111827; background:#fff;
+}
+.auth-input:focus { border-color:#1D9E75; }
+.auth-btn-primary {
+  width:100%; padding:11px; background:#1D9E75; color:#fff;
+  border:none; border-radius:8px; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit; transition:background 0.15s;
+  margin-bottom:12px; box-sizing:border-box;
+}
+.auth-btn-primary:hover { background:#0F6E56; }
+.auth-btn-primary:disabled { background:#9CA3AF; cursor:not-allowed; }
+.auth-btn-social {
+  width:100%; padding:10px; background:#fff; color:#374151;
+  border:1px solid #E5E7EB; border-radius:8px; font-size:13px;
+  font-weight:500; cursor:pointer; font-family:inherit;
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; margin-bottom:8px; transition:background 0.15s;
+  box-sizing:border-box;
+}
+.auth-btn-social:hover { background:#F9FAFB; }
+.auth-divider {
+  text-align:center; color:#9CA3AF; font-size:12px;
+  margin:12px 0; position:relative;
+}
+.auth-divider::before, .auth-divider::after {
+  content:''; position:absolute; top:50%; width:42%;
+  height:1px; background:#E5E7EB;
+}
+.auth-divider::before { left:0; }
+.auth-divider::after { right:0; }
+.auth-error {
+  background:#FEF2F2; color:#DC2626; border:1px solid #FCA5A5;
+  border-radius:8px; padding:10px 12px; font-size:13px;
+  margin-top:4px; margin-bottom:8px;
+}
+.auth-success {
+  background:#ECFDF5; color:#059669; border:1px solid #A7F3D0;
+  border-radius:8px; padding:10px 12px; font-size:13px;
+  margin-top:8px;
+}
+.dd-item {
+  padding:8px 10px; border-radius:6px; font-size:13px; color:#374151; cursor:pointer;
+}
+.dd-item:hover { background:#F9FAFB; }
 </style>
 </head>
 <body>
+
+<!-- ── AUTH OVERLAY — Phase 2 ── -->
+<div id="auth-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(13,46,30,0.97);display:flex;align-items:center;justify-content:center;">
+  <div style="width:400px;max-width:calc(100vw - 32px);background:#fff;border-radius:12px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:40px;height:40px;background:#1D9E75;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0;">S</div>
+        <span style="font-size:18px;font-weight:700;color:#111827;">SGAS.pro</span>
+      </div>
+      <p style="color:#6B7280;font-size:13px;margin:0;">Plataforma de Conformidade IFC / Banco Mundial</p>
+    </div>
+    <!-- Tab bar -->
+    <div style="display:flex;border-bottom:1px solid #E5E7EB;margin-bottom:20px;">
+      <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #1D9E75;font-weight:600;color:#111827;font-size:14px;cursor:pointer;font-family:inherit;">Entrar</button>
+      <button id="tab-register" onclick="switchAuthTab('register')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;font-weight:400;color:#6B7280;font-size:14px;cursor:pointer;font-family:inherit;">Criar conta</button>
+    </div>
+    <!-- Login form -->
+    <form id="form-login" onsubmit="return false;">
+      <input id="login-email" type="email" placeholder="Email" required class="auth-input">
+      <input id="login-password" type="password" placeholder="Senha" required class="auth-input">
+      <div style="text-align:right;margin-bottom:16px;margin-top:-4px;">
+        <a id="link-magic" href="#" style="font-size:12px;color:#1D9E75;">Esqueceu a senha?</a>
+      </div>
+      <button type="submit" id="btn-login" class="auth-btn-primary" data-label="Entrar">Entrar</button>
+      <div class="auth-divider">ou</div>
+      <button type="button" id="btn-google" class="auth-btn-social">
+        <img src="https://www.google.com/favicon.ico" width="16" alt=""> Entrar com Google
+      </button>
+      <button type="button" id="btn-microsoft" class="auth-btn-social">
+        <img src="https://www.microsoft.com/favicon.ico" width="16" alt=""> Entrar com Microsoft
+      </button>
+      <div id="login-error" class="auth-error" style="display:none;"></div>
+    </form>
+    <!-- Register form -->
+    <form id="form-register" style="display:none;" onsubmit="return false;">
+      <input id="reg-name" type="text" placeholder="Nome completo" required class="auth-input">
+      <input id="reg-email" type="email" placeholder="Email" required class="auth-input">
+      <input id="reg-password" type="password" placeholder="Senha (mín. 8 caracteres)" required minlength="8" class="auth-input">
+      <input id="reg-org" type="text" placeholder="Nome da organização" required class="auth-input">
+      <select id="reg-country" class="auth-input">
+        <option value="">País</option>
+        <option>Angola</option><option>Moçambique</option>
+        <option>Brasil</option><option>Portugal</option>
+        <option>Nigéria</option><option>Quénia</option>
+        <option>África do Sul</option><option>Outro</option>
+      </select>
+      <select id="reg-sector" class="auth-input">
+        <option value="">Sector</option>
+        <option>Construção</option><option>Infraestrutura</option>
+        <option>Energia</option><option>Mineração</option>
+        <option>Saúde</option><option>Agricultura</option>
+        <option>Financeiro</option><option>Outro</option>
+      </select>
+      <button type="submit" id="btn-register" class="auth-btn-primary" data-label="Criar conta">Criar conta</button>
+      <div id="register-error" class="auth-error" style="display:none;"></div>
+      <div id="register-success" class="auth-success" style="display:none;">✓ Conta criada! Verifique o seu email para confirmar o registo antes de entrar.</div>
+    </form>
+    <!-- Magic link panel -->
+    <div id="panel-magic" style="display:none;">
+      <p style="margin-bottom:16px;color:#374151;font-size:14px;">Introduza o seu email e enviamos um link de acesso instantâneo.</p>
+      <input id="magic-email" type="email" placeholder="Email" class="auth-input">
+      <button type="button" id="btn-magic" class="auth-btn-primary" data-label="Enviar link de acesso">Enviar link de acesso</button>
+      <div id="magic-success" class="auth-success" style="display:none;">✓ Verifique o seu email — enviámos um link de acesso.</div>
+      <div id="magic-error" class="auth-error" style="display:none;"></div>
+      <a id="link-back-login" href="#" style="display:block;margin-top:12px;font-size:13px;color:#1D9E75;">← Voltar ao login</a>
+    </div>
+  </div>
+</div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
@@ -514,8 +636,9 @@ canvas { max-width: 100%; }
     </div>
     <div class="project-pill">
       <div class="project-pill-label">Projecto activo</div>
-      <div class="project-pill-name">Hospital Provincial do Bailundo</div>
-      <div class="project-pill-loan">IDA-P171880 · Angola</div>
+      <div class="project-pill-name" id="proj-pill-name">Hospital Distrital do Kibala</div>
+      <div class="project-pill-loan" id="proj-pill-loan">IDA-P171880 · Angola</div>
+      <button onclick="openCreateProjectModal()" style="margin-top:6px;width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;text-align:center;">+ Criar projecto</button>
     </div>
   </div>
 
@@ -523,8 +646,9 @@ canvas { max-width: 100%; }
   <div class="nav-item active" onclick="nav('dashboard',this)">
     <span class="nav-icon">📊</span>Dashboard
   </div>
-  <div class="nav-item" onclick="nav('comercial',this)">
+  <div class="nav-item" onclick="nav('comercial',this)" style="opacity:0.5;">
     <span class="nav-icon">💼</span>Inteligência Comercial
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Conformidade SGAS</div>
@@ -538,23 +662,27 @@ canvas { max-width: 100%; }
     <span class="nav-icon">✅</span>Plano ESAP
     <span class="nav-badge warn" id="badge-esap">3</span>
   </div>
-  <div class="nav-item" onclick="nav('riscos',this)">
+  <div class="nav-item" onclick="nav('riscos',this)" style="opacity:0.5;">
     <span class="nav-icon">⚠️</span>Registo de Riscos
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('mapas-risco',this)">
+  <div class="nav-item" onclick="nav('mapas-risco',this)" style="opacity:0.5;">
     <span class="nav-icon">🧭</span>Mapas de Risco
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('terceiros',this)">
+  <div class="nav-item" onclick="nav('terceiros',this)" style="opacity:0.5;">
     <span class="nav-icon">🏗</span>Terceiros / Subempreiteiros
-    <span class="nav-badge warn" id="badge-contractors">2</span>
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Partes Interessadas</div>
-  <div class="nav-item" onclick="nav('stakeholders',this)">
+  <div class="nav-item" onclick="nav('stakeholders',this)" style="opacity:0.5;">
     <span class="nav-icon">👥</span>Partes Interessadas
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('comunidades',this)">
+  <div class="nav-item" onclick="nav('comunidades',this)" style="opacity:0.5;">
     <span class="nav-icon">📢</span>Comunicações Comunitárias
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
   <div class="nav-item" onclick="nav('reclamacoes',this)">
     <span class="nav-icon">💬</span>Reclamações
@@ -562,56 +690,74 @@ canvas { max-width: 100%; }
   </div>
 
   <div class="sidebar-section">Evidências</div>
-  <div class="nav-item" onclick="nav('implementacao',this)">
+  <div class="nav-item" onclick="nav('implementacao',this)" style="opacity:0.5;">
     <span class="nav-icon">📸</span>Evidência de Implementação
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('documentos',this)">
+  <div class="nav-item" onclick="nav('documentos',this)" style="opacity:0.5;">
     <span class="nav-icon">📁</span>Cofre de Documentos
-    <span class="nav-badge" id="badge-docs">5</span>
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('monitoring',this)">
+  <div class="nav-item" onclick="nav('monitoring',this)" style="opacity:0.5;">
     <span class="nav-icon">📈</span>Monitoramento
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('calendario',this)">
+  <div class="nav-item" onclick="nav('calendario',this)" style="opacity:0.5;">
     <span class="nav-icon">🗓</span>Calendário IFC
-    <span class="nav-badge warn" id="badge-reports">2</span>
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('relatorio',this)">
+  <div class="nav-item" onclick="nav('relatorio',this)" style="opacity:0.5;">
     <span class="nav-icon">📄</span>Relatórios
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('audit-room',this)">
+  <div class="nav-item" onclick="nav('audit-room',this)" style="opacity:0.5;">
     <span class="nav-icon">🏛</span>Sala de Auditoria BM
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Gestão SGAS</div>
-  <div class="nav-item" onclick="nav('revisao',this)">
+  <div class="nav-item" onclick="nav('revisao',this)" style="opacity:0.5;">
     <span class="nav-icon">🔄</span>Revisão de Gestão
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('treinamento',this)">
+  <div class="nav-item" onclick="nav('treinamento',this)" style="opacity:0.5;">
     <span class="nav-icon">🎓</span>Plano de Formação
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('legal',this)">
+  <div class="nav-item" onclick="nav('legal',this)" style="opacity:0.5;">
     <span class="nav-icon">⚖</span>Registo Legal
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Kit de Ferramentas IFC</div>
-  <div class="nav-item" onclick="nav('politicas',this)">
+  <div class="nav-item" onclick="nav('politicas',this)" style="opacity:0.5;">
     <span class="nav-icon">📝</span>Políticas SGAS
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('riscos-id',this)">
+  <div class="nav-item" onclick="nav('riscos-id',this)" style="opacity:0.5;">
     <span class="nav-icon">🔍</span>Identif. de Riscos
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('causa-raiz',this)">
+  <div class="nav-item" onclick="nav('causa-raiz',this)" style="opacity:0.5;">
     <span class="nav-icon">🧩</span>Causa Raiz (5 Porquês)
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('emergencias',this)">
+  <div class="nav-item" onclick="nav('emergencias',this)" style="opacity:0.5;">
     <span class="nav-icon">🚨</span>Emergências
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('mapeamento-pi',this)">
+  <div class="nav-item" onclick="nav('mapeamento-pi',this)" style="opacity:0.5;">
     <span class="nav-icon">🗺</span>Mapeamento de PI
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('auditoria',this)">
+  <div class="nav-item" onclick="nav('auditoria',this)" style="opacity:0.5;">
     <span class="nav-icon">🔎</span>Auditoria Interna
+    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
+  </div>
+
+  <div class="sidebar-section">Assistente IA</div>
+  <div class="nav-item" onclick="nav('ia',this)">
+    <span class="nav-icon">🤖</span>Assistente SGAS.pro
   </div>
 
   <div class="sidebar-bottom">
@@ -619,6 +765,9 @@ canvas { max-width: 100%; }
       <div class="audit-countdown-label">⏰ Próxima auditoria IFC</div>
       <div class="audit-countdown-days" id="days-left">47</div>
       <div class="audit-countdown-sub">dias · Missão de supervisão</div>
+    </div>
+    <div style="margin-top:10px;padding:8px 4px;font-size:10px;color:rgba(255,255,255,0.35);line-height:1.4;text-align:center;">
+      SGAS Pro não substitui certificação oficial IFC/World Bank nem aconselhamento jurídico.
     </div>
   </div>
 </div>
@@ -706,18 +855,18 @@ canvas { max-width: 100%; }
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div>
               <div class="loan-card-label">Projecto Banco Mundial</div>
-              <div class="loan-card-value" style="font-size:16px;margin-top:4px">Hospital Provincial do Bailundo</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px">Construção de infra-estrutura de saúde · Angola</div>
+              <div class="loan-card-value" id="proj-name" style="font-size:16px;margin-top:4px">Hospital Provincial do Bailundo</div>
+              <div id="proj-desc" style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px">Construção de infra-estrutura de saúde · Angola</div>
             </div>
             <div style="background:rgba(29,158,117,0.25);border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:6px 12px;font-size:11px;color:#6EE7B7;font-weight:600">ACTIVO</div>
           </div>
           <div class="loan-card-grid">
-            <div><div class="loan-card-label">Número IDA</div><div class="loan-card-value" style="font-size:13px">P171880</div></div>
-            <div><div class="loan-card-label">Montante</div><div class="loan-card-value" style="font-size:13px">USD 80M</div></div>
-            <div><div class="loan-card-label">Categoria E&S</div><div class="loan-card-value" style="font-size:13px">Substancial</div></div>
-            <div><div class="loan-card-label">Data aprovação</div><div class="loan-card-value" style="font-size:13px">Mar 2024</div></div>
-            <div><div class="loan-card-label">Encerramento</div><div class="loan-card-value" style="font-size:13px">Dez 2028</div></div>
-            <div><div class="loan-card-label">Especialista E&S</div><div class="loan-card-value" style="font-size:13px">BM Lisboa</div></div>
+            <div><div class="loan-card-label">Número IDA</div><div class="loan-card-value" id="proj-ida" style="font-size:13px">P171880</div></div>
+            <div><div class="loan-card-label">Montante</div><div class="loan-card-value" id="proj-amount" style="font-size:13px">USD 80M</div></div>
+            <div><div class="loan-card-label">Categoria E&S</div><div class="loan-card-value" id="proj-cat" style="font-size:13px">Substancial</div></div>
+            <div><div class="loan-card-label">Data aprovação</div><div class="loan-card-value" id="proj-approval" style="font-size:13px">Mar 2024</div></div>
+            <div><div class="loan-card-label">Encerramento</div><div class="loan-card-value" id="proj-closure" style="font-size:13px">Dez 2028</div></div>
+            <div><div class="loan-card-label">Especialista E&S</div><div class="loan-card-value" id="proj-specialist" style="font-size:13px">BM Lisboa</div></div>
           </div>
         </div>
 
@@ -1158,6 +1307,9 @@ canvas { max-width: 100%; }
       <div><div class="section-title">Evidência de Implementação Real</div><div class="section-sub">Fotos, entrevistas, testes, observações no terreno e validação por gestor · IFC ESMS Handbook p.15, p.28 e p.60</div></div>
       <button class="btn primary" onclick="openModal('modal-implementation')">+ Registar evidência</button>
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn" onclick="evidence_bulkDownload()">↓ Download ficheiros</button>
+    </div>
     <div class="alert-banner warn" style="margin-bottom:16px">
       <strong>Leitura de auditor:</strong> documento aprovado não prova implementação. Para auditoria, cada procedimento crítico precisa de evidência de uso real: observação, medição/teste, entrevista, foto ou validação formal.
     </div>
@@ -1388,7 +1540,7 @@ canvas { max-width: 100%; }
   <!-- REGISTO LEGAL -->
   <div class="page-content" id="page-legal">
     <div class="section-header">
-      <div><div class="section-title">Registo Legal Angola + IFC/ESS</div><div class="section-sub">Licenças, requisitos legais, autoridade competente, renovações e evidência para revisão de gestão</div></div>
+      <div><div class="section-title" id="legal-title">Registo Legal Angola + IFC/ESS</div><div class="section-sub">Licenças, requisitos legais, autoridade competente, renovações e evidência para revisão de gestão</div></div>
       <button class="btn primary" onclick="openModal('modal-legal')">+ Novo requisito</button>
     </div>
     <div class="alert-banner info" style="margin-bottom:16px">
@@ -1702,6 +1854,57 @@ canvas { max-width: 100%; }
     <div id="audit-sections-render"></div>
   </div>
 
+  <!-- ASSISTENTE IA -->
+  <div class="page-content" id="page-ia">
+    <div class="section-header">
+      <div>
+        <div class="section-title">🤖 Assistente SGAS.pro</div>
+        <div class="section-sub">Especialista em IFC PS1–PS8 e World Bank ESS1–ESS10 · Responde em Português europeu</div>
+      </div>
+      <button class="btn" onclick="ai_clearHistory()">🗑 Limpar conversa</button>
+    </div>
+
+    <div style="display:flex;gap:16px;height:calc(100vh - 200px);min-height:500px">
+      <!-- Chat column -->
+      <div style="flex:1;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <!-- Messages area -->
+        <div id="ai-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px"></div>
+
+        <!-- Quick prompts -->
+        <div id="ai-quick-prompts" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 16px;border-top:1px solid var(--border);background:var(--bg)"></div>
+
+        <!-- Input row -->
+        <div style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--surface)">
+          <textarea id="ai-input" rows="2"
+            placeholder="Escreva a sua pergunta sobre conformidade IFC/PS, ESAP, riscos…"
+            style="flex:1;resize:none;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--text);background:var(--bg)"></textarea>
+          <button id="ai-send" class="btn primary" style="align-self:flex-end;white-space:nowrap" data-label="Enviar">Enviar</button>
+        </div>
+      </div>
+
+      <!-- Context sidebar -->
+      <div style="width:240px;display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="card-header"><span class="card-title" style="font-size:12px">Contexto do projecto</span></div>
+          <div class="card-body" id="ai-context-display" style="font-size:11px;color:var(--text-2);line-height:1.6">
+            Carregando contexto…
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title" style="font-size:12px">Tópicos sugeridos</span></div>
+          <div class="card-body" style="font-size:11px;color:var(--text-2);line-height:1.8">
+            PS1–PS8 · ESS1–ESS10<br>
+            ESAP · GRM · ESMS<br>
+            Missão de supervisão<br>
+            Engajamento de stakeholders<br>
+            Biodiversidade · PS6<br>
+            Povos indígenas · PS7
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- MODALS -->
@@ -1954,6 +2157,11 @@ canvas { max-width: 100%; }
       <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="imp-status"><option>Validada</option><option>Em revisão</option><option>Insuficiente</option><option>Pendente</option></select></div>
     </div>
     <div class="form-group"><label class="form-label">Observações</label><textarea class="form-input" id="imp-notes" rows="3" placeholder="O que foi observado, testado ou confirmado em campo"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Código PS / ESS</label><select class="form-select" id="imp-ps-code"><option value="Geral">Geral</option><option value="PS1">PS1 — Avaliação e Gestão</option><option value="PS2">PS2 — Trabalho</option><option value="PS3">PS3 — Eficiência de Recursos</option><option value="PS4">PS4 — Saúde e Segurança</option><option value="PS5">PS5 — Reassentamento</option><option value="PS6">PS6 — Biodiversidade</option><option value="PS7">PS7 — Povos Indígenas</option><option value="PS8">PS8 — Património Cultural</option><option value="ESS1">ESS1 — Avaliação e Gestão</option><option value="ESS2">ESS2 — Trabalho</option><option value="ESS3">ESS3 — Recursos e Poluição</option><option value="ESS4">ESS4 — Saúde e Segurança</option><option value="ESS5">ESS5 — Reassentamento</option><option value="ESS6">ESS6 — Biodiversidade</option><option value="ESS7">ESS7 — Povos Indígenas</option><option value="ESS8">ESS8 — Património Cultural</option><option value="ESS9">ESS9 — Intermediários Financeiros</option><option value="ESS10">ESS10 — Partes Interessadas</option></select></div>
+      <div class="form-group"><label class="form-label">Validade do documento</label><input class="form-input" type="date" id="imp-expiry"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Ficheiro de evidência (máx. 50 MB · PDF, imagem, vídeo, Word, Excel)</label><div style="display:flex;align-items:center;gap:10px;margin-top:4px"><button type="button" class="btn" onclick="document.getElementById('ev-file-input').click()">📎 Escolher ficheiro</button><span id="ev-file-name" style="font-size:12px;color:var(--text-2)">Nenhum ficheiro seleccionado</span></div></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-implementation')">Cancelar</button>
       <button class="btn primary" onclick="addImplementationEvidence()">Registar evidência</button>
@@ -2166,6 +2374,170 @@ canvas { max-width: 100%; }
 </div>
 
 <script>
+// ===================== SUPABASE — Phase 1 =====================
+// Client created by auth.js (loaded in <head>); reuse it here.
+// SGAS_CONFIG.SUPABASE_URL / SUPABASE_ANON_KEY come from config.js.
+const SGAS_URL = (window.SGAS_CONFIG && window.SGAS_CONFIG.SUPABASE_URL) || 'https://txkyedcqancetuoxtapf.supabase.co';
+const SGAS_KEY = (window.SGAS_CONFIG && window.SGAS_CONFIG.SUPABASE_ANON_KEY) || '';
+let _supaClient = null;
+
+function getSupaClient() {
+  // Prefer the client already instantiated by auth.js
+  if (window.SGAS_AUTH && window.SGAS_AUTH.client) return window.SGAS_AUTH.client;
+  if (!_supaClient && window.supabase && SGAS_KEY) {
+    _supaClient = window.supabase.createClient(SGAS_URL, SGAS_KEY);
+  }
+  return _supaClient;
+}
+
+// localStorage cache helpers
+const SGAS_CACHE_KEY = 'sgas_cache_v1';
+function saveCache(data) {
+  try { localStorage.setItem(SGAS_CACHE_KEY, JSON.stringify({...data, _ts: Date.now()})); } catch(_) {}
+}
+function loadCache() {
+  try { return JSON.parse(localStorage.getItem(SGAS_CACHE_KEY) || 'null'); } catch(_) { return null; }
+}
+
+// DB row → app object mappers
+const fromDB = {
+  esap:        r => ({ id: r.esap_id||r.id, ps: r.ps, prio: r.priority, desc: r.description, hierarchy: r.hierarchy||'', resp: r.responsible, prazo: r.due_date, status: r.status, evid: r.evidence||'', objective: (r.metadata||{}).objective||'', outcome: (r.metadata||{}).outcome||'', kpi: (r.metadata||{}).kpi||'', budget: (r.metadata||{}).budget||'', procedure: (r.metadata||{}).procedure||'', stakeholders: (r.metadata||{}).stakeholders||'' }),
+  risk:        r => ({ id: r.risk_id||r.id, type: r.type, ps: r.ps, act: r.activity, imp: r.impact, sev: r.severity, prob: r.probability, hierarchy: r.hierarchy||'', ctrl: r.controls||'', status: r.status }),
+  stakeholder: r => ({ name: r.name, cat: r.category, initials: r.initials||(r.name||'').slice(0,2).toUpperCase(), concerns: r.concerns||'', method: r.method||'', freq: r.frequency||'', last: r.last_contact||'', fpic: r.fpic||'', support: r.support||'' }),
+  grievance:   r => ({ id: r.grm_id||r.id, data: r.received_date, origem: r.origin, cat: r.category, desc: r.description, resp: r.responsible, status: r.status, accepted: r.accepted||'', profile: r.profile||'', notifyMethod: r.notify_method||'', closureEvidence: r.closure_evidence||'', satisfaction: r.satisfaction||'', resources: r.resources||'', postMonitoring: r.post_monitoring||'', cao: r.cao||false, caoLink: r.cao_link||'', prazo: r.due_date||'' }),
+  contractor:  r => ({ name: r.name, scope: r.scope||'', ps: r.ps_refs||'', clauses: r.clauses||'', induction: r.induction||'', score: r.score||0, scorecard: r.scorecard||[], status: r.status, action: r.action||'' }),
+  evidence:    r => ({ id: r.evidence_id||r.id, date: r.date, module: r.module||'', procedure: r.procedure||'', type: r.type||'', ref: r.reference||'', validatedBy: r.validated_by||'', status: r.status, notes: r.notes||'' }),
+  communityReport: r => ({ date: r.date, community: r.community||'', topic: r.topic||'', channel: r.channel||'', feedback: r.feedback||'', newRisk: r.new_risk ? 'Sim' : 'Não', evidence: r.evidence||'', owner: r.owner||'', status: r.status }),
+  legal:       r => ({ requirement: r.requirement, source: r.source||'', authority: r.authority||'', permit: r.permit_ref||'', expiry: r.expiry_date||'', owner: r.owner||'', evidence: r.evidence||'', status: r.status }),
+  ifc:         r => ({ title: r.title, due: r.due_date||'', submitted: r.submitted_at||'', status: r.status, ref: r.ref||'' }),
+  lender:      r => ({ section: r.section, owner: r.owner||'', evidence: r.evidence||'', readiness: r.readiness||0, status: r.status, gap: r.gap||'' }),
+  kpi:         r => ({ kpi: r.kpi, frequency: r.frequency||'', method: r.method||'', equipment: r.equipment||'', standard: r.standard||'', owner: r.owner||'', record: r.record_ref||'', action: r.action||'' }),
+  sourceWatcher: r => ({ name: r.name, current: r.current_ver||'', lastChecked: r.last_checked||'', status: r.status, url: r.url||'', owner: r.owner||'', note: r.note||'' }),
+  hotspot:     r => ({ id: r.map_id||r.id, label: r.label||'', type: r.type||'', risk: r.risk_ref||'', x: r.x||0, y: r.y||0, level: r.level||'Baixo', control: r.control||'', community: r.community||'', evidence: r.evidence||'' }),
+  processRisk: r => ({ process: r.process||'', step: r.step||'', risks: r.risks||'', control: r.control||'', evidence: r.evidence||'', owner: r.owner||'', status: r.status }),
+};
+
+// App object → DB row mappers (for writes)
+const toDB = {
+  esap:      d => ({ esap_id: d.id, ps: d.ps, priority: d.prio, description: d.desc, hierarchy: d.hierarchy, responsible: d.resp, due_date: d.prazo, status: d.status, evidence: d.evid, metadata: { objective: d.objective||'', outcome: d.outcome||'', kpi: d.kpi||'', budget: d.budget||'', procedure: d.procedure||'', stakeholders: d.stakeholders||'' } }),
+  risk:      d => ({ risk_id: d.id, type: d.type, ps: d.ps, activity: d.act, impact: d.imp, severity: d.sev, probability: d.prob, hierarchy: d.hierarchy, controls: d.ctrl, status: d.status }),
+  grievance: d => ({ grm_id: d.id, received_date: d.data, origin: d.origem, category: d.cat, description: d.desc, responsible: d.resp, status: d.status, accepted: d.accepted, profile: d.profile, notify_method: d.notifyMethod, closure_evidence: d.closureEvidence, satisfaction: d.satisfaction, resources: d.resources, post_monitoring: d.postMonitoring, cao: d.cao, cao_link: d.caoLink, due_date: d.prazo }),
+  contractor: d => ({ name: d.name, scope: d.scope, ps_refs: d.ps, clauses: d.clauses, induction: d.induction, score: d.score, scorecard: d.scorecard, status: d.status, action: d.action }),
+  evidence:  d => ({ evidence_id: d.id, date: d.date, module: d.module, procedure: d.procedure, type: d.type, reference: d.ref, validated_by: d.validatedBy, status: d.status, notes: d.notes }),
+};
+
+// Current project (set on login in Phase 2 — placeholder until then)
+let ACTIVE_PROJECT_ID = localStorage.getItem('sgas_project_id') || null;
+
+// Generic upsert helper — call from any save function
+async function dbUpsert(table, row, matchCol) {
+  const client = getSupaClient();
+  if (!client || !ACTIVE_PROJECT_ID) return null;
+  const s = window.SGAS_SESSION || {};
+  const payload = {
+    ...row,
+    project_id:      ACTIVE_PROJECT_ID,
+    organization_id: s.orgId || row.organization_id,
+    created_by:      s.userId || row.created_by
+  };
+  const { data, error } = await client.from(table).upsert(payload, { onConflict: matchCol || 'id' }).select().single();
+  if (error) console.warn(`[SGAS] dbUpsert ${table}:`, error.message);
+  return data;
+}
+
+// Generic delete helper
+async function dbDelete(table, col, val) {
+  const client = getSupaClient();
+  if (!client || !ACTIVE_PROJECT_ID) return;
+  const { error } = await client.from(table).delete().eq(col, val).eq('project_id', ACTIVE_PROJECT_ID);
+  if (error) console.warn(`[SGAS] dbDelete ${table}:`, error.message);
+}
+
+// Pull all project data from Supabase and refresh local arrays
+async function syncFromSupabase() {
+  const client = getSupaClient();
+  if (!client || !ACTIVE_PROJECT_ID) return false;
+  try {
+    const pid = ACTIVE_PROJECT_ID;
+    const [esap, risk, sh, griev, contr, evid, cr, legal, ifc, lend, ps, kpi, src, phys, proc, scores] = await Promise.all([
+      client.from('esap_actions').select('*').eq('project_id', pid),
+      client.from('risk_register').select('*').eq('project_id', pid),
+      client.from('stakeholders').select('*').eq('project_id', pid),
+      client.from('grievances').select('*').eq('project_id', pid),
+      client.from('contractors').select('*').eq('project_id', pid),
+      client.from('evidence_items').select('*').eq('project_id', pid),
+      client.from('community_reports').select('*').eq('project_id', pid),
+      client.from('legal_register').select('*').eq('project_id', pid),
+      client.from('ifc_reports').select('*').eq('project_id', pid),
+      client.from('lender_package').select('*').eq('project_id', pid),
+      client.from('ps_checklists').select('*').eq('project_id', pid),
+      client.from('kpi_protocols').select('*').eq('project_id', pid),
+      client.from('source_watchers').select('*').eq('project_id', pid),
+      client.from('physical_risk_hotspots').select('*').eq('project_id', pid),
+      client.from('process_risk_map').select('*').eq('project_id', pid),
+      client.from('compliance_scores').select('*').eq('project_id', pid),
+    ]);
+
+    if (esap.data?.length)   esapData             = esap.data.map(fromDB.esap);
+    if (risk.data?.length)   riskData             = risk.data.map(fromDB.risk);
+    if (sh.data?.length)     stakeholders         = sh.data.map(fromDB.stakeholder);
+    if (griev.data?.length)  complaints           = griev.data.map(fromDB.grievance);
+    if (contr.data?.length)  contractors          = contr.data.map(fromDB.contractor);
+    if (evid.data?.length)   implementationEvidence = evid.data.map(fromDB.evidence);
+    if (cr.data?.length)     communityReports     = cr.data.map(fromDB.communityReport);
+    if (legal.data?.length)  legalRegister        = legal.data.map(fromDB.legal);
+    if (ifc.data?.length)    ifcReports           = ifc.data.map(fromDB.ifc);
+    if (lend.data?.length)   lenderPackage        = lend.data.map(fromDB.lender);
+    if (kpi.data?.length)    kpiProtocols         = kpi.data.map(fromDB.kpi);
+    if (src.data?.length)    sourceWatchers       = src.data.map(fromDB.sourceWatcher);
+    if (phys.data?.length)   physicalRiskHotspots = phys.data.map(fromDB.hotspot);
+    if (proc.data?.length)   processRiskMap       = proc.data.map(fromDB.processRisk);
+    if (ps.data?.length) {
+      ps.data.forEach(r => {
+        const i = PS_DATA.findIndex(p => p.id === r.ps_id);
+        if (i >= 0) { PS_DATA[i].score = r.score; if (r.reqs?.length) PS_DATA[i].reqs = r.reqs; }
+        if (r.req_status) psReqStatus[r.ps_id] = r.req_status;
+      });
+    }
+
+    // compliance_scores → sgasScores[0..7] (PS1=0 .. PS8=7)
+    // DB stores 0-100; UI radar/maturity uses 0-5 → divide by 20
+    if (scores.data?.length) {
+      const psMap = { PS1:0, PS2:1, PS3:2, PS4:3, PS5:4, PS6:5, PS7:6, PS8:7 };
+      scores.data.forEach(r => {
+        if (psMap[r.ps_code] !== undefined)
+          sgasScores[psMap[r.ps_code]] = parseFloat((r.score / 20).toFixed(1));
+      });
+    }
+    saveCache({ esapData, riskData, stakeholders, complaints, contractors, implementationEvidence, communityReports, legalRegister, ifcReports, lenderPackage, kpiProtocols, sourceWatchers, physicalRiskHotspots, processRiskMap });
+    console.log('[SGAS] ✓ Dados sincronizados com Supabase');
+    return true;
+  } catch(e) {
+    console.warn('[SGAS] Sync falhou, a usar dados locais:', e.message);
+    return false;
+  }
+}
+
+// Restore cached data on boot (runs after data arrays are declared below)
+function restoreFromCache() {
+  const c = loadCache();
+  if (!c) return;
+  if (c.esapData)              esapData             = c.esapData;
+  if (c.riskData)              riskData             = c.riskData;
+  if (c.stakeholders)          stakeholders         = c.stakeholders;
+  if (c.complaints)            complaints           = c.complaints;
+  if (c.contractors)           contractors          = c.contractors;
+  if (c.implementationEvidence) implementationEvidence = c.implementationEvidence;
+  if (c.communityReports)      communityReports     = c.communityReports;
+  if (c.legalRegister)         legalRegister        = c.legalRegister;
+  if (c.ifcReports)            ifcReports           = c.ifcReports;
+  if (c.lenderPackage)         lenderPackage        = c.lenderPackage;
+  if (c.kpiProtocols)          kpiProtocols         = c.kpiProtocols;
+  if (c.sourceWatchers)        sourceWatchers       = c.sourceWatchers;
+  if (c.physicalRiskHotspots)  physicalRiskHotspots = c.physicalRiskHotspots;
+  if (c.processRiskMap)        processRiskMap       = c.processRiskMap;
+}
+
 // ===================== DATA =====================
 let sgasScores = [3,2,2,3,2,1,1,3,1];
 const ELEMS = [
@@ -3765,7 +4137,7 @@ const PAGE_META = {
   documentos:{title:'Cofre de Documentos',sub:'Checklist auditoria Banco Mundial',action:'+ Documento',fn:'openModal("modal-doc")'},
   monitoring:{title:'Monitoramento & KPIs',sub:'Indicadores E&S mensais',action:'Exportar dados',fn:''},
   calendario:{title:'Calendário IFC',sub:'Datas, estado e histórico de submissões',action:'+ Submissão',fn:'openModal("modal-ifc-report")'},
-  relatorio:{title:'Relatórios',sub:'Submissão Banco Mundial',action:'Gerar PDF',fn:''},
+  relatorio:{title:'Relatórios',sub:'Submissão Banco Mundial',action:'Gerar PDF',fn:'exportAudit()'},
   'audit-room':{title:'Sala de Auditoria BM',sub:'Pacote lender-ready · fontes · evidências',action:'Preparar pacote',fn:'prepareLenderPackage()'},
   revisao:{title:'Revisão de Gestão',sub:'Agenda IFC · Elemento 9',action:'Nova revisão',fn:''},
   treinamento:{title:'Plano de Formação',sub:'Capacidade organizacional · IFC Elemento 4',action:'+ Formação',fn:'openModal("modal-treinamento")'},
@@ -3780,7 +4152,13 @@ const PAGE_META = {
 function navItemFor(page){
   return Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick')?.includes(`'${page}'`));
 }
+const TRIAL_LOCKED_PAGES = ['comercial','riscos','mapas-risco','terceiros','stakeholders','comunidades','implementacao','documentos','monitoring','calendario','relatorio','audit-room','revisao','treinamento','legal','politicas','riscos-id','causa-raiz','emergencias','mapeamento-pi','auditoria'];
+
 function nav(id, el){
+  if (TRIAL_LOCKED_PAGES.indexOf(id) !== -1) {
+    _showTrialToast('Este módulo fica disponível na versão completa. Contacte geral@hsilva.org para activar.');
+    return;
+  }
   document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -3793,7 +4171,90 @@ function nav(id, el){
   btn.onclick=new Function(m.fn||'void 0');
   renderAll();
 }
+
+function _showTrialToast(msg) {
+  let t = document.getElementById('sgas-trial-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'sgas-trial-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2);max-width:420px;text-align:center;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.style.opacity = '0'; }, 4000);
+}
 function topbarAction(){ new Function(PAGE_META['dashboard'].fn)(); }
+
+// ── Create Project Modal ──────────────────────────────────────────────────────
+function openCreateProjectModal() {
+  var m = document.getElementById('create-project-modal');
+  if (!m) return;
+  m.style.display = 'flex';
+  document.getElementById('cpf-name').value = '';
+  document.getElementById('cpf-country').value = '';
+  document.getElementById('cpf-ida').value = '';
+  document.getElementById('cpf-category').value = 'FI-1';
+  document.getElementById('cpf-err').textContent = '';
+}
+function closeCreateProjectModal() {
+  var m = document.getElementById('create-project-modal');
+  if (m) m.style.display = 'none';
+}
+async function submitCreateProject() {
+  var name     = (document.getElementById('cpf-name').value || '').trim();
+  var country  = (document.getElementById('cpf-country').value || '').trim();
+  var ida      = (document.getElementById('cpf-ida').value || '').trim();
+  var category = document.getElementById('cpf-category').value;
+  var errEl    = document.getElementById('cpf-err');
+  if (!name)    { errEl.textContent = 'Nome do projecto é obrigatório.'; return; }
+  if (!country) { errEl.textContent = 'País é obrigatório.'; return; }
+  errEl.textContent = '';
+
+  var btn = document.getElementById('cpf-submit');
+  btn.disabled = true;
+  btn.textContent = 'A criar…';
+
+  var client = getSupaClient();
+  var s = window.SGAS_SESSION || {};
+  if (!client || !s.orgId) {
+    errEl.textContent = 'Sessão inválida. Faça login novamente.';
+    btn.disabled = false; btn.textContent = 'Criar projecto';
+    return;
+  }
+
+  var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 62);
+  if (slug.length < 3) slug = slug + '-proj';
+  var payload = {
+    organization_id: s.orgId,
+    name:            name,
+    slug:            slug,
+    country:         country,
+    created_by:      s.userId,
+    metadata:        { ida_code: ida || null, category: category }
+  };
+  var res = await client.from('projects').insert(payload).select('id,name').single();
+  if (res.error) {
+    errEl.textContent = res.error.message;
+    btn.disabled = false; btn.textContent = 'Criar projecto';
+    return;
+  }
+
+  // Switch active project
+  ACTIVE_PROJECT_ID = res.data.id;
+  localStorage.setItem('sgas_project_id', ACTIVE_PROJECT_ID);
+  var pill = document.getElementById('proj-pill-name');
+  if (pill) pill.textContent = res.data.name;
+  var loanPill = document.getElementById('proj-pill-loan');
+  if (loanPill) loanPill.textContent = (ida ? ida + ' · ' : '') + country;
+
+  closeCreateProjectModal();
+  btn.disabled = false; btn.textContent = 'Criar projecto';
+  _showTrialToast('Projecto "' + res.data.name + '" criado. A sincronizar dados…');
+
+  if (typeof syncFromSupabase === 'function') syncFromSupabase().catch(function(){});
+}
 
 // ===================== COMMERCIAL INTELLIGENCE =====================
 function formatSellabilityScore(value, scale){
@@ -4712,7 +5173,9 @@ function addEsap(){
   const desc=document.getElementById('e-desc').value.trim();
   if(!desc){alert('Preenche a descrição.');return;}
   const id='ESAP-'+(esapData.length+1).toString().padStart(3,'0');
-  esapData.push({id,ps:document.getElementById('e-ps').value,prio:document.getElementById('e-prio').value,desc,objective:document.getElementById('e-objective').value,outcome:document.getElementById('e-outcome').value,kpi:document.getElementById('e-kpi').value,budget:document.getElementById('e-budget').value,procedure:document.getElementById('e-procedure').value,stakeholders:document.getElementById('e-stakeholders').value,hierarchy:document.getElementById('e-hierarchy').value,resp:document.getElementById('e-resp').value,prazo:document.getElementById('e-prazo').value,status:'Não iniciada',evid:document.getElementById('e-evid').value});
+  const newEsap = {id,ps:document.getElementById('e-ps').value,prio:document.getElementById('e-prio').value,desc,objective:document.getElementById('e-objective').value,outcome:document.getElementById('e-outcome').value,kpi:document.getElementById('e-kpi').value,budget:document.getElementById('e-budget').value,procedure:document.getElementById('e-procedure').value,stakeholders:document.getElementById('e-stakeholders').value,hierarchy:document.getElementById('e-hierarchy').value,resp:document.getElementById('e-resp').value,prazo:document.getElementById('e-prazo').value,status:'Não iniciada',evid:document.getElementById('e-evid').value};
+  esapData.push(newEsap);
+  dbUpsert('esap_actions', toDB.esap(newEsap), 'project_id,esap_id').catch(e => console.warn('[SGAS] esap save:', e?.message));
   closeModal('modal-esap');
   ['e-desc','e-objective','e-outcome','e-kpi','e-budget','e-procedure','e-stakeholders','e-resp','e-evid'].forEach(id=>document.getElementById(id).value='');
   renderEsap(); updateReadiness();
@@ -4985,7 +5448,9 @@ function addComplaint(){
   const desc=document.getElementById('c-desc').value.trim();
   if(!desc){alert('Preenche a descrição.');return;}
   const n=complaints.length+1;
-  complaints.push({id:'GRM-'+String(n).padStart(3,'0'),data:document.getElementById('c-data').value||new Date().toISOString().slice(0,10),origem:document.getElementById('c-origem').value,cat:document.getElementById('c-cat').value,desc,resp:document.getElementById('c-resp').value,status:'Em análise',accepted:document.getElementById('c-accepted').value,profile:document.getElementById('c-profile').value,notifyMethod:document.getElementById('c-notify').value,closureEvidence:document.getElementById('c-closure-evidence').value,satisfaction:document.getElementById('c-satisfaction').value,resources:document.getElementById('c-resources').value,postMonitoring:document.getElementById('c-post-monitoring').value,cao:document.getElementById('c-cao').value,caoLink:document.getElementById('c-cao-link').value,prazo:''});
+  const newGrm = {id:'GRM-'+String(n).padStart(3,'0'),data:document.getElementById('c-data').value||new Date().toISOString().slice(0,10),origem:document.getElementById('c-origem').value,cat:document.getElementById('c-cat').value,desc,resp:document.getElementById('c-resp').value,status:'Em análise',accepted:document.getElementById('c-accepted').value,profile:document.getElementById('c-profile').value,notifyMethod:document.getElementById('c-notify').value,closureEvidence:document.getElementById('c-closure-evidence').value,satisfaction:document.getElementById('c-satisfaction').value,resources:document.getElementById('c-resources').value,postMonitoring:document.getElementById('c-post-monitoring').value,cao:document.getElementById('c-cao').value,caoLink:document.getElementById('c-cao-link').value,prazo:''};
+  complaints.push(newGrm);
+  dbUpsert('grievances', toDB.grievance(newGrm), 'project_id,grm_id').catch(e => console.warn('[SGAS] grievance save:', e?.message));
   closeModal('modal-complaint');
   document.getElementById('c-desc').value='';
   document.getElementById('c-resp').value='';
@@ -6318,7 +6783,268 @@ function resetAudit(){
   renderAuditoria();
 }
 
-function exportAudit(){ alert('Exportar relatório de auditoria — disponível na versão cloud premium.'); }
+// ── PDF helpers ──────────────────────────────────────────────────────────
+function _showPdfSpinner() {
+  if (document.getElementById('_pdf-spin')) return;
+  const st = document.createElement('style');
+  st.id = '_pdf-spin-st';
+  st.textContent = '@keyframes _spinkf{to{transform:rotate(360deg)}}';
+  document.head.appendChild(st);
+  const d = document.createElement('div');
+  d.id = '_pdf-spin';
+  d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px';
+  d.innerHTML = '<div style="width:44px;height:44px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:_spinkf .75s linear infinite"></div><div style="color:#fff;font-size:15px;font-weight:500">A gerar PDF…</div>';
+  document.body.appendChild(d);
+}
+function _hidePdfSpinner() {
+  document.getElementById('_pdf-spin')?.remove();
+  document.getElementById('_pdf-spin-st')?.remove();
+}
+async function _loadJsPDF() {
+  if (window.jspdf?.jsPDF) return window.jspdf.jsPDF;
+  if (window.jsPDF) return window.jsPDF;
+  const load = (src) => new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src;
+    s.onload = res; s.onerror = rej; document.head.appendChild(s);
+  });
+  await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+  return window.jspdf?.jsPDF || window.jsPDF;
+}
+function _pdfPageHdr(doc, title, W, brand) {
+  doc.setFillColor(...brand);
+  doc.rect(0, 0, W, 16, 'F');
+  doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.setTextColor(255, 255, 255);
+  doc.text(title, W / 2, 10.5, { align: 'center' });
+  return 22;
+}
+
+async function exportAudit() {
+  _showPdfSpinner();
+  try {
+    const JsPDF = await _loadJsPDF();
+    const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const now    = new Date();
+    const datePT = now.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' });
+    const fileTs = now.toISOString().slice(0, 16).replace('T', '-').replace(':', '');
+    const brand  = [29, 158, 117];
+    const dark   = [17,  24,  39];
+    const gray   = [107, 114, 128];
+    const light  = [249, 250, 251];
+    const red    = [220,  38,  38];
+    const amber  = [217, 119,   6];
+    const green  = [  5, 150, 105];
+    const W = 210, M = 14, CW = W - 2 * M;
+    let Y;
+
+    // ── CAPA ──────────────────────────────────────────────────────────────
+    doc.setFillColor(...brand);
+    doc.rect(0, 0, W, 50, 'F');
+    doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text('SGAS.pro', M, 10);
+    doc.setFontSize(20); doc.setFont(undefined, 'bold');
+    doc.text('Relatório de Conformidade E&S', W / 2, 22, { align: 'center' });
+    doc.setFontSize(10); doc.setFont(undefined, 'normal');
+    doc.text('IFC PS1–PS8 · Auditoria Interna · ESAP · Registo de Riscos · GRM', W / 2, 31, { align: 'center' });
+    doc.text('Confidencial — Não divulgar sem autorização', W / 2, 39, { align: 'center' });
+    doc.setFontSize(8.5);
+    doc.text(datePT, W / 2, 46, { align: 'center' });
+
+    Y = 58;
+    doc.setFillColor(240, 253, 248); doc.setDrawColor(167, 243, 208); doc.setLineWidth(0.4);
+    doc.roundedRect(M, Y, CW, 26, 2, 2, 'FD');
+    doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark);
+    doc.text('Hospital Provincial do Bailundo', W / 2, Y + 9, { align: 'center' });
+    doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.setTextColor(...gray);
+    doc.text('IDA-P171880 · Angola · Huambo · Categoria B · Banco Mundial / IDA', W / 2, Y + 17, { align: 'center' });
+    doc.text('Construção hospitalar / Infraestrutura de saúde · Fase: Construção activa', W / 2, Y + 23, { align: 'center' });
+    Y += 34;
+
+    doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark);
+    doc.text('Sumário Executivo', M, Y); Y += 7;
+
+    const psAvg     = Math.round(PS_DATA.reduce((a, b) => a + b.score, 0) / PS_DATA.length);
+    const psOK      = PS_DATA.filter(p => p.score >= 80).length;
+    const esapOvrd  = esapData.filter(r => r.status === 'Em atraso').length;
+    const esapDone  = esapData.filter(r => r.status === 'Concluída').length;
+    const highRisks = riskData.filter(r => r.sev * r.prob >= 12).length;
+    const openGRM   = complaints.filter(c => c.status !== 'Resolvida').length;
+
+    const boxes = [
+      { val: psAvg + '%', lbl: 'Conformidade PS', sub: psOK + '/8 padrões conformes', col: psAvg >= 70 ? green : red },
+      { val: esapOvrd,    lbl: 'ESAP em atraso',  sub: esapDone + '/' + esapData.length + ' concluídas', col: esapOvrd > 0 ? red : green },
+      { val: highRisks,   lbl: 'Riscos altos',     sub: riskData.length + ' no registo', col: highRisks > 2 ? red : highRisks > 0 ? amber : green },
+      { val: openGRM,     lbl: 'Reclamações GRM',  sub: complaints.filter(c => c.status === 'Resolvida').length + ' resolvidas', col: openGRM > 1 ? amber : green },
+    ];
+    const bW = (CW - 9) / 4;
+    boxes.forEach((b, i) => {
+      const x = M + i * (bW + 3);
+      doc.setFillColor(255, 255, 255); doc.setDrawColor(229, 231, 235); doc.setLineWidth(0.3);
+      doc.roundedRect(x, Y, bW, 26, 2, 2, 'FD');
+      doc.setFontSize(22); doc.setFont(undefined, 'bold'); doc.setTextColor(...b.col);
+      doc.text(String(b.val), x + bW / 2, Y + 11, { align: 'center' });
+      doc.setFontSize(7.5); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark);
+      doc.text(b.lbl, x + bW / 2, Y + 17, { align: 'center' });
+      doc.setFont(undefined, 'normal'); doc.setTextColor(...gray);
+      doc.text(b.sub, x + bW / 2, Y + 22, { align: 'center' });
+    });
+    Y += 33;
+
+    if (esapOvrd > 0) {
+      doc.setFillColor(254, 242, 242); doc.setDrawColor(252, 165, 165);
+      doc.roundedRect(M, Y, CW, 9, 2, 2, 'FD');
+      doc.setFontSize(8); doc.setFont(undefined, 'bold'); doc.setTextColor(...red);
+      doc.text('⚠  ' + esapOvrd + ' acção(ões) ESAP em atraso — medidas imediatas necessárias.', M + 4, Y + 5.8);
+      Y += 14;
+    }
+
+    // ── P2: MATRIZ PS1–PS8 ────────────────────────────────────────────────
+    doc.addPage();
+    Y = _pdfPageHdr(doc, 'Matriz de Conformidade IFC PS1–PS8', W, brand);
+    doc.autoTable({
+      startY: Y,
+      head: [['Padrão', 'Nome', 'Score', 'Estado', 'Lacunas identificadas']],
+      body: PS_DATA.map(ps => {
+        const reqs  = psReqStatus[ps.id] || [];
+        const done  = reqs.filter(r => r === 'done').length;
+        const pct   = Math.round(done / ps.reqs.length * 100);
+        const gaps  = ps.reqs.filter((_, i) => (reqs[i] || 'none') === 'none');
+        const stato = pct >= 80 ? 'Conforme' : pct >= 40 ? 'Parcial' : 'Não conforme';
+        return [ps.id, ps.name, ps.score + '%', stato,
+          gaps.length ? gaps.slice(0, 2).join('; ') + (gaps.length > 2 ? ' (+' + (gaps.length - 2) + ')' : '') : '—'];
+      }),
+      margin: { left: M, right: M },
+      styles: { fontSize: 8, cellPadding: 3, lineColor: [229, 231, 235], overflow: 'linebreak' },
+      headStyles: { fillColor: brand, textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 0:{cellWidth:13,fontStyle:'bold'}, 1:{cellWidth:52}, 2:{cellWidth:14,halign:'center'}, 3:{cellWidth:24,halign:'center'}, 4:{cellWidth:'auto'} },
+      alternateRowStyles: { fillColor: light },
+      willDrawCell: (d) => {
+        if (d.column.index === 3 && d.section === 'body')
+          d.cell.styles.textColor = d.cell.raw === 'Conforme' ? green : d.cell.raw === 'Parcial' ? amber : red;
+      },
+    });
+
+    // ── P3: ESAP ──────────────────────────────────────────────────────────
+    doc.addPage();
+    Y = _pdfPageHdr(doc, 'Plano de Acção Ambiental e Social (ESAP)', W, brand);
+    doc.autoTable({
+      startY: Y,
+      head: [['ID', 'PS', 'Prioridade', 'Descrição', 'Responsável', 'Prazo', 'Estado']],
+      body: esapData.map(e => [e.id, e.ps, e.prio, e.desc, e.resp, e.prazo, e.status]),
+      margin: { left: M, right: M },
+      styles: { fontSize: 7.5, cellPadding: 2.5, lineColor: [229, 231, 235], overflow: 'linebreak' },
+      headStyles: { fillColor: brand, textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 0:{cellWidth:18,fontStyle:'bold'}, 1:{cellWidth:10,halign:'center'}, 2:{cellWidth:18,halign:'center'}, 3:{cellWidth:'auto'}, 4:{cellWidth:22}, 5:{cellWidth:21,halign:'center'}, 6:{cellWidth:22,halign:'center'} },
+      alternateRowStyles: { fillColor: light },
+      willDrawCell: (d) => {
+        if (d.section !== 'body') return;
+        if (d.column.index === 6) {
+          const v = d.cell.raw;
+          d.cell.styles.textColor = v === 'Em atraso' ? red : v === 'Concluída' ? green : v === 'Em curso' ? [37,99,235] : dark;
+          d.cell.styles.fontStyle = 'bold';
+        }
+        if (d.column.index === 2)
+          d.cell.styles.textColor = d.cell.raw === 'Crítica' ? red : d.cell.raw === 'Alta' ? amber : dark;
+      },
+    });
+
+    // ── P4: RISCOS ────────────────────────────────────────────────────────
+    doc.addPage();
+    Y = _pdfPageHdr(doc, 'Registo de Riscos E&S', W, brand);
+    doc.autoTable({
+      startY: Y,
+      head: [['ID', 'Tipo', 'PS', 'Actividade / Risco', 'Impacto potencial', 'Sev×Prob', 'Controlo', 'Estado']],
+      body: riskData.map(r => [r.id, r.type, r.ps, r.act, r.imp, r.sev+'×'+r.prob+'='+(r.sev*r.prob), r.ctrl, r.status]),
+      margin: { left: M, right: M },
+      styles: { fontSize: 7.5, cellPadding: 2.5, lineColor: [229, 231, 235], overflow: 'linebreak' },
+      headStyles: { fillColor: brand, textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 0:{cellWidth:14,fontStyle:'bold'}, 1:{cellWidth:20}, 2:{cellWidth:10,halign:'center'}, 3:{cellWidth:34}, 4:{cellWidth:32}, 5:{cellWidth:16,halign:'center',fontStyle:'bold'}, 6:{cellWidth:'auto'}, 7:{cellWidth:18,halign:'center'} },
+      alternateRowStyles: { fillColor: light },
+      willDrawCell: (d) => {
+        if (d.column.index === 5 && d.section === 'body') {
+          const sc = parseInt((d.cell.raw+'').split('=')[1]) || 0;
+          d.cell.styles.textColor = sc >= 12 ? red : sc >= 6 ? amber : green;
+        }
+      },
+    });
+
+    // ── P5: STAKEHOLDERS & GRM ────────────────────────────────────────────
+    doc.addPage();
+    Y = _pdfPageHdr(doc, 'Partes Interessadas & Mecanismo de Reclamações (GRM)', W, brand);
+    doc.autoTable({
+      startY: Y,
+      head: [['Parte Interessada', 'Categoria', 'Método', 'Frequência', 'Último contacto', 'Suporte']],
+      body: stakeholders.map(s => [s.name, s.cat, s.method, s.freq, s.last, s.support]),
+      margin: { left: M, right: M },
+      styles: { fontSize: 8, cellPadding: 3, lineColor: [229, 231, 235] },
+      headStyles: { fillColor: brand, textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: light },
+    });
+    Y = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark);
+    doc.text('Registo de Reclamações (GRM)', M, Y); Y += 4;
+    doc.autoTable({
+      startY: Y,
+      head: [['ID', 'Data', 'Origem', 'Categoria', 'Descrição', 'Responsável', 'Estado', 'Prazo']],
+      body: complaints.map(c => [c.id, c.data, c.origem, c.cat, c.desc.slice(0,48)+(c.desc.length>48?'…':''), c.resp, c.status, c.prazo]),
+      margin: { left: M, right: M },
+      styles: { fontSize: 7.5, cellPadding: 2.5, lineColor: [229, 231, 235] },
+      headStyles: { fillColor: brand, textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 0:{cellWidth:18,fontStyle:'bold'}, 1:{cellWidth:20,halign:'center'}, 2:{cellWidth:16}, 3:{cellWidth:18}, 4:{cellWidth:'auto'}, 5:{cellWidth:18}, 6:{cellWidth:20,halign:'center'}, 7:{cellWidth:21,halign:'center'} },
+      alternateRowStyles: { fillColor: light },
+      willDrawCell: (d) => {
+        if (d.column.index === 6 && d.section === 'body')
+          d.cell.styles.textColor = d.cell.raw === 'Resolvida' ? green : amber;
+      },
+    });
+
+    // ── P6: AUDITORIA INTERNA ─────────────────────────────────────────────
+    doc.addPage();
+    Y = _pdfPageHdr(doc, 'Checklist de Auditoria Interna SGAS — Ficha 9B', W, brand);
+    for (const sec of auditSections) {
+      if (Y > 245) { doc.addPage(); Y = 18; }
+      doc.setFillColor(240, 253, 248); doc.setDrawColor(...brand); doc.setLineWidth(0.3);
+      doc.rect(M, Y, CW, 7.5, 'FD');
+      doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.setTextColor(...brand);
+      doc.text(sec.id + ' — ' + sec.title, M + 3, Y + 5.3);
+      doc.setFontSize(7.5); doc.setFont(undefined, 'normal'); doc.setTextColor(...gray);
+      doc.text(sec.scope, W - M - 2, Y + 5.3, { align: 'right' });
+      Y += 9;
+      doc.autoTable({
+        startY: Y,
+        body: sec.items.map(item => [item.id, item.text, item.ref,
+          item.ok === true ? '✓ Sim' : item.ok === false ? '✗ Não' : '— N/A', item.note || '—']),
+        margin: { left: M, right: M },
+        styles: { fontSize: 7.5, cellPadding: 2, lineColor: [229, 231, 235], overflow: 'linebreak' },
+        columnStyles: { 0:{cellWidth:10,halign:'center',fontStyle:'bold'}, 1:{cellWidth:'auto'}, 2:{cellWidth:22,halign:'center',textColor:gray}, 3:{cellWidth:24,halign:'center',fontStyle:'bold'}, 4:{cellWidth:40} },
+        alternateRowStyles: { fillColor: light },
+        willDrawCell: (d) => {
+          if (d.column.index === 3 && d.section === 'body')
+            d.cell.styles.textColor = d.cell.raw.startsWith('✓') ? green : d.cell.raw.startsWith('✗') ? red : gray;
+        },
+      });
+      Y = doc.lastAutoTable.finalY + 5;
+    }
+
+    // ── RODAPÉ EM TODAS AS PÁGINAS ────────────────────────────────────────
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      const PH = doc.internal.pageSize.height;
+      doc.setFillColor(...brand); doc.rect(0, PH - 11, W, 11, 'F');
+      doc.setFontSize(7.5); doc.setFont(undefined, 'normal'); doc.setTextColor(255, 255, 255);
+      doc.text('SGAS.pro · Hospital Provincial do Bailundo · IDA-P171880 · Confidencial', M, PH - 3.8);
+      doc.text('Gerado em ' + datePT + ' · Pág. ' + p + '/' + totalPages, W - M, PH - 3.8, { align: 'right' });
+    }
+
+    doc.save('audit-report-' + fileTs + '.pdf');
+  } catch (err) {
+    console.error('[SGAS PDF]', err);
+    alert('Erro ao gerar PDF: ' + err.message);
+  } finally {
+    _hidePdfSpinner();
+  }
+}
 
 function renderAuditoria(){
   const allItems = auditSections.flatMap(s=>s.items);
@@ -6413,10 +7139,1373 @@ document.getElementById('ifc-due').value = new Date(Date.now()+30*86400000).toIS
 document.getElementById('imp-date').value = new Date().toISOString().slice(0,10);
 document.getElementById('cr-date').value = new Date().toISOString().slice(0,10);
 document.getElementById('lg-expiry').value = new Date(Date.now()+180*86400000).toISOString().slice(0,10);
+restoreFromCache();
+
+// ═══════════════════════════════════════════════════════════════
+// PHASE 7 — PROJECT CONFIG SYSTEM
+// Load order: ?projectId=X → localStorage → Hospital default
+// Debug: console.log(window.projectConfig)
+// Switch demo: location.search = '?projectId=demo-bank'
+// ═══════════════════════════════════════════════════════════════
+(function _projectConfigSystem() {
+
+  /* ── Demo template: BancAfrica Mozambique ── */
+  const DEMO_BANK = {
+    metadata: {
+      name: 'BancAfrica Programa de Expansão Rural',
+      loanId: 'P173XXX',
+      country: 'Moçambique',
+      region: 'Nampula',
+      sector: 'Financial intermediation / rural banking',
+      desc: 'Expansão de agências bancárias · Moçambique',
+      amount: 'USD 45M',
+      esCategory: 'Moderado',
+      approvalDate: 'Jun 2025',
+      closureDate: 'Jun 2030',
+      esSpecialist: 'BM Maputo',
+      projectCategory: 'B',
+      sgasScores: [2,3,2,2,3,2,2,1,2],
+    },
+    data: {
+      esapData: [
+        { id:'ESAP-001', ps:'PS1', prio:'Crítica', desc:'Elaborar e submeter ESMS do programa bancário ao Banco Mundial', hierarchy:'', resp:'Dir. Compliance', prazo:'2026-08-31', status:'Em curso', evid:'Documento ESMS v1' },
+        { id:'ESAP-002', ps:'PS2', prio:'Alta', desc:'Rever contratos de agências — cláusulas laborais IFC PS2', hierarchy:'Minimizar', resp:'RH', prazo:'2026-09-15', status:'Não iniciada', evid:'Contratos actualizados' },
+        { id:'ESAP-003', ps:'PS1', prio:'Alta', desc:'Activar GRM nas 12 agências piloto', hierarchy:'', resp:'Compliance', prazo:'2026-08-01', status:'Em curso', evid:'Registo formal GRM' },
+        { id:'ESAP-004', ps:'PS4', prio:'Média', desc:'Elaborar plano de segurança física para agências rurais', hierarchy:'Minimizar', resp:'Segurança', prazo:'2026-10-01', status:'Não iniciada', evid:'Plano de segurança aprovado' },
+        { id:'ESAP-005', ps:'PS7', prio:'Alta', desc:'Realizar consulta com comunidades rurais antes de abertura de agências', hierarchy:'', resp:'RSC', prazo:'2026-08-15', status:'Em atraso', evid:'Acta e lista de presença' },
+      ],
+      riskData: [
+        { id:'R-001', type:'Social', ps:'PS7', act:'Abertura de agência em terra comunitária', imp:'Conflito com comunidades indígenas', sev:4, prob:3, hierarchy:'Evitado', ctrl:'Consulta prévia + FPIC screening', status:'A avaliar' },
+        { id:'R-002', type:'Ambiental', ps:'PS3', act:'Resíduos electrónicos das agências', imp:'Contaminação do solo', sev:3, prob:2, hierarchy:'Reduzido', ctrl:'Protocolo e-waste certificado', status:'Activo' },
+        { id:'R-003', type:'HSE', ps:'PS2', act:'Assaltos a agências rurais', imp:'Violência a trabalhadores', sev:5, prob:3, hierarchy:'Mitigado', ctrl:'Protocolo de segurança + câmeras', status:'Activo' },
+        { id:'R-004', type:'Social', ps:'PS4', act:'Exclusão financeira de grupos vulneráveis', imp:'Impacto social negativo', sev:3, prob:4, hierarchy:'Mitigado', ctrl:'Produtos inclusivos + formação', status:'Monitorado' },
+      ],
+      stakeholders: [
+        { name:'Associação de Agricultores de Nampula', cat:'community', initials:'AN', concerns:'Acesso a crédito, condições de empréstimo', method:'Reunião presencial', freq:'Trimestral', last:'2026-05-15', fpic:'A avaliar', support:'Pendente' },
+        { name:'Banco Central de Moçambique', cat:'govt', initials:'BC', concerns:'Conformidade regulatória, relatórios', method:'Correspondência oficial', freq:'Trimestral', last:'2026-04-10', fpic:'Não', support:'Sim' },
+        { name:'ONG Desenvolvimento Rural Nampula', cat:'ngo', initials:'DR', concerns:'Inclusão financeira, grupos vulneráveis', method:'Consulta pública', freq:'Semestral', last:'2026-03-20', fpic:'Não', support:'Pendente' },
+      ],
+      complaints: [
+        { id:'GRM-001', data:'2026-05-18', origem:'Comunidade', cat:'Social', desc:'Taxas de empréstimo percebidas como abusivas para agricultores', resp:'Compliance', status:'Em análise', accepted:'Aceite', profile:'Agricultora / comunidade rural', notifyMethod:'Reunião', closureEvidence:'Análise de tarifas pendente', satisfaction:'Pendente', resources:'Revisão interna de produto', postMonitoring:'Relatório Q3 2026', cao:'Não', caoLink:'', prazo:'2026-06-18' },
+      ],
+      contractors: [
+        { name:'TechBuild Moçambique', scope:'Construção de agências', ps:'PS2, PS3, PS4', clauses:'Pendente', induction:'Pendente', score:55, scorecard:[60,55,50,58,52,48,45,44,54], status:'Acção pendente', action:'Incluir cláusulas IFC em contrato e realizar indução' },
+        { name:'SecureGuard Nampula', scope:'Segurança de agências', ps:'PS2, PS4', clauses:'Incluídas', induction:'Concluída', score:78, scorecard:[82,78,75,88,80,70,68,72,76], status:'Conforme', action:'Revisão mensal de incidentes' },
+      ],
+      ifcReports: [
+        { title:'Relatório semestral E&S Jan-Jun 2026', due:'2026-07-31', submitted:'', status:'Pendente', ref:'IFC-ES-BAN-2026-H1' },
+        { title:'Actualização ESAP Agosto 2026', due:'2026-08-31', submitted:'', status:'Em preparação', ref:'ESAP-BAN-2026-08' },
+      ],
+      implementationEvidence: [
+        { id:'IMP-001', date:'2026-06-01', module:'GRM', procedure:'Activação canal de reclamações na agência piloto', type:'Observação visual', ref:'GRM-BANK-01', validatedBy:'Compliance Manager', status:'Validada', notes:'Canal activo com registo físico e digital.' },
+      ],
+      communityReports: [
+        { date:'2026-05-20', community:'Agricultores Nampula', topic:'Produtos de crédito e condições de acesso', channel:'Reunião pública', feedback:'Pedido de produtos com carência inicial para ciclo agrícola.', newRisk:'Sim', evidence:'Acta SEC-2026-05', owner:'RSC', status:'Comunicado' },
+      ],
+      legalRegister: [
+        { requirement:'Licença bancária — expansão rural', source:'Regulação BdM + ESS2', authority:'Banco de Moçambique', permit:'LIC-BAN-2026-021', expiry:'2027-12-31', owner:'Compliance', evidence:'Licença digitalizada', status:'Conforme' },
+        { requirement:'Declaração de impacto ambiental agências', source:'Lei Ambiental Moçambique + ESS1', authority:'MITADER', permit:'DIA-BAN-2026', expiry:'2026-12-31', owner:'Dir. Compliance', evidence:'DIA aprovada', status:'Em revisão' },
+      ],
+      physicalRiskHotspots: [], processRiskMap: [], sourceWatchers: [], kpiProtocols: [], lenderPackage: [],
+    }
+  };
+
+  /* ── Demo template: Rift Valley Water NGO (Kenya) ── */
+  const DEMO_NGO = {
+    metadata: {
+      name: 'Rift Valley Water Access Program',
+      loanId: 'P174YYY',
+      country: 'Kenya',
+      region: 'Rift Valley',
+      sector: 'Water supply and sanitation / NGO programme',
+      desc: 'Acesso a água potável em comunidades rurais · Kenya',
+      amount: 'USD 22M',
+      esCategory: 'Moderado',
+      approvalDate: 'Jan 2026',
+      closureDate: 'Dez 2029',
+      esSpecialist: 'BM Nairobi',
+      projectCategory: 'B',
+      sgasScores: [3,2,3,2,2,3,3,2,2],
+    },
+    data: {
+      esapData: [
+        { id:'ESAP-001', ps:'PS1', prio:'Crítica', desc:'Finalizar ESMS para programa de água e submeter ao Banco Mundial', hierarchy:'', resp:'Programme Director', prazo:'2026-07-31', status:'Em curso', evid:'ESMS Water Programme v1' },
+        { id:'ESAP-002', ps:'PS5', prio:'Alta', desc:'Completar avaliação de reacomodação para comunidades afectadas pelo reservatório', hierarchy:'Evitar', resp:'Social Specialist', prazo:'2026-08-15', status:'Em atraso', evid:'RAP / ARP completo' },
+        { id:'ESAP-003', ps:'PS2', prio:'Alta', desc:'Formalizar contratos de trabalhadores locais com cláusulas IFC PS2', hierarchy:'Minimizar', resp:'HR', prazo:'2026-07-15', status:'Não iniciada', evid:'Contratos actualizados' },
+        { id:'ESAP-004', ps:'PS6', prio:'Alta', desc:'Screening de biodiversidade aquática antes de início da obra', hierarchy:'Evitar', resp:'Environment Specialist', prazo:'2026-07-01', status:'Em atraso', evid:'Biodiversity assessment report' },
+        { id:'ESAP-005', ps:'PS7', prio:'Alta', desc:'Conduzir FPIC com comunidades pastoras da área de influência', hierarchy:'', resp:'Community Liaison', prazo:'2026-08-30', status:'Em curso', evid:'FPIC documentation package' },
+        { id:'ESAP-006', ps:'PS1', prio:'Média', desc:'Activar GRM multicanal antes do início da obra', hierarchy:'', resp:'Community Liaison', prazo:'2026-07-20', status:'Não iniciada', evid:'GRM register + communications' },
+      ],
+      riskData: [
+        { id:'R-001', type:'Social', ps:'PS5', act:'Construção do reservatório', imp:'Deslocamento físico de 3 famílias', sev:5, prob:4, hierarchy:'Mitigado', ctrl:'RAP com compensação justa e acompanhamento', status:'Activo' },
+        { id:'R-002', type:'Ambiental', ps:'PS6', act:'Intervenção no ecossistema hídrico', imp:'Perturbação de fauna aquática', sev:4, prob:3, hierarchy:'Reduzido', ctrl:'Biodiversity assessment + No-go zones', status:'A avaliar' },
+        { id:'R-003', type:'HSE', ps:'PS2', act:'Escavação e soldadura em campo remoto', imp:'Acidentes de trabalho em ambiente remoto', sev:4, prob:3, hierarchy:'Mitigado', ctrl:'PTW + EPI + protocolo de emergência remota', status:'Activo' },
+        { id:'R-004', type:'Social', ps:'PS7', act:'Uso de terra pastora para infraestrutura', imp:'Conflito com pastores / perda de acesso', sev:4, prob:4, hierarchy:'Evitado', ctrl:'FPIC + alternativas de traçado', status:'A avaliar' },
+        { id:'R-005', type:'Ambiental', ps:'PS3', act:'Resíduos de construção em campo', imp:'Contaminação de nascentes', sev:3, prob:3, hierarchy:'Reduzido', ctrl:'Waste management plan + contentor', status:'Activo' },
+      ],
+      stakeholders: [
+        { name:'Maasai Community Council', cat:'community', initials:'MC', concerns:'Acesso a terra, deslocamento, FPIC', method:'Consulta FPIC + reuniões', freq:'Mensal', last:'2026-06-01', fpic:'Em curso', support:'Condicionado' },
+        { name:'Kenya NEMA', cat:'govt', initials:'NE', concerns:'EIA, monitoramento hídrico', method:'Visita técnica', freq:'Trimestral', last:'2026-04-18', fpic:'Não', support:'Sim' },
+        { name:'Water Users Association — Nakuru', cat:'community', initials:'WU', concerns:'Qualidade água, manutenção', method:'Reunião presencial', freq:'Mensal', last:'2026-05-25', fpic:'Não', support:'Sim' },
+        { name:'UNICEF Kenya', cat:'ngo', initials:'UN', concerns:'Acesso equitativo, grupos vulneráveis', method:'Reunião técnica', freq:'Semestral', last:'2026-03-10', fpic:'Não', support:'Sim' },
+      ],
+      complaints: [
+        { id:'GRM-001', data:'2026-05-28', origem:'Comunidade', cat:'Social', desc:'Pastores relatam bloqueio temporário de acesso a ponto de água', resp:'Community Liaison', status:'Em análise', accepted:'Aceite', profile:'Pastor Maasai / comunidade afectada', notifyMethod:'Reunião presencial', closureEvidence:'Rota alternativa pendente', satisfaction:'Pendente', resources:'Engenheiro + mediador comunitário', postMonitoring:'Monitoramento semanal 30 dias', cao:'Não', caoLink:'', prazo:'2026-06-12' },
+        { id:'GRM-002', data:'2026-06-03', origem:'Trabalhador', cat:'Laboral', desc:'Pagamento de ajudas de custo atrasado', resp:'HR', status:'Resolvida', accepted:'Aceite', profile:'Trabalhador temporário / remoto', notifyMethod:'SMS', closureEvidence:'Recibo de transferência bancária', satisfaction:'Satisfeito', resources:'Revisão processo de pagamento', postMonitoring:'Verificação mensal', cao:'Não', caoLink:'', prazo:'2026-06-10' },
+      ],
+      contractors: [
+        { name:'HydroConstruct Kenya', scope:'Construção do reservatório e rede', ps:'PS2, PS3, PS5, PS6', clauses:'Pendente', induction:'Pendente', score:45, scorecard:[50,45,40,48,42,38,36,34,42], status:'Não conforme', action:'Suspender início até assinatura de adenda IFC e indução HSE' },
+        { name:'Geo-Survey Africa', scope:'Topografia e survey ambiental', ps:'PS3, PS6', clauses:'Incluídas', induction:'Concluída', score:85, scorecard:[88,85,82,90,86,80,78,84,84], status:'Conforme', action:'Monitorar relatórios biodiversidade mensalmente' },
+      ],
+      ifcReports: [
+        { title:'Quarterly E&S Progress Report Q2 2026', due:'2026-07-15', submitted:'', status:'Pendente', ref:'IFC-ES-NGO-Q2-2026' },
+        { title:'ESAP Update — July 2026', due:'2026-07-31', submitted:'', status:'Em preparação', ref:'ESAP-NGO-2026-07' },
+        { title:'RAP Implementation Progress', due:'2026-08-15', submitted:'', status:'Não iniciada', ref:'RAP-NGO-2026-08' },
+      ],
+      implementationEvidence: [
+        { id:'IMP-001', date:'2026-06-04', module:'GRM', procedure:'Caixa de reclamações instalada no acampamento base', type:'Foto / vídeo', ref:'GRM-NGO-BOX-01', validatedBy:'Community Liaison', status:'Validada', notes:'Caixa visível com símbolo universal e folheto de processo.' },
+        { id:'IMP-002', date:'2026-05-30', module:'PS6 / Biodiversidade', procedure:'Demarcação de no-go zones aquáticas', type:'GPS track + foto', ref:'PS6-NOGOZ-01', validatedBy:'Environment Specialist', status:'Em revisão', notes:'Coordenadas submetidas; aguarda validação NEMA.' },
+      ],
+      communityReports: [
+        { date:'2026-06-01', community:'Maasai Community Council', topic:'FPIC — uso de terra e compensação', channel:'Consulta FPIC', feedback:'Pedido de mapa em língua local e opções de rota alternativa para gado.', newRisk:'Sim', evidence:'Acta FPIC-2026-06', owner:'Community Liaison', status:'Em seguimento' },
+      ],
+      legalRegister: [
+        { requirement:'Environmental Impact Assessment', source:'Kenya EMCA 1999 + ESS1', authority:'NEMA', permit:'EIA-RVWAP-2026', expiry:'2026-12-31', owner:'Programme Director', evidence:'EIA approved — NEMA cert.', status:'Conforme' },
+        { requirement:'Water Use License', source:'Water Act 2016 Kenya + PS6', authority:'Water Resources Authority', permit:'WUL-RVWAP-2026', expiry:'2027-06-30', owner:'Environment Specialist', evidence:'WUL pending renewal', status:'Em revisão' },
+        { requirement:'Resettlement Action Plan (RAP)', source:'PS5 / ESS5', authority:'County Government', permit:'RAP-RVWAP-2026', expiry:'N/A', owner:'Social Specialist', evidence:'Draft RAP under consultation', status:'Em curso' },
+      ],
+      physicalRiskHotspots: [], processRiskMap: [], sourceWatchers: [], kpiProtocols: [], lenderPackage: [],
+    }
+  };
+
+  const DEMO_CONFIGS = { 'demo-bank': DEMO_BANK, 'demo-ngo': DEMO_NGO };
+
+  /* ── Load: URL param → localStorage → null (Hospital defaults) ── */
+  function _load() {
+    const urlId = new URLSearchParams(window.location.search).get('projectId');
+    if (urlId) {
+      if (DEMO_CONFIGS[urlId]) return { ...DEMO_CONFIGS[urlId], _source: 'url:' + urlId };
+      const custom = localStorage.getItem('projectConfig_' + urlId);
+      if (custom) try { return { ...JSON.parse(custom), _source: 'localStorage:' + urlId }; } catch(e) {}
+    }
+    const override = localStorage.getItem('projectConfig');
+    if (override) try { return { ...JSON.parse(override), _source: 'localStorage' }; } catch(e) {}
+    return null;
+  }
+
+  /* ── Apply: overwrite globals + update DOM ── */
+  function _apply(cfg) {
+    const DEFAULT_META = {
+      name: 'Hospital Distrital do Kibala', loanId: 'P171880',
+      country: 'Angola', desc: 'Construção de infra-estrutura de saúde · Angola',
+      amount: 'USD 80M', esCategory: 'Substancial',
+      approvalDate: 'Mar 2024', closureDate: 'Dez 2028',
+      esSpecialist: 'BM Lisboa', projectCategory: 'B',
+      sgasScores: [3,2,2,3,2,1,1,3,1],
+    };
+    const m = (cfg && cfg.metadata) ? cfg.metadata : DEFAULT_META;
+
+    // Overwrite data arrays only for non-default configs
+    if (cfg && cfg.data) {
+      const d = cfg.data;
+      if (d.esapData)               esapData               = d.esapData;
+      if (d.riskData)               riskData               = d.riskData;
+      if (d.stakeholders)           stakeholders           = d.stakeholders;
+      if (d.complaints)             complaints             = d.complaints;
+      if (d.contractors)            contractors            = d.contractors;
+      if (d.ifcReports)             ifcReports             = d.ifcReports;
+      if (d.implementationEvidence) implementationEvidence = d.implementationEvidence;
+      if (d.communityReports)       communityReports       = d.communityReports;
+      if (d.legalRegister)          legalRegister          = d.legalRegister;
+      if (d.physicalRiskHotspots)   physicalRiskHotspots   = d.physicalRiskHotspots;
+      if (d.processRiskMap)         processRiskMap         = d.processRiskMap;
+      if (d.sourceWatchers)         sourceWatchers         = d.sourceWatchers;
+      if (d.kpiProtocols)           kpiProtocols           = d.kpiProtocols;
+      if (d.lenderPackage)          lenderPackage          = d.lenderPackage;
+    }
+
+    // Metadata → global vars
+    projectCategory = m.projectCategory || 'B';
+    if (Array.isArray(m.sgasScores)) sgasScores = m.sgasScores;
+    assessmentMeta = { ...assessmentMeta, company: m.name, projectId: m.loanId };
+
+    // DOM updates
+    const $s = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.textContent = v; };
+    $s('proj-pill-name', m.name);
+    $s('proj-pill-loan', m.loanId + ' · ' + m.country);
+    $s('proj-name', m.name);
+    $s('proj-desc', m.desc || (m.sector + ' · ' + m.country));
+    $s('proj-ida', m.loanId);
+    $s('proj-amount', m.amount || '—');
+    $s('proj-cat', m.esCategory || '—');
+    $s('proj-approval', m.approvalDate || '—');
+    $s('proj-closure', m.closureDate || '—');
+    $s('proj-specialist', m.esSpecialist || '—');
+    $s('legal-title', 'Registo Legal ' + m.country + ' + IFC/ESS');
+
+    window.projectConfig = { metadata: m, _source: cfg ? (cfg._source || 'custom') : 'default' };
+    console.log('[SGAS] projectConfig:', m.name, '|', window.projectConfig._source);
+  }
+
+  _apply(_load());
+  window._pc = { configs: DEMO_CONFIGS };
+})();
+// ─────────────────────────────────────────────────────────────
+
 renderAll();
+// Background sync from Supabase — re-renders if live data differs from cache
+syncFromSupabase().then(ok => { if (ok) renderAll(); });
 // URL-based deep linking: ?page=monitoring
 const _urlPage=new URLSearchParams(location.search).get('page');
 if(_urlPage){ const _navEl=document.querySelector(`[onclick*="'${_urlPage}'"]`); if(_navEl) _navEl.click(); }
 </script>
+
+<!-- Auth module moved to auth.js (loaded in <head>). onAuthSuccess, signOut,
+     showAuthOverlay, hideAuthOverlay, switchAuthTab are all defined there. -->
+
+<div id="trial-expired-screen" style="display:none;position:fixed;inset:0;background:#F9FAFB;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;">
+  <div style="font-size:48px;">⏰</div>
+  <div style="font-size:22px;font-weight:700;color:#111827;">O seu período de trial terminou</div>
+  <div style="font-size:14px;color:#6B7280;max-width:400px;">O acesso ao SGAS Pro estava activo durante o período de avaliação de 3 dias. Para continuar, contacte-nos para activar a sua conta.</div>
+  <a href="mailto:geral@hsilva.org?subject=SGAS Pro — Activar conta" style="margin-top:8px;background:#1D9E75;color:#fff;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">Falar connosco →</a>
+  <div style="font-size:11px;color:#9CA3AF;margin-top:4px;">geral@hsilva.org</div>
+</div>
+
+<script>
+// ── Trial expiry check (wraps onAuthSuccess defined in auth.js) ──────────
+(function() {
+  var _origOnAuth = window.onAuthSuccess;
+  window.onAuthSuccess = async function(session) {
+    await _origOnAuth(session);
+    var s = window.SGAS_SESSION;
+    if (s && s.trialEndsAt) {
+      var expired = new Date() > new Date(s.trialEndsAt);
+      if (expired) {
+        document.getElementById('trial-expired-screen').style.display = 'flex';
+        document.querySelectorAll('.sidebar, .main').forEach(function(el){ el.style.visibility = 'hidden'; });
+        return;
+      }
+    }
+  };
+})();
+</script>
+
+<!-- ══ FASE 3: COFRE DE EVIDÊNCIAS — SUPABASE STORAGE ══════════════════ -->
+<input type="file" id="ev-file-input" style="display:none"
+  accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.gif,.bmp,.webp,.mp4,.mov,.avi,.zip,.rar,.7z,.txt,.ppt,.pptx"
+  onchange="evidence_onFileSelected(this)">
+
+<script>
+// ════════════════════════════════════════════════════════════════════════
+// FASE 3 — SUPABASE STORAGE · todas as funções com prefixo evidence_
+// ════════════════════════════════════════════════════════════════════════
+
+const EVIDENCE_BLOCKED_EXT  = ['.exe','.sh','.bat','.php','.cmd','.scr','.vbs','.jar','.msi','.ps1'];
+const EVIDENCE_MAX_BYTES    = 50 * 1024 * 1024; // 50 MB
+let   _ev_file              = null;              // ficheiro actualmente seleccionado
+
+// ── PASSO 1 · Selecção e validação de ficheiro ──────────────────────────
+function evidence_onFileSelected(input) {
+  const file  = input.files[0];
+  const nameEl = document.getElementById('ev-file-name');
+  if (!file) {
+    _ev_file = null;
+    if (nameEl) nameEl.textContent = 'Nenhum ficheiro seleccionado';
+    return;
+  }
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  if (EVIDENCE_BLOCKED_EXT.includes(ext)) {
+    alert('Tipo de ficheiro não permitido: ' + ext + '\nFormatos bloqueados: ' + EVIDENCE_BLOCKED_EXT.join(' '));
+    input.value = ''; _ev_file = null;
+    if (nameEl) nameEl.textContent = 'Nenhum ficheiro seleccionado';
+    return;
+  }
+  if (file.size > EVIDENCE_MAX_BYTES) {
+    alert('Ficheiro demasiado grande (' + (file.size / 1048576).toFixed(1) + ' MB). Máximo: 50 MB.');
+    input.value = ''; _ev_file = null;
+    if (nameEl) nameEl.textContent = 'Nenhum ficheiro seleccionado';
+    return;
+  }
+  _ev_file = file;
+  const sz = file.size > 1048576
+    ? (file.size / 1048576).toFixed(1) + ' MB'
+    : (file.size / 1024).toFixed(0) + ' KB';
+  if (nameEl) nameEl.textContent = file.name + ' (' + sz + ')';
+}
+
+// ── Upload para Supabase Storage ─────────────────────────────────────────
+// Caminho: evidence/{org_id}/{project_id}/{ps_code}/{timestamp}_{filename}
+async function evidence_uploadFile(file, orgId, projectId, psCode) {
+  const client = getSupaClient();
+  const ts     = Date.now();
+  const safe   = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path   = 'evidence/' + orgId + '/' + projectId + '/' + psCode + '/' + ts + '_' + safe;
+  const { error } = await client.storage.from('evidence').upload(path, file, {
+    cacheControl: '3600', upsert: false
+  });
+  if (error) throw error;
+  return { path, fileName: file.name, fileSize: file.size };
+}
+
+// ── PASSO 3 · Carregar evidências do Supabase com campos completos ────────
+async function evidence_loadFromSupabase() {
+  if (!ACTIVE_PROJECT_ID) return;
+  const client = getSupaClient();
+  if (!client) return;
+  try {
+    const { data, error } = await client
+      .from('evidence_items')
+      .select('*')
+      .eq('project_id', ACTIVE_PROJECT_ID)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    if (data && data.length) {
+      implementationEvidence = data.map(r => ({
+        id:          r.evidence_id || r.id,
+        _dbId:       r.id,
+        date:        r.upload_date || r.date || new Date().toISOString().slice(0, 10),
+        module:      r.module       || '',
+        procedure:   r.procedure    || '',
+        type:        r.type         || '',
+        ref:         r.reference    || '',
+        validatedBy: r.validated_by || '',
+        status:      r.status       || 'Pendente',
+        notes:       r.notes        || '',
+        psCode:      r.ps_code      || 'Geral',
+        filePath:    r.file_path    || '',
+        fileName:    r.file_name    || '',
+        fileSize:    r.file_size    || 0,
+        expiryDate:  r.expiry_date  || '',
+        uploadDate:  r.upload_date  || r.date || ''
+      }));
+    }
+  } catch (err) {
+    console.warn('[Evidence] Erro ao carregar evidências:', err.message);
+  }
+  evidence_renderEvidence();
+  evidence_updateStats();
+}
+
+// ── PASSO 5 · Badge de validade ──────────────────────────────────────────
+function evidence_expiryBadge(dateStr) {
+  if (!dateStr) return '<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#F3F4F6;color:#6B7280">sem data</span>';
+  const diff = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+  if (diff < 0)  return '<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#FEE2E2;color:#DC2626">⛔ expirado</span>';
+  if (diff <= 30) return '<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#FEF3C7;color:#D97706">⚠ ' + diff + 'd</span>';
+  return              '<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#D1FAE5;color:#059669">✓ válido</span>';
+}
+
+// ── PASSO 3 · Renderizar tabela com links de download, validade e eliminar ─
+function evidence_renderEvidence() {
+  const tbody = document.getElementById('implementation-tbody');
+  if (!tbody) return;
+  if (!implementationEvidence.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-3)">Sem evidências registadas. Clica em "+ Registar evidência" para adicionar.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = implementationEvidence.map(function(e, idx) {
+    var fileCell = e.filePath
+      ? '<a href="#" onclick="evidence_download(\'' + e.filePath.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\');return false" style="color:var(--accent);font-size:12px;text-decoration:none" title="' + (e.fileName || 'ficheiro') + '">📎 ' + (e.fileName || 'ficheiro').substring(0, 24) + '</a>'
+      : (e.ref ? '<span style="font-size:12px;color:var(--text-2)">' + e.ref + '</span>' : '<span style="color:var(--text-3);font-size:12px">—</span>');
+    return '<tr>' +
+      '<td><strong style="font-size:11px">' + (e.id || '—') + '</strong><br>' +
+        '<span class="badge" style="font-size:10px;margin-top:2px">' + (e.psCode || 'Geral') + '</span></td>' +
+      '<td style="white-space:nowrap;font-size:12px">' + (e.uploadDate || e.date || '—') + '</td>' +
+      '<td>' + (e.module || '—') + '</td>' +
+      '<td style="max-width:190px">' + (e.procedure || '—') +
+        (e.notes ? '<div style="font-size:11px;color:var(--text-3);margin-top:2px">' + e.notes + '</div>' : '') + '</td>' +
+      '<td><span class="badge blue">' + (e.type || '—') + '</span></td>' +
+      '<td>' + fileCell + '</td>' +
+      '<td style="font-size:12px;color:var(--text-2)">' + (e.validatedBy || '—') + '</td>' +
+      '<td>' + (typeof statusBadge === 'function' ? statusBadge(e.status) : e.status) +
+        '<div style="margin-top:4px">' + evidence_expiryBadge(e.expiryDate) + '</div>' +
+        '<button onclick="evidence_confirmDelete(' + idx + ')" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:11px;padding:2px 0;display:block;margin-top:4px" title="Eliminar">× eliminar</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ── PASSO 7 · Actualizar cartões de estatísticas ─────────────────────────
+function evidence_updateStats() {
+  var today    = new Date();
+  var total    = implementationEvidence.length;
+  var expired  = implementationEvidence.filter(function(e) {
+    return e.expiryDate && new Date(e.expiryDate) < today;
+  }).length;
+  var expiring = implementationEvidence.filter(function(e) {
+    if (!e.expiryDate) return false;
+    var d = Math.ceil((new Date(e.expiryDate) - today) / 86400000);
+    return d >= 0 && d <= 30;
+  }).length;
+  var valid = implementationEvidence.filter(function(e) {
+    return e.status === 'Validada' && !(e.expiryDate && new Date(e.expiryDate) < today);
+  }).length;
+  var storageMB = (implementationEvidence.reduce(function(s, e) { return s + (e.fileSize || 0); }, 0) / 1048576).toFixed(1);
+
+  var m = document.getElementById('implementation-metrics');
+  if (!m) return;
+  m.innerHTML =
+    '<div class="metric-card"><div class="metric-label">Total de evidências</div><div class="metric-value">' + total + '</div><div class="metric-sub">registadas no cofre</div></div>' +
+    '<div class="metric-card"><div class="metric-label">Validadas e vigentes</div><div class="metric-value' + (valid > 0 ? ' green' : '') + '">' + valid + '</div><div class="metric-sub">de ' + total + ' registadas</div></div>' +
+    '<div class="metric-card"><div class="metric-label">A vencer (&lt;30 dias)</div><div class="metric-value' + (expiring > 0 ? ' amber' : '') + '">' + expiring + '</div><div class="metric-sub">' + expired + ' expirada(s)</div></div>' +
+    '<div class="metric-card"><div class="metric-label">Armazenamento</div><div class="metric-value">' + storageMB + ' MB</div><div class="metric-sub">de 50 MB disponíveis</div></div>';
+}
+
+// ── PASSO 4 · Download via URL assinada (1 hora) ─────────────────────────
+async function evidence_download(path) {
+  if (!path) { alert('Este registo não tem ficheiro associado.'); return; }
+  const client = getSupaClient();
+  try {
+    const { data, error } = await client.storage.from('evidence').createSignedUrl(path, 3600);
+    if (error) throw error;
+    window.open(data.signedUrl, '_blank');
+  } catch (err) {
+    alert('Erro ao gerar link de download: ' + err.message);
+  }
+}
+
+// ── PASSO 6 · Confirmar e eliminar ──────────────────────────────────────
+async function evidence_confirmDelete(idx) {
+  const item = implementationEvidence[idx];
+  if (!item) return;
+  if (!confirm('Eliminar evidência "' + (item.procedure || item.id) + '"?\nEsta acção não pode ser desfeita.')) return;
+  const client = getSupaClient();
+  try {
+    if (item.filePath) {
+      const { error: stErr } = await client.storage.from('evidence').remove([item.filePath]);
+      if (stErr) console.warn('[Evidence] Storage remove:', stErr.message);
+    }
+    if (item._dbId) {
+      const { error: dbErr } = await client.from('evidence_items').delete().eq('id', item._dbId);
+      if (dbErr) throw dbErr;
+    } else {
+      await client.from('evidence_items').delete().eq('evidence_id', item.id);
+    }
+    implementationEvidence.splice(idx, 1);
+    evidence_renderEvidence();
+    evidence_updateStats();
+  } catch (err) {
+    alert('Erro ao eliminar: ' + err.message);
+  }
+}
+
+// ── PASSO 8 · Download em massa ──────────────────────────────────────────
+async function evidence_bulkDownload() {
+  const paths = implementationEvidence.map(function(e) { return e.filePath; }).filter(Boolean);
+  if (!paths.length) {
+    alert('Nenhum ficheiro disponível para download. Carrega ficheiros primeiro ao registar evidências.');
+    return;
+  }
+  const client = getSupaClient();
+  let count = 0;
+  for (const p of paths) {
+    try {
+      const { data, error } = await client.storage.from('evidence').createSignedUrl(p, 3600);
+      if (!error && data && data.signedUrl) {
+        setTimeout(function(url) { return function() { window.open(url, '_blank'); }; }(data.signedUrl), count * 500);
+        count++;
+      }
+    } catch (e) { console.warn('[Evidence] Bulk download erro:', e.message); }
+  }
+  if (!count) alert('Não foi possível gerar links de download. Verifica as políticas de Storage no Supabase.');
+}
+
+// ── PASSO 9 · Notificar uploads pendentes (offline fallback) ─────────────
+function evidence_notifyPending() {
+  const pending = JSON.parse(localStorage.getItem('sgas_pending_uploads') || '[]');
+  if (!pending.length) return;
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 16px;font-size:13px;max-width:340px;box-shadow:0 4px 12px rgba(0,0,0,.12)';
+  banner.innerHTML = '⚠️ <strong>' + pending.length + ' upload(s) pendente(s)</strong> de sessão anterior não foram enviados.<br><span style="font-size:12px;color:#78716C">Abre "Registar evidência" e recarrega os ficheiros.</span>';
+  document.body.appendChild(banner);
+  setTimeout(function() { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 10000);
+}
+
+// ── Override de addImplementationEvidence ────────────────────────────────
+// Substitui a versão original: agora faz upload de ficheiro + guarda no Supabase
+window.addImplementationEvidence = async function() {
+  const procedure = (document.getElementById('imp-procedure') || {}).value && document.getElementById('imp-procedure').value.trim();
+  if (!procedure) { alert('Indica o procedimento ou prática verificada.'); return; }
+
+  const getVal = function(id, def) {
+    const el = document.getElementById(id);
+    return el ? (el.value || def || '') : (def || '');
+  };
+  const psCode     = getVal('imp-ps-code', 'Geral');
+  const expiryDate = getVal('imp-expiry', '');
+  const file       = _ev_file;
+  const sess       = window.SGAS_SESSION || {};
+  const orgId      = sess.orgId    || 'sem-org';
+  const projectId  = ACTIVE_PROJECT_ID || '';
+
+  const saveBtn = document.querySelector('#modal-implementation .modal-actions .btn.primary');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'A guardar…'; }
+
+  try {
+    const client = getSupaClient();
+    let filePath = '', fileName = '', fileSize = 0;
+
+    // Passo 1 — Upload do ficheiro se existir
+    if (file) {
+      try {
+        const up = await evidence_uploadFile(file, orgId, projectId, psCode);
+        filePath = up.path; fileName = up.fileName; fileSize = up.fileSize;
+      } catch (upErr) {
+        // Passo 9 — Fallback offline: guardar metadados em localStorage
+        const pending = JSON.parse(localStorage.getItem('sgas_pending_uploads') || '[]');
+        pending.push({ procedure, psCode, expiryDate, fileName: file.name, fileSize: file.size, ts: Date.now() });
+        localStorage.setItem('sgas_pending_uploads', JSON.stringify(pending));
+        console.warn('[Evidence] Upload falhou, guardado como pendente:', upErr.message);
+      }
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const newId = 'IMP-' + String(implementationEvidence.length + 1).padStart(3, '0');
+
+    const row = {
+      evidence_id:  newId,
+      date:         getVal('imp-date', today),
+      upload_date:  today,
+      module:       getVal('imp-module', ''),
+      procedure:    procedure,
+      type:         getVal('imp-type', 'Observação visual'),
+      reference:    getVal('imp-ref', '') || filePath,
+      validated_by: getVal('imp-validator', ''),
+      status:       getVal('imp-status', 'Pendente'),
+      notes:        getVal('imp-notes', ''),
+      ps_code:      psCode,
+      expiry_date:  expiryDate || null,
+      file_path:    filePath   || null,
+      file_name:    fileName   || null,
+      file_size:    fileSize   || null,
+      project_id:   projectId  || null,
+      org_id:       orgId !== 'sem-org' ? orgId : null
+    };
+
+    let _dbId = null;
+    if (projectId && client) {
+      try {
+        const { data: ins, error } = await client.from('evidence_items').insert(row).select('id').single();
+        if (error) throw error;
+        if (ins) _dbId = ins.id;
+      } catch (dbErr) {
+        console.warn('[Evidence] DB insert falhou (guardado localmente):', dbErr.message);
+      }
+    }
+
+    implementationEvidence.unshift({
+      id: newId, _dbId: _dbId,
+      date: row.date, uploadDate: today,
+      module: row.module, procedure: procedure,
+      type: row.type, ref: row.reference,
+      validatedBy: row.validated_by, status: row.status, notes: row.notes,
+      psCode: psCode, filePath: filePath, fileName: fileName,
+      fileSize: fileSize, expiryDate: expiryDate
+    });
+    localStorage.setItem('implementationEvidence', JSON.stringify(implementationEvidence));
+
+    // Reset ficheiro
+    _ev_file = null;
+    const fi = document.getElementById('ev-file-input'); if (fi) fi.value = '';
+    const fn = document.getElementById('ev-file-name'); if (fn) fn.textContent = 'Nenhum ficheiro seleccionado';
+    const expEl = document.getElementById('imp-expiry'); if (expEl) expEl.value = '';
+
+    closeModal('modal-implementation');
+    ['imp-procedure', 'imp-ref', 'imp-validator', 'imp-notes', 'imp-module'].forEach(function(id) {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+
+    evidence_renderEvidence();
+    evidence_updateStats();
+    if (typeof updateReadiness === 'function') updateReadiness();
+    if (typeof renderReport    === 'function') renderReport();
+    if (typeof renderAuditRoom === 'function') renderAuditRoom();
+
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Registar evidência'; }
+  }
+};
+
+// ── Injectar hooks (executado uma vez após todos os scripts) ─────────────
+(function evidence_initHooks() {
+  // Wrap syncFromSupabase → também carrega evidências com campos completos
+  var _origSync = window.syncFromSupabase;
+  if (typeof _origSync === 'function') {
+    window.syncFromSupabase = async function() {
+      const result = await _origSync.call(this);
+      await evidence_loadFromSupabase();
+      return result;
+    };
+  }
+
+  // Wrap renderAll → também re-renderiza tabela e estatísticas
+  var _origRender = window.renderAll;
+  if (typeof _origRender === 'function') {
+    window.renderAll = function() {
+      _origRender.call(this);
+      evidence_renderEvidence();
+      evidence_updateStats();
+    };
+  }
+
+  // Wrap onAuthSuccess → notifica uploads pendentes após login
+  var _origAuth = window.onAuthSuccess;
+  if (typeof _origAuth === 'function') {
+    var _pendingNotified = false;
+    window.onAuthSuccess = async function(session) {
+      await _origAuth.call(this, session);
+      if (!_pendingNotified) { _pendingNotified = true; evidence_notifyPending(); }
+    };
+  }
+})();
+</script>
+
+<!-- ══ FASE 4: ASSISTENTE IA — ANTHROPIC CLAUDE API ═══════════════════════ -->
+<script>
+// ════════════════════════════════════════════════════════════════════════
+// FASE 4 — ASSISTENTE IA · todas as funções com prefixo ai_
+// ════════════════════════════════════════════════════════════════════════
+
+const AI_EDGE_URL = (window.SGAS_CONFIG ? window.SGAS_CONFIG.SUPABASE_URL : 'https://txkyedcqancetuoxtapf.supabase.co') + '/functions/v1/ai-assistant';
+window.AI_CONVERSATION = [];
+
+// ── PASSO 3 · Histórico de conversa ──────────────────────────────────────
+function ai_loadHistory() {
+  try {
+    const key = 'sgas_ai_history_' + (ACTIVE_PROJECT_ID || 'default');
+    const stored = localStorage.getItem(key);
+    if (stored) window.AI_CONVERSATION = JSON.parse(stored).slice(-50);
+    else window.AI_CONVERSATION = [];
+  } catch(e) { window.AI_CONVERSATION = []; }
+}
+
+function ai_saveHistory() {
+  try {
+    const key = 'sgas_ai_history_' + (ACTIVE_PROJECT_ID || 'default');
+    localStorage.setItem(key, JSON.stringify(window.AI_CONVERSATION.slice(-50)));
+  } catch(e) {}
+}
+
+function ai_clearHistory() {
+  window.AI_CONVERSATION = [];
+  try { localStorage.removeItem('sgas_ai_history_' + (ACTIVE_PROJECT_ID || 'default')); } catch(e) {}
+  ai_renderMessages();
+  ai_appendMessage('assistant',
+    'Conversa apagada. Como posso ajudar?');
+}
+
+// ── PASSO 2 · Contexto do projecto ───────────────────────────────────────
+async function ai_buildProjectContext() {
+  try {
+    const supa = getSupaClient();
+    const projectId = ACTIVE_PROJECT_ID;
+    let ctx = null;
+
+    // Try Supabase first if we have a project ID
+    if (supa && projectId) {
+      const [projectRes, checklistRes, esapRes, riskRes, grievanceRes, evidenceRes] = await Promise.all([
+        supa.from('projects').select('*').eq('id', projectId).single(),
+        supa.from('ps_checklists').select('ps_code,status').eq('project_id', projectId),
+        supa.from('esap_actions').select('status,priority,due_date').eq('project_id', projectId),
+        supa.from('risk_register').select('risk_score,status').eq('project_id', projectId),
+        supa.from('grievances').select('status').eq('project_id', projectId),
+        supa.from('evidence_items').select('status,expiry_date').eq('project_id', projectId)
+      ]);
+
+      const checklist  = checklistRes.data  || [];
+      const esap       = esapRes.data       || [];
+      const risks      = riskRes.data       || [];
+      const grievances = grievanceRes.data  || [];
+      const evidence   = evidenceRes.data   || [];
+
+      // Use Supabase ctx only if there is real data
+      if (projectRes.data || checklist.length || esap.length || risks.length) {
+        const compliant = checklist.filter(r => r.status === 'compliant').length;
+        const partial   = checklist.filter(r => r.status === 'partial').length;
+        const nonComp   = checklist.filter(r => r.status === 'non_compliant').length;
+        ctx = {
+          project:    projectRes.data,
+          compliance: { compliant, partial, non_compliant: nonComp, total: checklist.length,
+                        score: checklist.length > 0 ? ((compliant / checklist.length) * 10).toFixed(1) : 'N/A' },
+          esap:       { total: esap.length,
+                        overdue: esap.filter(r => r.status === 'overdue').length,
+                        open: esap.filter(r => r.status === 'not_started' || r.status === 'in_progress').length,
+                        completed: esap.filter(r => r.status === 'completed').length },
+          risks:      { total: risks.length, high: risks.filter(r => r.risk_score >= 15).length,
+                        open: risks.filter(r => r.status === 'open').length },
+          grievances: { total: grievances.length, open: grievances.filter(r => r.status === 'open').length },
+          evidence:   { total: evidence.length, expired: evidence.filter(r => r.status === 'expired').length,
+                        valid: evidence.filter(r => r.status === 'valid').length },
+          _source: 'supabase'
+        };
+      }
+    }
+
+    // Fallback: build rich context from hardcoded JS data already in scope
+    if (!ctx) ctx = ai_buildLocalContext();
+
+    // Update context sidebar
+    const ctxEl = document.getElementById('ai-context-display');
+    if (ctxEl) {
+      const proj  = ctx.project || {};
+      const name  = proj.name || proj.company || 'Hospital Provincial do Bailundo';
+      const ref   = proj.reference || proj.id || 'IDA-P171880';
+      const score = ctx.compliance?.score ?? 'N/A';
+      const total = (ctx.esap?.total||0) + (ctx.risks?.total||0) +
+                    (ctx.grievances?.total||0) + (ctx.evidence?.total||0);
+      ctxEl.innerHTML =
+        '<strong>Projecto:</strong> ' + name + '<br>' +
+        '<strong>Referência:</strong> ' + ref + '<br>' +
+        '<strong>Conformidade:</strong> ' + score + '/10<br>' +
+        '<strong>ESAP atrasados:</strong> ' + (ctx.esap?.overdue||0) + '<br>' +
+        '<strong>Riscos altos:</strong> ' + (ctx.risks?.high||0) + '<br>' +
+        '<strong>Reclamações abertas:</strong> ' + (ctx.grievances?.open||0) + '<br>' +
+        '<strong>Evidências expiradas:</strong> ' + (ctx.evidence?.expired||0) + '<br>' +
+        '<small style="color:var(--muted);display:block;margin-top:6px">' +
+        (ctx._source === 'supabase' ? 'Fonte: Supabase' : 'Fonte: dados locais') +
+        ' · ' + total + ' registos</small>';
+    }
+    return ctx;
+  } catch(err) {
+    console.error('[SGAS AI] Context error:', err);
+    try { return ai_buildLocalContext(); } catch(e) {}
+    return { error: 'Não foi possível carregar o contexto' };
+  }
+}
+
+function ai_buildLocalContext() {
+  const _esap  = typeof esapData      !== 'undefined' ? esapData      : [];
+  const _risk  = typeof riskData      !== 'undefined' ? riskData      : [];
+  const _comp  = typeof complaints    !== 'undefined' ? complaints    : [];
+  const _impl  = typeof implementationEvidence !== 'undefined' ? implementationEvidence : [];
+  const _ctr   = typeof contractors   !== 'undefined' ? contractors   : [];
+  const _rep   = typeof ifcReports    !== 'undefined' ? ifcReports    : [];
+  const _legal = typeof legalRegister !== 'undefined' ? legalRegister : [];
+  const _stkh  = typeof stakeholders  !== 'undefined' ? stakeholders  : [];
+  const _cat   = typeof projectCategory !== 'undefined' ? projectCategory : 'B';
+
+  return {
+    project: {
+      name: 'Hospital Provincial do Bailundo',
+      reference: 'IDA-P171880',
+      country: 'Angola',
+      region: 'Huambo',
+      category: _cat,
+      sector: 'Construção hospitalar / infraestrutura de saúde',
+      financier: 'Banco Mundial / IDA'
+    },
+    compliance: {
+      score: 'Em avaliação',
+      note: 'Conformidade PS1–PS8 deduzida de ESAP e registo de riscos (dados locais)'
+    },
+    esap: {
+      total: _esap.length,
+      overdue: _esap.filter(r => r.status === 'Em atraso').length,
+      open: _esap.filter(r => r.status !== 'Concluída').length,
+      completed: _esap.filter(r => r.status === 'Concluída').length,
+      criticalItems: _esap.filter(r => r.prio === 'Crítica').map(r =>
+        ({ id: r.id, ps: r.ps, description: r.desc, status: r.status, deadline: r.prazo, owner: r.resp }))
+    },
+    risks: {
+      total: _risk.length,
+      high: _risk.filter(r => r.sev * r.prob >= 12).length,
+      active: _risk.filter(r => r.status === 'Activo').length,
+      items: _risk.map(r =>
+        ({ id: r.id, type: r.type, activity: r.act, impact: r.imp,
+           score: r.sev * r.prob, status: r.status, control: r.ctrl }))
+    },
+    grievances: {
+      total: _comp.length,
+      open: _comp.filter(r => r.status !== 'Resolvida').length,
+      resolved: _comp.filter(r => r.status === 'Resolvida').length
+    },
+    evidence: {
+      total: _impl.length,
+      expired: 0,
+      valid: _impl.filter(r => r.status === 'Validada').length
+    },
+    contractors: {
+      total: _ctr.length,
+      nonCompliant: _ctr.filter(c => c.status === 'Não conforme').length,
+      pendingAction: _ctr.filter(c => c.status === 'Acção pendente').length
+    },
+    reports: {
+      total: _rep.length,
+      pending: _rep.filter(r => r.status === 'Pendente').length,
+      submitted: _rep.filter(r => r.status === 'Submetido').length
+    },
+    legal: {
+      total: _legal.length,
+      expiringSoon: _legal.filter(r => r.status === 'A vencer').length,
+      nonCompliant: _legal.filter(r => r.status !== 'Conforme').length
+    },
+    stakeholders: { total: _stkh.length },
+    _source: 'local'
+  };
+}
+
+// ── PASSO 5 · Funções de UI ───────────────────────────────────────────────
+function ai_formatMessage(text) {
+  if (!text) return '<p></p>';
+  return '<p>' + text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code style="background:var(--border);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>') + '</p>';
+}
+
+function ai_appendMessage(role, text, id) {
+  const container = document.getElementById('ai-messages');
+  if (!container) return;
+  const bubble = document.createElement('div');
+  if (id) bubble.id = id;
+  const isUser = role === 'user';
+  bubble.style.cssText = [
+    'max-width:80%',
+    'padding:10px 14px',
+    'border-radius:12px',
+    'font-size:13px',
+    'line-height:1.55',
+    'word-break:break-word',
+    isUser
+      ? 'align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:3px'
+      : 'align-self:flex-start;background:var(--border);color:var(--text);border-bottom-left-radius:3px'
+  ].join(';');
+  bubble.innerHTML = ai_formatMessage(text);
+  container.appendChild(bubble);
+  container.scrollTop = container.scrollHeight;
+}
+
+function ai_updateBubble(id, text) {
+  const bubble = document.getElementById(id);
+  if (bubble) {
+    bubble.innerHTML = ai_formatMessage(text);
+    const c = document.getElementById('ai-messages');
+    if (c) c.scrollTop = c.scrollHeight;
+  }
+}
+
+function ai_clearInput() {
+  const inp = document.getElementById('ai-input');
+  if (inp) inp.value = '';
+}
+
+function ai_setLoading(loading) {
+  const btn = document.getElementById('ai-send');
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.textContent = loading ? '…' : (btn.dataset.label || 'Enviar');
+}
+
+function ai_renderMessages() {
+  const container = document.getElementById('ai-messages');
+  if (!container) return;
+  container.innerHTML = '';
+  window.AI_CONVERSATION.forEach(function(msg) {
+    ai_appendMessage(msg.role, msg.content);
+  });
+}
+
+// ── PASSO 4 · Enviar mensagem com streaming ──────────────────────────────
+async function ai_sendMessage(userText) {
+  if (!userText || !userText.trim()) return;
+  const text = userText.trim();
+
+  window.AI_CONVERSATION.push({ role: 'user', content: text });
+  ai_saveHistory();
+  ai_appendMessage('user', text);
+  ai_clearInput();
+  ai_setLoading(true);
+
+  const bubbleId = 'ai-bubble-' + Date.now();
+  ai_appendMessage('assistant', '…', bubbleId);
+
+  try {
+    const { data: { session } } = await getSupaClient().auth.getSession();
+    const token = session?.access_token || '';
+
+    const projectContext = await ai_buildProjectContext();
+
+    const res = await fetch(AI_EDGE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        messages: window.AI_CONVERSATION.slice(-20),
+        projectContext
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Erro ' + res.status);
+    }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText  = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(data);
+          // Anthropic streaming event: content_block_delta
+          const delta = parsed.delta?.text || parsed.choices?.[0]?.delta?.content || '';
+          if (delta) {
+            fullText += delta;
+            ai_updateBubble(bubbleId, fullText);
+          }
+        } catch(e) {}
+      }
+    }
+
+    if (fullText) {
+      window.AI_CONVERSATION.push({ role: 'assistant', content: fullText });
+      ai_saveHistory();
+    }
+
+  } catch(err) {
+    console.error('[SGAS AI] Send error:', err);
+    ai_updateBubble(bubbleId,
+      'Erro ao contactar o assistente: ' + err.message + '. Verifique a ligação e tente novamente.');
+  } finally {
+    ai_setLoading(false);
+  }
+}
+
+// ── PASSO 7 · Quick prompt pills ─────────────────────────────────────────
+function ai_renderQuickPrompts() {
+  const container = document.getElementById('ai-quick-prompts');
+  if (!container || container.childElementCount > 0) return;
+  const prompts = [
+    'Qual é o estado de conformidade do projecto com PS1–PS8?',
+    'Que acções ESAP estão em atraso?',
+    'Que evidências estão em falta para PS3?',
+    'Resume os riscos de alta prioridade do projecto'
+  ];
+  prompts.forEach(function(p) {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'font-size:11px;padding:4px 10px;white-space:nowrap';
+    btn.textContent = p.length > 48 ? p.slice(0, 45) + '…' : p;
+    btn.title = p;
+    btn.onclick = function() {
+      const inp = document.getElementById('ai-input');
+      if (inp) { inp.value = p; inp.focus(); }
+    };
+    container.appendChild(btn);
+  });
+}
+
+// ── PASSO 9 · Digest diário (sem chamar API) ────────────────────────────
+async function ai_generateDailyDigest() {
+  try {
+    const ctx = await ai_buildProjectContext();
+    const insights = [];
+    if (ctx.esap?.overdue > 0)
+      insights.push(ctx.esap.overdue + ' acção(ões) ESAP em atraso requerem atenção imediata.');
+    if (ctx.risks?.high > 0)
+      insights.push(ctx.risks.high + ' risco(s) de alta prioridade precisam de mitigação.');
+    if (ctx.evidence?.expired > 0)
+      insights.push(ctx.evidence.expired + ' documento(s) de evidência expirado(s) — actualize-os.');
+    if (ctx.grievances?.open > 0)
+      insights.push(ctx.grievances.open + ' reclamação(ões) em aberto no GRM.');
+    if (!insights.length)
+      insights.push('Conformidade em dia — continue a monitorizar regularmente.');
+
+    const banner = document.querySelector('.ai-insight, #ai-insight, .ai-banner, #ai-banner, [data-ai-insight]');
+    if (banner) banner.textContent = insights[0];
+  } catch(err) {
+    console.error('[SGAS AI] Digest error:', err);
+  }
+}
+
+// ── PASSO 6 · Wire send button + Enter key ───────────────────────────────
+(function ai_wireUI() {
+  // Delay wiring until DOM is definitely ready
+  function wire() {
+    const sendBtn = document.getElementById('ai-send');
+    const input   = document.getElementById('ai-input');
+    if (!sendBtn || !input) return; // elements not in DOM yet (not on AI page)
+
+    sendBtn.onclick = function() { ai_sendMessage(input.value); };
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        ai_sendMessage(input.value);
+      }
+    });
+  }
+  // Wire on DOMContentLoaded (or immediately if already loaded)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wire);
+  } else {
+    wire();
+  }
+})();
+
+// ── PASSO 8 · Init após login ─────────────────────────────────────────────
+(function ai_hookAuth() {
+  var _origAuth = window.onAuthSuccess;
+  if (typeof _origAuth !== 'function') return;
+
+  window.onAuthSuccess = async function(session) {
+    await _origAuth.call(this, session);
+
+    ai_loadHistory();
+    ai_renderMessages();
+    ai_renderQuickPrompts();
+
+    if (window.AI_CONVERSATION.length === 0) {
+      ai_appendMessage('assistant',
+        'Olá! Sou o assistente de IA do SGAS.pro. ' +
+        'Posso ajudá-lo com conformidade IFC/PS, acções ESAP, registos de risco ' +
+        'e preparação para missões de supervisão. Como posso ajudar hoje?');
+    }
+
+    // Small delay to let ACTIVE_PROJECT_ID be set by profile load
+    setTimeout(() => ai_buildProjectContext(), 800);
+    ai_generateDailyDigest();
+  };
+})();
+
+// ── Hook nav() to refresh context when entering AI page ──────────────────
+(function ai_hookNav() {
+  var _origNav = window.nav;
+  if (typeof _origNav !== 'function') {
+    // nav defined later — patch after DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof nav === 'function') {
+        var _n = nav;
+        window.nav = function(id, el) {
+          _n.call(this, id, el);
+          if (id === 'ia') setTimeout(ai_buildProjectContext, 200);
+        };
+      }
+    });
+    return;
+  }
+  window.nav = function(id, el) {
+    _origNav.call(this, id, el);
+    if (id === 'ia') setTimeout(ai_buildProjectContext, 200);
+  };
+})();
+</script>
+
+<!-- ══ ONBOARDING PRIMEIRO ACESSO — Agente 2 ════════════════════════════ -->
+<style>
+.sgas-onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(13, 46, 30, 0.42);
+  backdrop-filter: blur(2px);
+}
+.sgas-onboarding-overlay.is-open { display: flex; }
+.sgas-onboarding-modal {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(244, 236, 216, 0.9);
+  background: #FFFFFF;
+  box-shadow: 0 22px 70px rgba(13, 46, 30, 0.28);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #0D2E1E;
+}
+.sgas-onboarding-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #E5E7EB;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: #374151;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+.sgas-onboarding-close:hover { background: #F4ECD8; border-color: #D8CBAE; transform: translateY(-1px); }
+.sgas-onboarding-close:focus-visible,
+.sgas-onboarding-nav button:focus-visible,
+.sgas-onboarding-primary:focus-visible {
+  outline: 3px solid rgba(29, 158, 117, 0.34);
+  outline-offset: 2px;
+}
+.sgas-onboarding-head {
+  padding: 34px 34px 0;
+  text-align: center;
+}
+.sgas-onboarding-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #F4ECD8;
+  color: #0D2E1E;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sgas-onboarding-head h2 {
+  margin: 0;
+  color: #0D2E1E;
+  font-size: 28px;
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.sgas-onboarding-head p {
+  margin: 8px 0 0;
+  color: #4B5563;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.sgas-onboarding-body {
+  position: relative;
+  min-height: 248px;
+  padding: 28px 34px 10px;
+}
+.sgas-onboarding-slide {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 300ms ease, transform 300ms ease;
+  text-align: center;
+}
+.sgas-onboarding-slide.is-active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+.sgas-onboarding-icon {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 18px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #F4ECD8, #E1F5EE);
+  border: 1px solid #D7EFE6;
+  color: #0D2E1E;
+  font-size: 40px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.sgas-onboarding-slide h3 {
+  margin: 0 0 8px;
+  color: #0D2E1E;
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+.sgas-onboarding-slide p {
+  max-width: 440px;
+  margin: 0 auto;
+  color: #4B5563;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sgas-onboarding-footer {
+  padding: 8px 34px 30px;
+}
+.sgas-onboarding-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.sgas-onboarding-dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sgas-onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #D1D5DB;
+  transition: width 180ms ease, background 180ms ease;
+}
+.sgas-onboarding-dot.is-active {
+  width: 24px;
+  background: #1D9E75;
+}
+.sgas-onboarding-count {
+  color: #6B7280;
+  font-size: 12px;
+  font-weight: 700;
+}
+.sgas-onboarding-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sgas-onboarding-secondary,
+.sgas-onboarding-primary {
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 750;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 150ms ease, background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+.sgas-onboarding-secondary {
+  background: #FFFFFF;
+  border-color: #E5E7EB;
+  color: #374151;
+}
+.sgas-onboarding-secondary:hover { background: #F9FAFB; border-color: #D1D5DB; }
+.sgas-onboarding-primary {
+  background: #1D9E75;
+  border-color: #1D9E75;
+  color: #FFFFFF;
+  box-shadow: 0 10px 18px rgba(29, 158, 117, 0.2);
+}
+.sgas-onboarding-primary:hover { background: #0F6E56; border-color: #0F6E56; transform: translateY(-1px); }
+.sgas-onboarding-primary:active,
+.sgas-onboarding-secondary:active { transform: translateY(0); }
+.sgas-onboarding-note {
+  min-height: 18px;
+  margin-top: 12px;
+  color: #6B7280;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.sgas-onboarding-note.is-visible { opacity: 1; }
+@media (max-width: 600px) {
+  .sgas-onboarding-overlay { padding: 14px; align-items: flex-end; }
+  .sgas-onboarding-modal { border-radius: 16px; max-height: calc(100vh - 28px); }
+  .sgas-onboarding-head { padding: 28px 22px 0; }
+  .sgas-onboarding-head h2 { font-size: 24px; }
+  .sgas-onboarding-head p { font-size: 14px; }
+  .sgas-onboarding-body { min-height: 230px; padding: 24px 22px 8px; }
+  .sgas-onboarding-icon { width: 78px; height: 78px; border-radius: 20px; font-size: 34px; }
+  .sgas-onboarding-slide h3 { font-size: 19px; }
+  .sgas-onboarding-footer { padding: 8px 22px 24px; }
+  .sgas-onboarding-nav { align-items: stretch; }
+  .sgas-onboarding-secondary,
+  .sgas-onboarding-primary { flex: 1; padding: 0 12px; }
+}
+</style>
+
+<div id="sgas-onboarding-overlay" class="sgas-onboarding-overlay" aria-hidden="true">
+  <section class="sgas-onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="sgas-onboarding-title" aria-describedby="sgas-onboarding-subtitle">
+    <button type="button" id="sgas-onboarding-close" class="sgas-onboarding-close" aria-label="Fechar onboarding">×</button>
+
+    <div class="sgas-onboarding-head">
+      <div class="sgas-onboarding-eyebrow">Trial SGAS Pro</div>
+      <h2 id="sgas-onboarding-title">Bem-vindo ao SGAS Pro</h2>
+      <p id="sgas-onboarding-subtitle">Vamos em 3 passos rápidos</p>
+    </div>
+
+    <div class="sgas-onboarding-body">
+      <article class="sgas-onboarding-slide is-active" data-step="0">
+        <div class="sgas-onboarding-icon" aria-hidden="true">📁</div>
+        <h3>Cria o teu projeto</h3>
+        <p>Começa por nomear o teu projeto e a localização. Podes editar tudo depois.</p>
+      </article>
+
+      <article class="sgas-onboarding-slide" data-step="1">
+        <div class="sgas-onboarding-icon" aria-hidden="true">📊</div>
+        <h3>Preenche os Padrões IFC</h3>
+        <p>Avalia o teu projeto contra os 8 Padrões IFC. A app calcula o score automaticamente.</p>
+      </article>
+
+      <article class="sgas-onboarding-slide" data-step="2">
+        <div class="sgas-onboarding-icon" aria-hidden="true">PDF</div>
+        <h3>Exporta e partilha</h3>
+        <p>Gera o teu relatório em PDF e partilha com os stakeholders. Tudo fica guardado na app.</p>
+      </article>
+    </div>
+
+    <div class="sgas-onboarding-footer">
+      <div class="sgas-onboarding-progress" aria-hidden="true">
+        <div class="sgas-onboarding-dots">
+          <span class="sgas-onboarding-dot is-active"></span>
+          <span class="sgas-onboarding-dot"></span>
+          <span class="sgas-onboarding-dot"></span>
+        </div>
+        <span id="sgas-onboarding-count" class="sgas-onboarding-count">1/3</span>
+      </div>
+      <div class="sgas-onboarding-nav">
+        <button type="button" id="sgas-onboarding-prev" class="sgas-onboarding-secondary">Anterior</button>
+        <button type="button" id="sgas-onboarding-next" class="sgas-onboarding-primary">Seguinte</button>
+      </div>
+      <div id="sgas-onboarding-note" class="sgas-onboarding-note" aria-live="polite"></div>
+    </div>
+  </section>
+</div>
+
+<script src="/onboarding.js"></script>
+<script src="/trial.js"></script>
+
+<!-- ── Create Project Modal ─────────────────────────────────────────────── -->
+<div id="create-project-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:32px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <h3 style="margin:0 0 20px;font-size:17px;font-weight:600;color:#111827;">Novo Projecto</h3>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:4px;">Nome do projecto *</label>
+        <input id="cpf-name" type="text" placeholder="Ex: Kibala 330 kV" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:4px;">País *</label>
+        <input id="cpf-country" type="text" placeholder="Ex: Angola" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:4px;">Código IDA / Projecto BM</label>
+        <input id="cpf-ida" type="text" placeholder="Ex: P180456" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:4px;">Categoria ambiental</label>
+        <select id="cpf-category" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;outline:none;background:#fff;">
+          <option value="FI-1">FI-1 (Alto risco)</option>
+          <option value="FI-2">FI-2 (Médio risco)</option>
+          <option value="FI-3">FI-3 (Baixo risco)</option>
+          <option value="A">Categoria A</option>
+          <option value="B">Categoria B</option>
+          <option value="C">Categoria C</option>
+        </select>
+      </div>
+      <p id="cpf-err" style="margin:0;font-size:12px;color:#EF4444;min-height:16px;"></p>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:24px;justify-content:flex-end;">
+      <button onclick="closeCreateProjectModal()" style="padding:9px 18px;border:1px solid #D1D5DB;background:#fff;border-radius:7px;font-size:13px;cursor:pointer;color:#374151;">Cancelar</button>
+      <button id="cpf-submit" onclick="submitCreateProject()" style="padding:9px 18px;background:#1D9E75;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;">Criar projecto</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
