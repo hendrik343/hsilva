@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SGAS Pro — Plataforma de Conformidade IFC / Banco Mundial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="/config.js"></script>
@@ -12,9 +15,9 @@
 :root {
   --bg: #F4F6F5;
   --surface: #FFFFFF;
-  --sidebar-bg: #0D2E1E;
-  --sidebar-text: rgba(255,255,255,0.65);
-  --sidebar-active: rgba(255,255,255,0.1);
+  --sidebar-bg: #0B2818;
+  --sidebar-text: rgba(255,255,255,0.6);
+  --sidebar-active: rgba(255,255,255,0.08);
   --sidebar-active-text: #FFFFFF;
   --accent: #1D9E75;
   --accent-dark: #0F6E56;
@@ -23,6 +26,7 @@
   --text-2: #6B7280;
   --text-3: #9CA3AF;
   --border: #E5E7EB;
+  --border-light: #F3F4F6;
   --danger: #DC2626;
   --danger-bg: #FEF2F2;
   --warning: #D97706;
@@ -33,31 +37,34 @@
   --success-bg: #ECFDF5;
   --radius: 8px;
   --radius-lg: 12px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.05);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; height: 100vh; overflow: hidden; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
 /* SIDEBAR */
-.sidebar { width: 240px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
-.sidebar-logo { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.sidebar { width: 240px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; border-right: 1px solid rgba(255,255,255,0.04); }
+.sidebar-logo { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.07); }
 .sidebar-logo-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.logo-mark { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; }
-.logo-name { font-size: 15px; font-weight: 600; color: #fff; }
-.logo-tagline { font-size: 10px; color: var(--sidebar-text); }
-.project-pill { background: rgba(29,158,117,0.2); border: 1px solid rgba(29,158,117,0.35); border-radius: 6px; padding: 8px 10px; }
-.project-pill-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 600; margin-bottom: 3px; }
+.logo-mark { width: 32px; height: 32px; background: linear-gradient(135deg, #22B585 0%, #1D9E75 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(29,158,117,0.35); }
+.logo-name { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.01em; }
+.logo-tagline { font-size: 10px; color: var(--sidebar-text); letter-spacing: 0.01em; }
+.project-pill { background: rgba(29,158,117,0.15); border: 1px solid rgba(29,158,117,0.28); border-radius: 8px; padding: 8px 10px; }
+.project-pill-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 600; margin-bottom: 3px; }
 .project-pill-name { font-size: 11px; color: #fff; font-weight: 500; line-height: 1.4; }
 .project-pill-loan { font-size: 10px; color: var(--sidebar-text); margin-top: 2px; }
-.sidebar-section { padding: 14px 12px 4px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.3); font-weight: 600; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; margin: 1px 8px; border-radius: var(--radius); cursor: pointer; color: var(--sidebar-text); font-size: 13px; transition: all 0.15s; position: relative; }
-.nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
-.nav-item.active { background: var(--sidebar-active); color: var(--sidebar-active-text); font-weight: 500; }
-.nav-item .nav-icon { font-size: 16px; width: 18px; flex-shrink: 0; }
-.nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 100px; font-weight: 600; }
+.sidebar-section { padding: 16px 12px 5px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.25); font-weight: 600; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; margin: 1px 6px; border-radius: var(--radius); cursor: pointer; color: var(--sidebar-text); font-size: 13px; transition: all 0.12s ease; position: relative; border-left: 2px solid transparent; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
+.nav-item.active { background: rgba(29,158,117,0.15); color: #fff; font-weight: 500; border-left: 2px solid var(--accent); padding-left: 10px; }
+.nav-item .nav-icon { font-size: 15px; width: 18px; flex-shrink: 0; opacity: 0.85; }
+.nav-item.active .nav-icon { opacity: 1; }
+.nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 100px; font-weight: 600; letter-spacing: 0.01em; }
 .nav-badge.warn { background: var(--warning); }
 .nav-badge.ok { background: var(--accent); }
-.sidebar-bottom { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,0.08); }
+.sidebar-bottom { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,0.07); }
 .audit-countdown { background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.3); border-radius: var(--radius); padding: 10px 12px; }
 .audit-countdown-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(220,38,38,0.8); font-weight: 600; margin-bottom: 3px; }
 .audit-countdown-days { font-size: 22px; font-weight: 700; color: #fff; line-height: 1; }
@@ -65,29 +72,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* MAIN */
 .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: sticky; top: 0; z-index: 10; }
-.topbar-left h1 { font-size: 16px; font-weight: 600; color: var(--text); }
-.topbar-left p { font-size: 12px; color: var(--text-2); margin-top: 1px; }
+.topbar { background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.topbar-left h1 { font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+.topbar-left p { font-size: 12px; color: var(--text-2); margin-top: 2px; }
 .topbar-right { display: flex; align-items: center; gap: 10px; }
-.audit-score-pill { display: flex; align-items: center; gap: 8px; background: var(--success-bg); border: 1px solid #A7F3D0; border-radius: 100px; padding: 6px 14px; }
+.audit-score-pill { display: flex; align-items: center; gap: 8px; background: var(--success-bg); border: 1px solid #A7F3D0; border-radius: 100px; padding: 6px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .audit-score-pill.warn { background: var(--warning-bg); border-color: #FCD34D; }
 .audit-score-pill.danger { background: var(--danger-bg); border-color: #FCA5A5; }
 .audit-score-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
 .audit-score-dot.warn { background: var(--warning); }
 .audit-score-dot.danger { background: var(--danger); }
 .audit-score-text { font-size: 13px; font-weight: 600; color: var(--text); }
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; transition: all 0.15s; }
-.btn:hover { background: var(--bg); border-color: #D1D5DB; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { background: var(--accent-dark); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; transition: all 0.15s ease; letter-spacing: -0.01em; }
+.btn:hover { background: #F9FAFB; border-color: #D1D5DB; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: linear-gradient(180deg, #22B585 0%, #1A9068 100%); border-color: #1A9068; color: #fff; box-shadow: 0 1px 4px rgba(29,158,117,0.3); }
+.btn.primary:hover { background: linear-gradient(180deg, #1FAF7D 0%, #157B59 100%); box-shadow: 0 2px 8px rgba(29,158,117,0.35); }
 .btn.danger { background: var(--danger-bg); border-color: #FCA5A5; color: var(--danger); }
 .page-content { padding: 24px; flex: 1; display: none; }
 .page-content.active { display: block; }
 
 /* CARDS */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
-.card-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.card-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); transition: box-shadow 0.2s ease; }
+.card:hover { box-shadow: var(--shadow-md); }
+.card-header { padding: 16px 20px 13px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
 .card-title .icon { font-size: 16px; }
 .card-body { padding: 20px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -95,19 +104,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 
 /* METRIC CARDS */
-.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); }
-.metric-label { font-size: 11px; color: var(--text-2); font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-.metric-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); transition: box-shadow 0.2s ease, transform 0.15s ease; }
+.metric-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.metric-label { font-size: 11px; color: var(--text-2); font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.metric-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; letter-spacing: -0.03em; }
 .metric-value.green { color: var(--success); }
 .metric-value.red { color: var(--danger); }
 .metric-value.amber { color: var(--warning); }
-.metric-sub { font-size: 11px; color: var(--text-3); margin-top: 5px; }
-.metric-trend { font-size: 11px; margin-top: 4px; }
+.metric-sub { font-size: 11px; color: var(--text-3); margin-top: 6px; }
+.metric-trend { font-size: 11px; margin-top: 5px; font-weight: 500; }
 .metric-trend.up { color: var(--success); }
 .metric-trend.down { color: var(--danger); }
 
 /* TAGS / BADGES */
-.badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+.badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; letter-spacing: 0.01em; }
 .badge.green { background: var(--success-bg); color: var(--success); }
 .badge.red { background: var(--danger-bg); color: var(--danger); }
 .badge.amber { background: var(--warning-bg); color: var(--warning); }
@@ -116,17 +126,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .badge.purple { background: #F5F3FF; color: #7C3AED; }
 
 /* PROGRESS BAR */
-.prog-wrap { margin-bottom: 10px; }
-.prog-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.prog-wrap { margin-bottom: 12px; }
+.prog-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .prog-label-text { font-size: 12px; color: var(--text-2); }
 .prog-val { font-size: 12px; font-weight: 600; color: var(--text); }
-.prog-track { height: 8px; background: #F3F4F6; border-radius: 4px; overflow: hidden; }
-.prog-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.prog-track { height: 6px; background: #F0F1F3; border-radius: 4px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
 
 /* TABLES */
 .data-table { width: 100%; border-collapse: collapse; }
-.data-table th { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 16px; border-bottom: 1px solid var(--border); text-align: left; background: #FAFAFA; }
-.data-table td { padding: 11px 16px; border-bottom: 1px solid #F3F4F6; font-size: 13px; color: var(--text); vertical-align: middle; }
+.data-table th { font-size: 10.5px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 16px; border-bottom: 1px solid var(--border); text-align: left; background: #F9FAFB; }
+.data-table td { padding: 11px 16px; border-bottom: 1px solid #F3F4F6; font-size: 13px; color: var(--text); vertical-align: middle; transition: background 0.1s; }
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tr:hover td { background: #FAFAFA; }
 .data-table .actions { display: flex; gap: 6px; }
@@ -135,14 +145,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .icon-btn.del:hover { background: var(--danger-bg); border-color: #FCA5A5; color: var(--danger); }
 
 /* MODAL */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 .modal-overlay.open { display: flex; }
-.modal { background: var(--surface); border-radius: var(--radius-lg); padding: 24px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-.modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 18px; color: var(--text); }
+.modal { background: var(--surface); border-radius: 16px; padding: 26px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.06); }
+.modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 18px; color: var(--text); letter-spacing: -0.01em; }
 .form-group { margin-bottom: 14px; }
 .form-label { font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 5px; display: block; }
-.form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); font-family: inherit; background: var(--surface); }
-.form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
+.form-input { width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); font-family: inherit; background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
+.form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
 .form-select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); font-family: inherit; background: var(--surface); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
@@ -217,9 +227,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* TABS */
 .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-.tab { padding: 10px 18px; font-size: 13px; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: all 0.15s; }
+.tab { padding: 10px 18px; font-size: 13px; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: all 0.15s ease; letter-spacing: -0.005em; }
 .tab:hover { color: var(--text); }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
 /* EMPTY STATE */
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; color: var(--text-3); gap: 8px; }
@@ -227,7 +237,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .empty p { font-size: 13px; }
 
 /* IFC LOAN CARD */
-.loan-card { background: linear-gradient(135deg, #0D2E1E 0%, #0F4C35 100%); border-radius: var(--radius-lg); padding: 20px; color: #fff; }
+.loan-card { background: linear-gradient(135deg, #0B2818 0%, #0F4C35 100%); border-radius: var(--radius-lg); padding: 20px; color: #fff; box-shadow: 0 4px 16px rgba(11,40,24,0.25); }
 .loan-card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); font-weight: 600; margin-bottom: 4px; }
 .loan-card-value { font-size: 15px; font-weight: 600; color: #fff; }
 .loan-card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); }
@@ -236,13 +246,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 canvas { max-width: 100%; }
 
 /* SCROLLBAR */
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
 
 /* SECTION HEADER */
-.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.section-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.section-title { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
 .section-sub { font-size: 13px; color: var(--text-2); margin-top: 3px; }
 
 /* ALERT BANNER */
@@ -297,6 +308,10 @@ canvas { max-width: 100%; }
   .evidence-grid, .evidence-grid.compact, .doc-version-grid { grid-template-columns:1fr; }
   .qa-question-top { flex-wrap: wrap; }
   .qa-score-dots { margin-left: 34px; }
+}
+@media (max-width: 820px) {
+  #auth-video-panel { display: none !important; }
+  #auth-overlay > div:last-of-type { width: 100% !important; padding: 32px 24px !important; }
 }
 
 /* ===================== IFC TOOLKIT MODULE STYLES ===================== */
@@ -504,20 +519,21 @@ canvas { max-width: 100%; }
 
 /* ── AUTH MODAL — Phase 2 ── */
 .auth-input {
-  width:100%; padding:10px 12px; border:1px solid #E5E7EB;
+  width:100%; padding:10px 13px; border:1px solid #E5E7EB;
   border-radius:8px; font-size:14px; margin-bottom:12px;
-  font-family:inherit; outline:none; transition:border 0.15s;
+  font-family:inherit; outline:none; transition:border 0.15s, box-shadow 0.15s;
   box-sizing:border-box; color:#111827; background:#fff;
 }
-.auth-input:focus { border-color:#1D9E75; }
+.auth-input:focus { border-color:#1D9E75; box-shadow:0 0 0 3px rgba(29,158,117,0.12); }
 .auth-btn-primary {
-  width:100%; padding:11px; background:#1D9E75; color:#fff;
+  width:100%; padding:11px; background:linear-gradient(180deg,#22B585 0%,#1A9068 100%); color:#fff;
   border:none; border-radius:8px; font-size:14px; font-weight:600;
-  cursor:pointer; font-family:inherit; transition:background 0.15s;
+  cursor:pointer; font-family:inherit; transition:all 0.15s;
   margin-bottom:12px; box-sizing:border-box;
+  box-shadow:0 1px 4px rgba(29,158,117,0.3);
 }
-.auth-btn-primary:hover { background:#0F6E56; }
-.auth-btn-primary:disabled { background:#9CA3AF; cursor:not-allowed; }
+.auth-btn-primary:hover { background:linear-gradient(180deg,#1FAF7D 0%,#157B59 100%); box-shadow:0 2px 8px rgba(29,158,117,0.35); }
+.auth-btn-primary:disabled { background:#9CA3AF; cursor:not-allowed; box-shadow:none; }
 .auth-btn-social {
   width:100%; padding:10px; background:#fff; color:#374151;
   border:1px solid #E5E7EB; border-radius:8px; font-size:13px;
@@ -556,15 +572,32 @@ canvas { max-width: 100%; }
 <body>
 
 <!-- ── AUTH OVERLAY — Phase 2 ── -->
-<div id="auth-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(13,46,30,0.97);display:flex;align-items:center;justify-content:center;">
-  <div style="width:400px;max-width:calc(100vw - 32px);background:#fff;border-radius:12px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;">
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <div style="width:40px;height:40px;background:#1D9E75;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0;">S</div>
-        <span style="font-size:18px;font-weight:700;color:#111827;">SGAS.pro</span>
+<div id="auth-overlay" style="position:fixed;inset:0;z-index:9999;display:flex;background:#0B2818;">
+  <!-- Video left panel -->
+  <div id="auth-video-panel" style="flex:1;position:relative;overflow:hidden;min-width:0;">
+    <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4" type="video/mp4">
+    </video>
+    <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(8,22,14,0.72) 0%,rgba(15,78,53,0.4) 60%,rgba(29,158,117,0.15) 100%);"></div>
+    <div style="position:absolute;bottom:52px;left:52px;right:52px;color:#fff;">
+      <div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:24px;">
+        <div style="width:34px;height:34px;background:linear-gradient(135deg,#22B585 0%,#1D9E75 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 2px 10px rgba(29,158,117,0.4);">S</div>
+        <span style="font-size:15px;font-weight:600;letter-spacing:-0.01em;opacity:0.92;">SGAS Pro</span>
       </div>
-      <p style="color:#6B7280;font-size:13px;margin:0;">Plataforma de Conformidade IFC / Banco Mundial</p>
+      <div style="font-size:32px;font-weight:700;line-height:1.28;letter-spacing:-0.03em;margin-bottom:14px;">Conformidade ambiental e social em tempo real</div>
+      <div style="font-size:13px;opacity:0.55;line-height:1.6;letter-spacing:0.01em;">Padrões IFC · PS1–PS8 · Banco Mundial</div>
+    </div>
+  </div>
+  <!-- Form right panel -->
+  <div style="width:480px;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:40px 40px;">
+  <div style="width:100%;max-width:380px;">
+    <!-- Header -->
+    <div style="margin-bottom:28px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#22B585 0%,#1D9E75 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(29,158,117,0.3);">S</div>
+        <span style="font-size:17px;font-weight:700;color:#111827;letter-spacing:-0.02em;">SGAS.pro</span>
+      </div>
+      <p style="color:#6B7280;font-size:13px;margin:0;line-height:1.5;">Plataforma de Conformidade IFC / Banco Mundial</p>
     </div>
     <!-- Tab bar -->
     <div style="display:flex;border-bottom:1px solid #E5E7EB;margin-bottom:20px;">
@@ -622,6 +655,8 @@ canvas { max-width: 100%; }
       <a id="link-back-login" href="#" style="display:block;margin-top:12px;font-size:13px;color:#1D9E75;">← Voltar ao login</a>
     </div>
   </div>
+  </div>
+  </div>
 </div>
 
 <!-- SIDEBAR -->
@@ -646,9 +681,8 @@ canvas { max-width: 100%; }
   <div class="nav-item active" onclick="nav('dashboard',this)">
     <span class="nav-icon">📊</span>Dashboard
   </div>
-  <div class="nav-item" onclick="nav('comercial',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('comercial',this)">
     <span class="nav-icon">💼</span>Inteligência Comercial
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Conformidade SGAS</div>
@@ -662,27 +696,22 @@ canvas { max-width: 100%; }
     <span class="nav-icon">✅</span>Plano ESAP
     <span class="nav-badge warn" id="badge-esap">3</span>
   </div>
-  <div class="nav-item" onclick="nav('riscos',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('riscos',this)">
     <span class="nav-icon">⚠️</span>Registo de Riscos
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('mapas-risco',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('mapas-risco',this)">
     <span class="nav-icon">🧭</span>Mapas de Risco
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('terceiros',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('terceiros',this)">
     <span class="nav-icon">🏗</span>Terceiros / Subempreiteiros
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Partes Interessadas</div>
-  <div class="nav-item" onclick="nav('stakeholders',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('stakeholders',this)">
     <span class="nav-icon">👥</span>Partes Interessadas
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('comunidades',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('comunidades',this)">
     <span class="nav-icon">📢</span>Comunicações Comunitárias
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
   <div class="nav-item" onclick="nav('reclamacoes',this)">
     <span class="nav-icon">💬</span>Reclamações
@@ -690,69 +719,54 @@ canvas { max-width: 100%; }
   </div>
 
   <div class="sidebar-section">Evidências</div>
-  <div class="nav-item" onclick="nav('implementacao',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('implementacao',this)">
     <span class="nav-icon">📸</span>Evidência de Implementação
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('documentos',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('documentos',this)">
     <span class="nav-icon">📁</span>Cofre de Documentos
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('monitoring',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('monitoring',this)">
     <span class="nav-icon">📈</span>Monitoramento
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('calendario',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('calendario',this)">
     <span class="nav-icon">🗓</span>Calendário IFC
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('relatorio',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('relatorio',this)">
     <span class="nav-icon">📄</span>Relatórios
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('audit-room',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('audit-room',this)">
     <span class="nav-icon">🏛</span>Sala de Auditoria BM
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Gestão SGAS</div>
-  <div class="nav-item" onclick="nav('revisao',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('revisao',this)">
     <span class="nav-icon">🔄</span>Revisão de Gestão
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('treinamento',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('treinamento',this)">
     <span class="nav-icon">🎓</span>Plano de Formação
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('legal',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('legal',this)">
     <span class="nav-icon">⚖</span>Registo Legal
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Kit de Ferramentas IFC</div>
-  <div class="nav-item" onclick="nav('politicas',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('politicas',this)">
     <span class="nav-icon">📝</span>Políticas SGAS
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('riscos-id',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('riscos-id',this)">
     <span class="nav-icon">🔍</span>Identif. de Riscos
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('causa-raiz',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('causa-raiz',this)">
     <span class="nav-icon">🧩</span>Causa Raiz (5 Porquês)
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('emergencias',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('emergencias',this)">
     <span class="nav-icon">🚨</span>Emergências
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('mapeamento-pi',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('mapeamento-pi',this)">
     <span class="nav-icon">🗺</span>Mapeamento de PI
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
-  <div class="nav-item" onclick="nav('auditoria',this)" style="opacity:0.5;">
+  <div class="nav-item" onclick="nav('auditoria',this)">
     <span class="nav-icon">🔎</span>Auditoria Interna
-    <span style="margin-left:auto;font-size:9px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:rgba(255,255,255,0.6);">em breve</span>
   </div>
 
   <div class="sidebar-section">Assistente IA</div>
@@ -2459,46 +2473,14 @@ async function syncFromSupabase() {
   if (!client || !ACTIVE_PROJECT_ID) return false;
   try {
     const pid = ACTIVE_PROJECT_ID;
-    const [esap, risk, sh, griev, contr, evid, cr, legal, ifc, lend, ps, kpi, src, phys, proc, scores] = await Promise.all([
+    const [esap, griev, scores] = await Promise.all([
       client.from('esap_actions').select('*').eq('project_id', pid),
-      client.from('risk_register').select('*').eq('project_id', pid),
-      client.from('stakeholders').select('*').eq('project_id', pid),
       client.from('grievances').select('*').eq('project_id', pid),
-      client.from('contractors').select('*').eq('project_id', pid),
-      client.from('evidence_items').select('*').eq('project_id', pid),
-      client.from('community_reports').select('*').eq('project_id', pid),
-      client.from('legal_register').select('*').eq('project_id', pid),
-      client.from('ifc_reports').select('*').eq('project_id', pid),
-      client.from('lender_package').select('*').eq('project_id', pid),
-      client.from('ps_checklists').select('*').eq('project_id', pid),
-      client.from('kpi_protocols').select('*').eq('project_id', pid),
-      client.from('source_watchers').select('*').eq('project_id', pid),
-      client.from('physical_risk_hotspots').select('*').eq('project_id', pid),
-      client.from('process_risk_map').select('*').eq('project_id', pid),
       client.from('compliance_scores').select('*').eq('project_id', pid),
     ]);
 
     if (esap.data?.length)   esapData             = esap.data.map(fromDB.esap);
-    if (risk.data?.length)   riskData             = risk.data.map(fromDB.risk);
-    if (sh.data?.length)     stakeholders         = sh.data.map(fromDB.stakeholder);
     if (griev.data?.length)  complaints           = griev.data.map(fromDB.grievance);
-    if (contr.data?.length)  contractors          = contr.data.map(fromDB.contractor);
-    if (evid.data?.length)   implementationEvidence = evid.data.map(fromDB.evidence);
-    if (cr.data?.length)     communityReports     = cr.data.map(fromDB.communityReport);
-    if (legal.data?.length)  legalRegister        = legal.data.map(fromDB.legal);
-    if (ifc.data?.length)    ifcReports           = ifc.data.map(fromDB.ifc);
-    if (lend.data?.length)   lenderPackage        = lend.data.map(fromDB.lender);
-    if (kpi.data?.length)    kpiProtocols         = kpi.data.map(fromDB.kpi);
-    if (src.data?.length)    sourceWatchers       = src.data.map(fromDB.sourceWatcher);
-    if (phys.data?.length)   physicalRiskHotspots = phys.data.map(fromDB.hotspot);
-    if (proc.data?.length)   processRiskMap       = proc.data.map(fromDB.processRisk);
-    if (ps.data?.length) {
-      ps.data.forEach(r => {
-        const i = PS_DATA.findIndex(p => p.id === r.ps_id);
-        if (i >= 0) { PS_DATA[i].score = r.score; if (r.reqs?.length) PS_DATA[i].reqs = r.reqs; }
-        if (r.req_status) psReqStatus[r.ps_id] = r.req_status;
-      });
-    }
 
     // compliance_scores → sgasScores[0..7] (PS1=0 .. PS8=7)
     // DB stores 0-100; UI radar/maturity uses 0-5 → divide by 20
@@ -2509,7 +2491,7 @@ async function syncFromSupabase() {
           sgasScores[psMap[r.ps_code]] = parseFloat((r.score / 20).toFixed(1));
       });
     }
-    saveCache({ esapData, riskData, stakeholders, complaints, contractors, implementationEvidence, communityReports, legalRegister, ifcReports, lenderPackage, kpiProtocols, sourceWatchers, physicalRiskHotspots, processRiskMap });
+    saveCache({ esapData, complaints, riskData, stakeholders, contractors, implementationEvidence, communityReports, legalRegister, ifcReports, lenderPackage, kpiProtocols, sourceWatchers, physicalRiskHotspots, processRiskMap });
     console.log('[SGAS] ✓ Dados sincronizados com Supabase');
     return true;
   } catch(e) {
@@ -3834,12 +3816,12 @@ const PS_DATA = [
     reqs:['Plano de gestão de resíduos sólidos','Controlo de emissões e efluentes','Registo de consumo de água e energia','Gestão de substâncias perigosas','Plano de prevenção de derrames','Monitoramento de qualidade do ar e água'] },
   { id:'PS4', name:'Saúde e Segurança Comunitária', color:'#D97706', score:65,
     reqs:['Avaliação de riscos para a comunidade','Plano de saúde e segurança comunitária','Gestão de segurança em obra (acesso)','Protocolos COVID-19 e doenças infecciosas','Plano de gestão de tráfego','Informação pública sobre riscos da obra'] },
-  { id:'PS5', name:'Aquisição de Terras e Reassentamento', color:'#DC2626', score:90,
-    reqs:['Plano de reassentamento (se aplicável)','Consulta e compensação justa','Registo de afectados documentado','Monitoramento pós-reassentamento'] },
+  { id:'PS5', name:'Aquisição de Terras e Reassentamento', color:'#DC2626', score:65,
+    reqs:['Triagem de aplicabilidade PS5/ESS5 documentada','Declaração de não-aplicabilidade ou Plano de Reassentamento aprovado','Consulta e compensação justa aos afectados (se aplicável)','Registo de afectados e monitoramento pós-reassentamento (se aplicável)'] },
   { id:'PS6', name:'Conservação da Biodiversidade', color:'#059669', score:50,
     reqs:['Avaliação de impacto em biodiversidade','Plano de gestão de biodiversidade','Medidas de compensação de habitat','Monitoramento de espécies sensíveis'] },
-  { id:'PS7', name:'Povos Indígenas / Comunidades Tradicionais', color:'#0891B2', score:55,
-    reqs:['Triagem de aplicabilidade PS7/ESS7','Registo de consulta livre, prévia e informada (FPIC quando aplicável)','Plano de engajamento culturalmente apropriado','Evidência de suporte comunitário amplo','Mecanismo de reclamações acessível'] },
+  { id:'PS7', name:'Povos Indígenas / Comunidades Tradicionais', color:'#0891B2', score:40,
+    reqs:['Triagem de aplicabilidade PS7/ESS7 com justificação documentada','Consulta Livre, Prévia e Informada (CLPI/FPIC) quando aplicável','Plano de envolvimento culturalmente apropriado (se aplicável)','Evidência de Broad Community Support ou FPIC documentado','Mecanismo de reclamações acessível a comunidades tradicionais'] },
   { id:'PS8', name:'Património Cultural', color:'#A16207', score:58,
     reqs:['Triagem de património cultural tangível e intangível','Procedimento de achados fortuitos (chance find)','Consulta a autoridades competentes','Registo de achados e medidas de protecção'] },
 ];
@@ -3862,6 +3844,8 @@ let esapData = [
   { id:'ESAP-010', ps:'PS4', prio:'Alta', desc:'Actualizar e testar Plano de Emergência com simulacro', hierarchy:'Minimizar', resp:'N. Segunda', prazo:'2026-05-15', status:'Em atraso', evid:'Relatório simulacro + fotos' },
   { id:'ESAP-011', ps:'PS6', prio:'Média', desc:'Concluir triagem de biodiversidade e habitats sensíveis', hierarchy:'Evitar', resp:'Eng. Ambiente', prazo:'2026-07-20', status:'Não iniciada', evid:'Screening PS6/ESS6 + mapa' },
   { id:'ESAP-012', ps:'PS8', prio:'Média', desc:'Aprovar procedimento de achados fortuitos em obra', hierarchy:'Minimizar', resp:'Dir. Obra', prazo:'2026-07-25', status:'Não iniciada', evid:'Chance-find procedure + indução' },
+  { id:'ESAP-013', ps:'PS5', prio:'Média', desc:'Triagem PS5 — documentar não-aplicabilidade de reassentamento involuntário', hierarchy:'Evitar', resp:'Dir. Ambiente', prazo:'2026-07-10', status:'Em curso', evid:'Declaração técnica PS5/ESS5 + mapa de afectados', objective:'Confirmar e documentar formalmente que o projecto não envolve aquisição de terras nem deslocamento de pessoas', outcome:'Declaração técnica assinada, arquivada no Cofre de Documentos e disponível para due diligence', kpi:'Triagem concluída e arquivada', procedure:'PROC-PS5-SCREENING', stakeholders:'Comunidades vizinhas, Município, MINAMB' },
+  { id:'ESAP-014', ps:'PS7', prio:'Média', desc:'Triagem PS7 / FPIC — verificar presença de comunidades tradicionais e aplicabilidade de CLPI', hierarchy:'Evitar', resp:'RSC', prazo:'2026-07-10', status:'Em curso', evid:'Triagem PS7/ESS7 + justificação de não aplicabilidade ou plano FPIC', objective:'Determinar se existem comunidades indígenas ou tradicionais na área de influência do projecto', outcome:'Declaração técnica arquivada; FPIC activado se aplicável; Broad Community Support documentado para Categoria A', kpi:'Triagem concluída e arquivada', procedure:'PROC-PS7-FPIC', stakeholders:'Administração Municipal, líderes comunitários, MINAMB' },
 ];
 
 let riskData = [
@@ -3873,6 +3857,8 @@ let riskData = [
   { id:'R-006', type:'HSE', ps:'PS2', act:'Exposição a poeiras (sílica)', imp:'Doenças respiratórias', sev:4, prob:3, hierarchy:'Mitigado', ctrl:'EPI respiratório + humidificação', status:'Activo' },
   { id:'R-007', type:'Ambiental', ps:'PS6', act:'Supressão vegetal / preparação do terreno', imp:'Perda de habitat ou espécies sensíveis', sev:3, prob:2, hierarchy:'Reduzido', ctrl:'Triagem PS6/ESS6 + demarcação', status:'A avaliar' },
   { id:'R-008', type:'Social', ps:'PS8', act:'Escavações e movimentação de solos', imp:'Achado cultural não identificado', sev:3, prob:2, hierarchy:'Mitigado', ctrl:'Chance-find procedure + paragem controlada', status:'A avaliar' },
+  { id:'R-009', type:'Social', ps:'PS5', act:'Construção / preparação do terreno', imp:'Deslocamento involuntário ou restrição de uso de terra não documentada', sev:4, prob:1, hierarchy:'Evitado', ctrl:'Triagem PS5/ESS5 — confirmação de não-aplicabilidade com declaração técnica', status:'A avaliar' },
+  { id:'R-010', type:'Social', ps:'PS7', act:'Actividades na área de influência do projecto', imp:'Impacto sobre comunidades tradicionais sem FPIC documentado', sev:4, prob:1, hierarchy:'Evitado', ctrl:'Triagem PS7/ESS7 — verificação de presença de comunidades tradicionais e activação de FPIC se aplicável', status:'A avaliar' },
 ];
 
 let stakeholders = [
@@ -4011,6 +3997,11 @@ const DOC_SECTIONS = [
     { name:'Plano de Saúde e Segurança Comunitária', req:true, status:'ok', date:'2025-08-15' },
     { name:'Plano de Gestão de Tráfego', req:true, status:'ok', date:'2026-04-01' },
     { name:'Actas de consulta pública (últimas 2)', req:true, status:'missing', date:null },
+  ]},
+  { title:'Documentos PS5 — Reassentamento / Aquisição de Terras', docs:[
+    { name:'Triagem PS5/ESS5 — declaração de não-aplicabilidade ou Plano de Reassentamento', req:true, status:'missing', date:null },
+    { name:'Mapa de área de influência e registo de afectados', req:false, status:'missing', date:null },
+    { name:'Evidência de consulta e compensação justa (se aplicável)', req:false, status:'missing', date:null },
   ]},
   { title:'Documentos PS6 — Biodiversidade', docs:[
     { name:'Triagem de biodiversidade PS6/ESS6', req:true, status:'missing', date:null },
@@ -4152,13 +4143,7 @@ const PAGE_META = {
 function navItemFor(page){
   return Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick')?.includes(`'${page}'`));
 }
-const TRIAL_LOCKED_PAGES = ['comercial','riscos','mapas-risco','terceiros','stakeholders','comunidades','implementacao','documentos','monitoring','calendario','relatorio','audit-room','revisao','treinamento','legal','politicas','riscos-id','causa-raiz','emergencias','mapeamento-pi','auditoria'];
-
 function nav(id, el){
-  if (TRIAL_LOCKED_PAGES.indexOf(id) !== -1) {
-    _showTrialToast('Este módulo fica disponível na versão completa. Contacte geral@hsilva.org para activar.');
-    return;
-  }
   document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');

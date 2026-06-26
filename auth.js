@@ -171,7 +171,7 @@
   window.onAuthSuccess = async function (session) {
     try {
       // 1. Profile (auto-created by DB trigger on auth.users insert)
-      var profileRes = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+      var profileRes = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
       var profile = profileRes.data;
 
       // 2. Org membership (new schema: organization_members → organizations)
