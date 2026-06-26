@@ -696,6 +696,7 @@ var _sb = null;
 function getClient() {
   if (window.SGAS_AUTH && window.SGAS_AUTH.client) return window.SGAS_AUTH.client;
   if (_sb) return _sb;
+  if (!window.supabase || !window.supabase.createClient) return null;
   var cfg = window.SGAS_CONFIG || {};
   if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return null;
   _sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
@@ -973,7 +974,7 @@ function renderRail() {
     else if (ans.val === 'no') counts.miss++;
   });
   var lbl = t('legend');
-  var colors = {ev:getComputedStyle(document.documentElement).getPropertyValue('--teal-bright'),
+  var colors = {ev:'#2BC78F',
                 claim:'rgba(244,236,216,.4)',prog:'#E0A84B',miss:'#D9645A'};
   document.getElementById('legend').innerHTML = Object.keys(counts).map(function(k) {
     return '<div class="row"><span class="l"><span class="pip" style="background:' + colors[k] + '"></span>' +
@@ -1370,7 +1371,8 @@ document.querySelectorAll('.langs button').forEach(function(btn) {
 
 /* ── Boot ────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
-  detectPlan().then(function() { render(); });
+  render(); // render immediately with default plan (trial)
+  detectPlan().then(function() { render(); }).catch(function() { /* already rendered */ });
 });
 </script>
 </body>
