@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/sgas-pro.html" }
+    { "source": "/app", "destination": "/sgas-pro.html" },
+    { "source": "/app/:path*", "destination": "/sgas-pro.html" }
   ],
   "headers": [
     {

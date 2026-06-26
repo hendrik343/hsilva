@@ -1,0 +1,1389 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SGAS Pro prepara empresas para due diligence ambiental e social, auditorias e financiadores IFC/Banco Mundial em 30 dias." />
+    <meta property="og:title" content="SGAS Pro — Conformidade E&S" />
+    <meta property="og:description" content="Organize evidências, ESAP, documentos, reclamações e KPIs para auditorias e financiadores." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@1,8..60,400;1,8..60,600&display=swap" rel="stylesheet" />
+    <title>SGAS Pro — Prontidão E&S para financiadores</title>
+    <style>
+      /* ─── Reset & Base ─────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --radius: 1rem;
+        --paper:  hsl(0 0% 96%);
+        --ink:    hsl(0 0% 8%);
+        --muted:  hsl(0 0% 42%);
+        --line:   hsl(0 0% 88%);
+        --white:  #ffffff;
+      }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        font-family: 'Poppins', system-ui, sans-serif;
+        font-weight: 400;
+        background: var(--paper);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a { color: inherit; text-decoration: none; }
+      img { display: block; max-width: 100%; }
+      h1, h2, h3 { font-weight: 500; }
+      em { font-family: 'Source Serif 4', Georgia, serif; font-style: italic; }
+
+      /* ─── Liquid Glass: Light ───────────────────────────────── */
+      .liquid-glass {
+        background: rgba(255, 255, 255, 0.01);
+        background-blend-mode: luminosity;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: none;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+      .liquid-glass::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1.4px;
+        background: linear-gradient(
+          180deg,
+          rgba(255,255,255,.45) 0%,
+          rgba(255,255,255,.15) 20%,
+          transparent           40%,
+          transparent           60%,
+          rgba(255,255,255,.15) 80%,
+          rgba(255,255,255,.45) 100%
+        );
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      /* ─── Liquid Glass: Strong (CTA / panels) ───────────────── */
+      .liquid-glass-strong {
+        background: rgba(255, 255, 255, 0.01);
+        background-blend-mode: luminosity;
+        backdrop-filter: blur(50px);
+        -webkit-backdrop-filter: blur(50px);
+        border: none;
+        box-shadow: 4px 4px 4px rgba(0,0,0,.05), inset 0 1px 1px rgba(255,255,255,.15);
+        position: relative;
+        overflow: hidden;
+      }
+      .liquid-glass-strong::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1.4px;
+        background: linear-gradient(
+          180deg,
+          rgba(255,255,255,.5)  0%,
+          rgba(255,255,255,.2)  20%,
+          transparent           40%,
+          transparent           60%,
+          rgba(255,255,255,.2)  80%,
+          rgba(255,255,255,.5)  100%
+        );
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      /* ─── HERO ──────────────────────────────────────────────── */
+      .hero {
+        position: relative;
+        display: flex;
+        min-height: 100svh;
+        overflow: hidden;
+        background: #0a0a0a url('/hero-bg.png') center/cover no-repeat;
+      }
+
+      .hero-video {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* dark overlay on video */
+      .hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: rgba(0, 0, 0, 0.38);
+      }
+
+      /* ── Left Panel ─────────────────────────────────────────── */
+      .hero-left {
+        position: relative;
+        z-index: 2;
+        width: 52%;
+        padding: 16px 0 16px 16px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .glass-panel {
+        flex: 1;
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        padding: 28px 32px 36px;
+      }
+
+      /* Nav */
+      .hero-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+
+      .hero-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-brand img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .hero-menu {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        color: rgba(255,255,255,.9);
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        transition: transform .18s;
+        background: transparent;
+      }
+      .hero-menu:hover { transform: scale(1.05); }
+
+      /* Hero Center */
+      .hero-center {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 24px;
+        padding: 40px 0;
+      }
+
+      .hero-logo-lg {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        object-fit: cover;
+      }
+
+      .hero-h1 {
+        font-size: clamp(2.6rem, 5.5vw, 5.2rem);
+        line-height: 1.05;
+        letter-spacing: -0.05em;
+        color: #fff;
+      }
+
+      .hero-h1 em {
+        color: rgba(255,255,255,.8);
+        font-size: 0.92em;
+      }
+
+      .hero-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 22px;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 500;
+        transition: transform .18s;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .hero-cta:hover { transform: scale(1.05); }
+      .hero-cta:active { transform: scale(0.95); }
+
+      .cta-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .hero-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 400;
+        color: rgba(255,255,255,.8);
+      }
+
+      /* Hero Quote */
+      .hero-quote {
+        flex-shrink: 0;
+        border-top: 1px solid rgba(255,255,255,.1);
+        padding-top: 24px;
+      }
+
+      .quote-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.5);
+        margin-bottom: 10px;
+      }
+
+      .quote-text {
+        font-size: clamp(1rem, 1.8vw, 1.2rem);
+        font-weight: 500;
+        color: #fff;
+        line-height: 1.45;
+        margin-bottom: 6px;
+      }
+
+      .quote-sub {
+        font-size: 12px;
+        color: rgba(255,255,255,.55);
+        margin-bottom: 16px;
+      }
+
+      .quote-author {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        color: rgba(255,255,255,.5);
+      }
+
+      .quote-author .line {
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,.18);
+        display: block;
+      }
+
+      /* ── Right Panel ────────────────────────────────────────── */
+      .hero-right {
+        position: relative;
+        z-index: 2;
+        width: 48%;
+        padding: 16px 16px 16px 0;
+        display: none; /* hidden on mobile */
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* Right top bar */
+      .right-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      .social-pill {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 14px;
+        border-radius: 999px;
+      }
+
+      .social-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,.8);
+        transition: color .18s;
+      }
+      .social-icon:hover { color: #fff; }
+
+      .social-arrow {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,.6);
+      }
+
+      .account-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        transition: transform .18s;
+        text-decoration: none;
+      }
+      .account-btn:hover { transform: scale(1.05); }
+
+      /* Community card */
+      .community-card {
+        padding: 20px 22px;
+        border-radius: 20px;
+        flex-shrink: 0;
+      }
+
+      .comm-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 6px;
+      }
+
+      .comm-desc {
+        font-size: 12px;
+        color: rgba(255,255,255,.6);
+        line-height: 1.55;
+      }
+
+      /* Feature section (bottom) */
+      .right-features {
+        flex: 1;
+        border-radius: 40px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+      }
+
+      .feat-cards-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .feat-card {
+        padding: 18px 16px;
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .feat-card-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,.85);
+      }
+
+      .feat-card-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: rgba(255,255,255,.85);
+      }
+
+      .feat-card-sub {
+        font-size: 11px;
+        color: rgba(255,255,255,.45);
+        line-height: 1.4;
+      }
+
+      /* Login / audit card */
+      .feat-bottom {
+        border-radius: 24px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .feat-bottom-thumb {
+        width: 88px;
+        height: 64px;
+        border-radius: 14px;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .feat-bottom-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .feat-bottom-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 4px;
+      }
+
+      .feat-bottom-sub {
+        font-size: 11px;
+        color: rgba(255,255,255,.5);
+        line-height: 1.4;
+      }
+
+      .feat-plus-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,.1);
+        color: rgba(255,255,255,.85);
+        font-size: 20px;
+        font-weight: 300;
+        flex-shrink: 0;
+        text-decoration: none;
+        transition: transform .18s;
+      }
+      .feat-plus-btn:hover { transform: scale(1.1); }
+
+      /* Score badge */
+      .audit-score {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        margin-bottom: 2px;
+      }
+      .audit-score strong {
+        font-size: 22px;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1;
+      }
+      .audit-score span {
+        font-size: 11px;
+        color: rgba(255,255,255,.45);
+      }
+
+      /* ─── STATS STRIP ───────────────────────────────────────── */
+      .stats-strip {
+        position: relative;
+        z-index: 3;
+        padding: 0 20px;
+        margin-top: -28px;
+      }
+
+      .stats-grid {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        padding: 10px;
+        box-shadow: 0 16px 50px rgba(0,0,0,.08);
+      }
+
+      .stat-box {
+        background: var(--paper);
+        border-radius: 22px;
+        padding: 22px;
+      }
+
+      .stat-box strong {
+        display: block;
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1;
+      }
+
+      .stat-box span {
+        display: block;
+        margin-top: 10px;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      /* ─── SECTIONS ──────────────────────────────────────────── */
+      .container {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      section.block {
+        padding: 96px 20px;
+      }
+
+      .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .2em;
+        text-transform: uppercase;
+        color: hsl(150 50% 32%);
+        margin-bottom: 16px;
+      }
+
+      h2 {
+        font-size: clamp(2.2rem, 4.8vw, 4.6rem);
+        font-weight: 500;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+        color: var(--ink);
+        max-width: 820px;
+      }
+
+      .lead {
+        margin-top: 20px;
+        font-size: 18px;
+        color: var(--muted);
+        line-height: 1.75;
+        max-width: 680px;
+      }
+
+      /* ─── PILLARS ───────────────────────────────────────────── */
+      .cards-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 44px;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: 0 12px 36px rgba(0,0,0,.05);
+      }
+
+      .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: hsl(148 60% 94%);
+        color: hsl(150 50% 32%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 28px;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--ink);
+        margin-bottom: 12px;
+      }
+
+      .card p, .step p, .module p, .package p {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      /* ─── PAIN (dark) ───────────────────────────────────────── */
+      .dark-section {
+        background: hsl(0 0% 8%);
+        color: #fff;
+        padding: 96px 20px;
+      }
+
+      .dark-section .section-label { color: hsl(75 100% 62%); }
+      .dark-section h2 { color: #fff; }
+
+      .pain-grid {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 48px;
+        align-items: start;
+        margin-top: 0;
+      }
+
+      .pain-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .pain-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 18px 20px;
+        background: rgba(255,255,255,.055);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 20px;
+        font-size: 15px;
+        color: rgba(255,255,255,.8);
+        line-height: 1.65;
+      }
+
+      .pain-icon {
+        flex-shrink: 0;
+        color: hsl(75 100% 62%);
+        margin-top: 2px;
+      }
+
+      /* ─── PROCESS ───────────────────────────────────────────── */
+      .process-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 24px;
+      }
+
+      .cards-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-top: 44px;
+      }
+
+      .step {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 24px;
+      }
+
+      .step-num {
+        font-size: 12px;
+        font-weight: 600;
+        color: hsl(150 50% 32%);
+        margin-bottom: 24px;
+      }
+
+      /* ─── MODULES ───────────────────────────────────────────── */
+      .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 44px;
+      }
+
+      .module {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 24px;
+        transition: transform .18s, border-color .18s, background .18s;
+      }
+
+      .module:hover {
+        transform: translateY(-3px);
+        border-color: hsl(150 50% 40% / .35);
+        background: hsl(148 60% 96%);
+      }
+
+      .module-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .module-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: #fff;
+        color: hsl(150 50% 32%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      }
+
+      .module-arrow { color: hsl(0 0% 60%); }
+      .module:hover .module-arrow { color: hsl(150 50% 32%); }
+
+      /* ─── PLANS ─────────────────────────────────────────────── */
+      .plans-grid {
+        display: grid;
+        grid-template-columns: 0.85fr 1.15fr;
+        gap: 44px;
+        align-items: start;
+      }
+
+      .packages-list { display: grid; gap: 16px; }
+
+      .package {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 24px;
+      }
+
+      .package-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
+      .package small {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: hsl(150 50% 32%);
+        margin-bottom: 6px;
+      }
+
+      .package h3 { font-size: 20px; }
+
+      .checks {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 16px;
+        margin-top: 18px;
+      }
+
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: hsl(0 0% 22%);
+      }
+
+      .check-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: hsl(148 60% 94%);
+        color: hsl(150 50% 32%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      /* ─── CTA BOX ───────────────────────────────────────────── */
+      .cta-box {
+        position: relative;
+        overflow: hidden;
+        background: hsl(0 0% 8%);
+        border-radius: 28px;
+        padding: 56px;
+        color: #fff;
+      }
+
+      .cta-box::after {
+        content: '';
+        position: absolute;
+        inset: 0 0 0 auto;
+        width: 44%;
+        background: url('/card-decision.png') center / cover no-repeat;
+        opacity: .12;
+      }
+
+      .cta-box > * { position: relative; z-index: 1; }
+      .cta-box h2 { color: #fff; }
+      .cta-box .lead { color: rgba(255,255,255,.7); }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 46px;
+        padding: 0 22px;
+        border-radius: 999px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        transition: transform .18s, background .18s;
+        text-decoration: none;
+      }
+      .btn:hover { transform: translateY(-1px); }
+
+      .btn-light {
+        background: hsl(0 0% 96%);
+        color: hsl(0 0% 8%);
+      }
+      .btn-light:hover { background: #fff; }
+
+      .btn-dark {
+        background: hsl(0 0% 8%);
+        color: #fff;
+      }
+      .btn-dark:hover { background: hsl(150 50% 25%); }
+
+      .btn-ghost {
+        border: 1px solid rgba(255,255,255,.22);
+        background: rgba(255,255,255,.1);
+        color: #fff;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+      }
+
+      /* ─── NAV (main) ────────────────────────────────────────── */
+      .site-nav-wrap {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 50;
+        padding: 14px 20px;
+        pointer-events: none;
+      }
+
+      .site-nav {
+        pointer-events: all;
+        max-width: 1180px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 16px;
+        background: rgba(7, 20, 16, .78);
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 999px;
+        backdrop-filter: blur(18px);
+        box-shadow: 0 18px 60px rgba(0,0,0,.22);
+      }
+
+      .site-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: .15em;
+        white-space: nowrap;
+      }
+
+      .site-brand img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .site-nav-links {
+        display: flex;
+        gap: 26px;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(255,255,255,.65);
+      }
+
+      .site-nav-links a:hover { color: #fff; }
+
+      /* ─── FOOTER ────────────────────────────────────────────── */
+      footer {
+        padding: 24px 20px 40px;
+      }
+
+      .footer-inner {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        border-top: 1px solid var(--line);
+        padding-top: 22px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
+      .footer-links a:hover { color: var(--ink); }
+
+      /* ─── RESPONSIVE ────────────────────────────────────────── */
+      @media (min-width: 1024px) {
+        .hero-right { display: flex; }
+      }
+
+      @media (max-width: 1023px) {
+        .hero-left { width: 100%; padding: 14px; }
+        .glass-panel { padding: 22px 20px 28px; }
+        .hero-h1 { font-size: clamp(2.4rem, 9vw, 4.5rem); }
+      }
+
+      @media (max-width: 860px) {
+        .site-nav-links { display: none; }
+        .cards-3, .cards-4, .modules-grid, .stats-grid { grid-template-columns: 1fr; }
+        .pain-grid, .plans-grid { grid-template-columns: 1fr; }
+        .process-head { flex-direction: column; align-items: flex-start; }
+        .cta-box { padding: 34px 24px; }
+        .cta-box::after { width: 100%; opacity: .07; }
+        .footer-inner { flex-direction: column; align-items: flex-start; }
+      }
+
+      @media (max-width: 540px) {
+        .hero-h1 { font-size: clamp(2.2rem, 14vw, 3.6rem); }
+        .hero-pills { flex-direction: column; }
+        .checks { grid-template-columns: 1fr; }
+        section.block { padding: 72px 18px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- ══ FIXED NAV (visible on scroll / non-hero pages) ══ -->
+    <header class="site-nav-wrap">
+      <nav class="site-nav">
+        <a class="site-brand" href="#">
+          <img src="/hsilva-logo.jpg" alt="SGAS Pro" />
+          <span>SGAS PRO</span>
+        </a>
+        <div class="site-nav-links">
+          <a href="#oferta">Oferta</a>
+          <a href="#processo">30 dias</a>
+          <a href="#modulos">Módulos</a>
+          <a href="#planos">Planos</a>
+        </div>
+        <a class="btn btn-light" href="/sgas-pro.html" target="_blank" rel="noopener noreferrer">Entrar</a>
+      </nav>
+    </header>
+
+    <main>
+
+      <!-- ══ HERO ══════════════════════════════════════════════ -->
+      <section class="hero">
+
+        <!-- Video background -->
+        <video class="hero-video" autoplay loop muted playsinline>
+          <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4" type="video/mp4" />
+        </video>
+
+        <!-- ── Left Panel ── -->
+        <div class="hero-left">
+          <div class="glass-panel liquid-glass-strong">
+
+            <!-- Nav -->
+            <nav class="hero-nav">
+              <a class="hero-brand" href="#">
+                <img src="/hsilva-logo.jpg" alt="SGAS Pro" />
+                <span>SGAS PRO</span>
+              </a>
+              <button class="hero-menu liquid-glass">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+                Menu
+              </button>
+            </nav>
+
+            <!-- Center -->
+            <div class="hero-center">
+              <img src="/hsilva-logo.jpg" alt="" class="hero-logo-lg" />
+
+              <h1 class="hero-h1">
+                A plataforma E&S<br />
+                <em>que financiadores reconhecem</em>
+              </h1>
+
+              <a href="/sgas-pro.html" target="_blank" rel="noopener noreferrer" class="hero-cta liquid-glass-strong">
+                Aceder à plataforma
+                <span class="cta-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </span>
+              </a>
+
+              <div class="hero-pills">
+                <span class="pill liquid-glass">Diagnóstico E&S</span>
+                <span class="pill liquid-glass">Cofre de Evidências</span>
+                <span class="pill liquid-glass">ESAP &amp; GRM</span>
+              </div>
+            </div>
+
+            <!-- Quote / slogan -->
+            <div class="hero-quote">
+              <p class="quote-label">Compromisso de valor</p>
+              <blockquote class="quote-text">"Não paga enquanto não ficar satisfeito."</blockquote>
+              <p class="quote-sub">Não pedimos dinheiro enquanto a nossa reputação é a coisa mais importante.</p>
+              <div class="quote-author">
+                <span class="line"></span>
+                <span>SGAS PRO</span>
+                <span class="line"></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Right Panel (desktop only) ── -->
+        <div class="hero-right">
+
+          <!-- Top bar -->
+          <div class="right-topbar">
+            <div class="social-pill liquid-glass">
+              <a class="social-icon" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </a>
+              <a class="social-icon" href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+              <a class="social-icon" href="mailto:contact@hsilva.com" aria-label="Email">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+              </a>
+              <span class="social-arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </span>
+            </div>
+            <a class="account-btn liquid-glass" href="/sgas-pro.html" target="_blank" rel="noopener noreferrer">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              Entrar
+            </a>
+          </div>
+
+          <!-- Community / trust card -->
+          <div class="community-card liquid-glass">
+            <p class="comm-title">Entre no ecossistema E&amp;S</p>
+            <p class="comm-desc">Diagnóstico SGAS implementado em 30 dias com suporte consultivo dedicado.</p>
+          </div>
+
+          <!-- Feature section -->
+          <div class="right-features liquid-glass">
+
+            <div class="feat-cards-row">
+              <div class="feat-card liquid-glass">
+                <div class="feat-card-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <p class="feat-card-title">Diagnóstico</p>
+                <p class="feat-card-sub">Maturidade E&amp;S em horas</p>
+              </div>
+              <div class="feat-card liquid-glass">
+                <div class="feat-card-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <p class="feat-card-title">Arquivo Vivo</p>
+                <p class="feat-card-sub">Evidências sempre atuais</p>
+              </div>
+            </div>
+
+            <!-- Audit readiness card -->
+            <div class="feat-bottom liquid-glass">
+              <img src="/hsilva-logo.jpg" alt="SGAS Pro" class="feat-bottom-thumb" />
+              <div class="feat-bottom-info">
+                <div class="audit-score">
+                  <strong>68%</strong>
+                  <span>Audit readiness</span>
+                </div>
+                <p class="feat-bottom-title">Sala de Auditoria</p>
+                <p class="feat-bottom-sub">ESAP · GRM · Contratantes · Lender</p>
+              </div>
+              <a href="/sgas-pro.html?page=audit-room" target="_blank" rel="noopener noreferrer" class="feat-plus-btn liquid-glass">+</a>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ══ STATS STRIP ════════════════════════════════════════ -->
+      <div class="stats-strip">
+        <div class="stats-grid">
+          <div class="stat-box"><strong>30 dias</strong><span>para sair do diagnóstico para pacote executivo</span></div>
+          <div class="stat-box"><strong>26</strong><span>módulos funcionais no cockpit SGAS Pro</span></div>
+          <div class="stat-box"><strong>IFC + WB</strong><span>linguagem alinhada a due diligence E&amp;S</span></div>
+        </div>
+      </div>
+
+      <!-- ══ OFERTA ══════════════════════════════════════════════ -->
+      <section id="oferta" class="block" style="padding:96px 20px">
+        <div class="container">
+          <div>
+            <p class="section-label">Oferta vendável agora</p>
+            <h2>Um pacote de prontidão, não apenas uma licença de software.</h2>
+            <p class="lead">A empresa compra resultado: organização, evidência, plano de melhoria e confiança para responder a financiadores, auditorias e supervisões.</p>
+          </div>
+          <div class="cards-3">
+            <article class="card">
+              <div class="card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </div>
+              <h3>Diagnóstico SGAS</h3>
+              <p>Mapeamos maturidade, gaps críticos e evidências em falta com base em práticas IFC/World Bank E&amp;S.</p>
+            </article>
+            <article class="card">
+              <div class="card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <h3>Sala de evidências</h3>
+              <p>Organizamos documentos, fotos, relatórios, reclamações, stakeholders, contratantes e KPIs num cockpit auditável.</p>
+            </article>
+            <article class="card">
+              <div class="card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <h3>Acompanhamento assistido</h3>
+              <p>A empresa usa o SaaS com suporte consultivo para sair do caos documental e chegar a um pacote pronto para revisão.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ PAIN (dark) ════════════════════════════════════════ -->
+      <div class="dark-section">
+        <div class="container pain-grid">
+          <div>
+            <p class="section-label">A dor que vende</p>
+            <h2>O risco não é só técnico. É chegar à auditoria sem provas.</h2>
+          </div>
+          <div class="pain-list">
+            <div class="pain-item">
+              <svg class="pain-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Documentos espalhados por email, pastas e WhatsApp</span>
+            </div>
+            <div class="pain-item">
+              <svg class="pain-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Evidências sem dono, data, versão ou validação</span>
+            </div>
+            <div class="pain-item">
+              <svg class="pain-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>ESAP e reclamações sem rastreio executivo</span>
+            </div>
+            <div class="pain-item">
+              <svg class="pain-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Auditoria a aproximar-se sem pacote para o financiador</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PROCESSO ═══════════════════════════════════════════ -->
+      <section id="processo" class="block" style="padding:96px 20px">
+        <div class="container">
+          <div class="process-head">
+            <div>
+              <p class="section-label">Implementação assistida</p>
+              <h2>Do diagnóstico ao pacote executivo em 30 dias.</h2>
+            </div>
+            <a class="btn btn-dark" href="mailto:contact@hsilva.com?subject=Quero%20come%C3%A7ar%20um%20piloto%20SGAS%20Pro" style="flex-shrink:0">Começar piloto</a>
+          </div>
+          <div class="cards-4">
+            <article class="step">
+              <p class="step-num">Semana 1</p>
+              <h3>Diagnóstico rápido</h3>
+              <p>Recolha de documentos, entrevistas curtas, leitura do projeto e score inicial de prontidão.</p>
+            </article>
+            <article class="step">
+              <p class="step-num">Semana 2</p>
+              <h3>Configuração do SaaS</h3>
+              <p>Projeto, módulos, responsáveis, cofre documental, calendário, ESAP e matriz de riscos.</p>
+            </article>
+            <article class="step">
+              <p class="step-num">Semana 3</p>
+              <h3>Evidências e gaps</h3>
+              <p>Organização das provas, pendências críticas, registo legal, reclamações e contratantes.</p>
+            </article>
+            <article class="step">
+              <p class="step-num">Semana 4</p>
+              <h3>Pacote para gestão</h3>
+              <p>Dashboard final, relatório de prontidão, plano de melhoria e próximos 90 dias de execução.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ MÓDULOS ════════════════════════════════════════════ -->
+      <section id="modulos" class="block" style="padding:96px 20px;background:#fff">
+        <div class="container">
+          <p class="section-label">SaaS por trás do serviço</p>
+          <h2>Cada módulo responde a uma pergunta de auditoria.</h2>
+          <div class="modules-grid">
+            <a class="module" href="/sgas-pro.html?page=dashboard" target="_blank" rel="noopener noreferrer">
+              <div class="module-top">
+                <div class="module-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <svg class="module-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <h3>Dashboard de prontidão</h3>
+              <p>Visão executiva de maturidade SGAS, ações vencidas, documentos em falta e preparação para missão.</p>
+            </a>
+            <a class="module" href="/sgas-pro.html?page=documentos" target="_blank" rel="noopener noreferrer">
+              <div class="module-top">
+                <div class="module-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <svg class="module-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <h3>Cofre documental</h3>
+              <p>Controlo de versões, owners, aprovadores, próxima revisão e evidências exigidas pelo projeto.</p>
+            </a>
+            <a class="module" href="/sgas-pro.html?page=esap" target="_blank" rel="noopener noreferrer">
+              <div class="module-top">
+                <div class="module-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <svg class="module-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <h3>ESAP e calendário</h3>
+              <p>Prazos, responsáveis, medidas corretivas, submissões e preparação para auditorias ou supervisões.</p>
+            </a>
+            <a class="module" href="/sgas-pro.html?page=reclamacoes" target="_blank" rel="noopener noreferrer">
+              <div class="module-top">
+                <div class="module-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <svg class="module-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <h3>GRM e stakeholders</h3>
+              <p>Registo de reclamações, consultas, respostas, encerramento e evidência de engajamento contínuo.</p>
+            </a>
+            <a class="module" href="/sgas-pro.html?page=terceiros" target="_blank" rel="noopener noreferrer">
+              <div class="module-top">
+                <div class="module-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <svg class="module-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <h3>Contratantes</h3>
+              <p>Scorecard de empreiteiros, requisitos PS/ESS, induções, ações pendentes e risco operacional.</p>
+            </a>
+            <a class="module" href="/sgas-pro.html?page=audit-room" target="_blank" rel="noopener noreferrer">
+              <div class="module-top">
+                <div class="module-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <svg class="module-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <h3>Sala de auditoria</h3>
+              <p>Pacote para financiador com índice de evidências, gaps, estado de prontidão e prioridades.</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ PLANOS ═════════════════════════════════════════════ -->
+      <section id="planos" class="block" style="padding:96px 20px">
+        <div class="container plans-grid">
+          <div>
+            <p class="section-label">Modelo comercial</p>
+            <h2>Venda primeiro o piloto. Escale depois a subscrição.</h2>
+            <p class="lead">O cliente não precisa decidir uma transformação completa no primeiro contacto. Precisa ver o estado real do risco e receber um plano de ação credível.</p>
+          </div>
+          <div class="packages-list">
+            <article class="package">
+              <div class="package-top">
+                <div><small>Venda agora</small><h3>Piloto 30 dias</h3></div>
+              </div>
+              <p>Para empresas que precisam entender rapidamente o estado real da conformidade E&amp;S.</p>
+              <div class="checks">
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Diagnóstico SGAS</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Setup do projeto</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Dashboard de prontidão</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Relatório executivo</span>
+              </div>
+            </article>
+            <article class="package">
+              <div class="package-top">
+                <div><small>Mais indicado</small><h3>SaaS assistido</h3></div>
+              </div>
+              <p>Para equipas HSE/E&amp;S que precisam manter evidências, ações e relatórios vivos mês a mês.</p>
+              <div class="checks">
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Acesso à plataforma</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Reunião mensal</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Atualização ESAP</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Suporte sala de auditoria</span>
+              </div>
+            </article>
+            <article class="package">
+              <div class="package-top">
+                <div><small>Multi-projeto</small><h3>Enterprise</h3></div>
+              </div>
+              <p>Para grupos, empreiteiros e programas com várias obras, contratos ou unidades operacionais.</p>
+              <div class="checks">
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Múltiplos projetos</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Permissões por equipa</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Relatórios customizados</span>
+                <span class="check-item"><span class="check-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>Onboarding dedicado</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ CTA BOX ════════════════════════════════════════════ -->
+      <section style="padding:0 20px 20px">
+        <div class="container">
+          <div class="cta-box">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="hsl(75 100% 62%)" stroke-width="2" style="margin-bottom:28px"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <h2>Comece com uma empresa, um projeto e uma auditoria próxima.</h2>
+            <p class="lead">O piloto pago prova valor rápido: o cliente vê o que falta, quem responde e que evidências precisa apresentar.</p>
+            <div class="hero-actions">
+              <a class="btn btn-light" href="mailto:contact@hsilva.com?subject=Quero%20agendar%20uma%20demo%20do%20SGAS%20Pro">Agendar demo comercial</a>
+              <a class="btn btn-ghost" href="/sgas-pro.html" target="_blank" rel="noopener noreferrer">Abrir protótipo SaaS</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>SGAS Pro · Prontidão E&amp;S para financiadores e auditorias</span>
+        <div class="footer-links">
+          <a href="/sgas-pro.html?page=dashboard" target="_blank" rel="noopener noreferrer">Dashboard</a>
+          <a href="/sgas-pro.html?page=audit-room" target="_blank" rel="noopener noreferrer">Sala de auditoria</a>
+          <a href="mailto:contact@hsilva.com?subject=SGAS%20Pro">Contacto</a>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+</html>
