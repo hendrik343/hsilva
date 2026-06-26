@@ -77,6 +77,26 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 .nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 100px; font-weight: 600; letter-spacing: 0.01em; }
 .nav-badge.warn { background: var(--warning); }
 .nav-badge.ok { background: var(--accent); }
+.readiness-empty{padding:18px;border:1px dashed var(--border);border-radius:var(--radius);background:#FAFAFA;color:var(--text-2);font-size:12px;line-height:1.45}
+.readiness-empty strong{display:block;color:var(--text);font-size:13px;margin-bottom:4px}
+.readiness-empty button{margin-top:10px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:7px;padding:7px 11px;font-size:12px;font-weight:600}
+.readiness-source-note{margin-top:8px;font-size:11px;color:var(--text-3)}
+.readiness-wizard-overlay{position:fixed;inset:0;z-index:8800;background:rgba(8,31,19,.72);display:none;align-items:center;justify-content:center;padding:18px}
+.readiness-wizard-overlay.active{display:flex}
+.readiness-wizard-shell{width:min(1180px,96vw);height:min(860px,94vh);background:#0A1F14;border:1px solid rgba(244,236,216,.18);border-radius:12px;box-shadow:0 30px 90px rgba(0,0,0,.45);overflow:hidden;display:flex;flex-direction:column}
+.readiness-wizard-head{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid rgba(244,236,216,.12);background:#0D2E1E;color:#F4ECD8;font-size:12px;font-weight:700}
+.readiness-wizard-head-actions{display:flex;align-items:center;gap:6px}
+.readiness-wizard-close,.readiness-wizard-min{border:1px solid rgba(244,236,216,.18);background:rgba(244,236,216,.06);color:#F4ECD8;border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;line-height:1}
+.readiness-wizard-min:hover{background:rgba(244,236,216,.12)}
+.readiness-wizard-close:hover{background:rgba(220,50,50,.18)}
+.readiness-wizard-frame{width:100%;height:100%;border:0;background:#0A1F14;flex:1}
+.readiness-wizard-pill{position:fixed;bottom:24px;right:24px;z-index:8801;background:#0D2E1E;border:1px solid rgba(43,199,143,.4);border-radius:50px;padding:10px 16px 10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.5);cursor:pointer;color:#F4ECD8;font-size:13px;font-weight:600;transition:box-shadow .2s}
+.readiness-wizard-pill.active{display:flex}
+.readiness-wizard-pill:hover{box-shadow:0 8px 30px rgba(43,199,143,.25)}
+.readiness-wizard-pill-dot{width:8px;height:8px;border-radius:50%;background:#2BC78F;flex-shrink:0;animation:wz-pulse 2s ease-in-out infinite}
+.readiness-wizard-pill-resume{font-size:11px;color:#2BC78F;margin-left:2px}
+@keyframes wz-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+@media(max-width:760px){.readiness-wizard-overlay{padding:8px}.readiness-wizard-shell{width:100vw;height:100vh;border-radius:0}.readiness-wizard-head{height:48px}.readiness-wizard-pill{bottom:16px;right:16px}}
 .sidebar-bottom { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,0.07); }
 .audit-countdown { background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.3); border-radius: var(--radius); padding: 10px 12px; }
 .audit-countdown-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(220,38,38,0.8); font-weight: 600; margin-bottom: 3px; }
@@ -583,6 +603,23 @@ canvas { max-width: 100%; }
 </style>
 </head>
 <body>
+<div class="readiness-wizard-overlay" id="readiness-wizard-overlay" role="dialog" aria-modal="true" aria-labelledby="readiness-wizard-title">
+  <section class="readiness-wizard-shell">
+    <header class="readiness-wizard-head">
+      <span id="readiness-wizard-title">Diagnóstico de Prontidão SGAS</span>
+      <div class="readiness-wizard-head-actions">
+        <button class="readiness-wizard-min" type="button" onclick="minimizeReadinessWizard()" title="Minimizar">— Minimizar</button>
+        <button class="readiness-wizard-close" type="button" onclick="closeReadinessWizard()">✕ Fechar</button>
+      </div>
+    </header>
+    <iframe class="readiness-wizard-frame" id="readiness-wizard-frame" title="Diagnóstico de Prontidão SGAS"></iframe>
+  </section>
+</div>
+<div class="readiness-wizard-pill" id="readiness-wizard-pill" onclick="restoreReadinessWizard()" role="button" aria-label="Retomar diagnóstico">
+  <div class="readiness-wizard-pill-dot"></div>
+  <span>Diagnóstico em curso</span>
+  <span class="readiness-wizard-pill-resume">▲ Retomar</span>
+</div>
 
 <!-- ── AUTH OVERLAY — Phase 2 ── -->
 <div id="auth-overlay" style="position:fixed;inset:0;z-index:9999;display:flex;background:#0B2818;">
@@ -730,8 +767,8 @@ canvas { max-width: 100%; }
       </div>
       <div class="project-pill">
         <div class="project-pill-label">Projecto activo</div>
-        <div class="project-pill-name" id="proj-pill-name">Hospital Distrital do Kibala</div>
-        <div class="project-pill-loan" id="proj-pill-loan">IDA-P171880 · Angola</div>
+        <div class="project-pill-name" id="proj-pill-name">—</div>
+        <div class="project-pill-loan" id="proj-pill-loan">—</div>
         <button onclick="openCreateProjectModal()" style="margin-top:6px;width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;text-align:center;">+ Criar projecto</button>
       </div>
     </div>
@@ -742,9 +779,6 @@ canvas { max-width: 100%; }
       <div class="nav-item active" onclick="nav('dashboard',this)">
         <span class="nav-icon">📊</span>Dashboard
       </div>
-      <div class="nav-item" onclick="nav('comercial',this)">
-        <span class="nav-icon">💼</span>Inteligência Comercial
-      </div>
     </div>
 
     <!-- Group: Conformidade SGAS -->
@@ -753,7 +787,7 @@ canvas { max-width: 100%; }
       <div class="nav-item" onclick="nav('diagnostico',this)">
         <span class="nav-icon">🔍</span>Diagnóstico IFC
       </div>
-      <div class="nav-item" onclick="window.open('/sgas-readiness-wizard.html','_blank')">
+      <div class="nav-item" data-open-readiness-wizard="true">
         <span class="nav-icon">🧭</span>Prontidão PS1–PS8
       </div>
       <div class="nav-item" onclick="nav('avaliacao',this)">
@@ -936,16 +970,20 @@ canvas { max-width: 100%; }
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">💼 Valor comercial</span><span class="badge blue">Pré-loan</span></div>
-        <div class="card-body commercial-note">
-          <strong id="commercial-positioning">Preparação para due diligence IFC / World Bank E&S.</strong><br>
-          Empresas em fase de aprovação de financiamento já precisam demonstrar capacidade de SGAS, documentação E&S, consulta e gestão de riscos.
-          <div class="intel-actions" id="dash-sell-badges">
-            <span class="badge green" id="dash-sell-demo">Demo: 8.5/10</span>
-            <span class="badge amber" id="dash-sell-pilot">Paid pilot: 8.0/10</span>
-            <span class="badge amber" id="dash-sell-enterprise">Enterprise SaaS: 7.0/10</span>
-            <button class="btn" onclick="nav('comercial',navItemFor('comercial'))">Abrir análise</button>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Fase do projeto</span>
+          <span class="badge blue" id="project-phase-badge">Implementação</span>
+        </div>
+        <div class="card-body">
+          <div id="project-phase-detail" style="font-size:13px;color:var(--ink-dim,#aaa);line-height:1.6">
+            <strong id="project-phase-category">Categoria B</strong> &mdash; Preparação para due diligence.<br>
+            <span id="project-phase-label">Supervisão / Implementação</span>
           </div>
+          <!-- commercial-intel-mount: populated by internal/commercial-intel.js when ?internal=1 -->
+          <div id="commercial-intel-mount" style="display:none"></div>
+        </div>
+      </div>
         </div>
       </div>
     </div>
@@ -957,18 +995,18 @@ canvas { max-width: 100%; }
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div>
               <div class="loan-card-label">Projecto Banco Mundial</div>
-              <div class="loan-card-value" id="proj-name" style="font-size:16px;margin-top:4px">Hospital Provincial do Bailundo</div>
-              <div id="proj-desc" style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px">Construção de infra-estrutura de saúde · Angola</div>
+              <div class="loan-card-value" id="proj-name" style="font-size:16px;margin-top:4px">A preencher pelo wizard</div>
+              <div id="proj-desc" style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px">Completa o diagnóstico para alimentar este cartão.</div>
             </div>
             <div style="background:rgba(29,158,117,0.25);border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:6px 12px;font-size:11px;color:#6EE7B7;font-weight:600">ACTIVO</div>
           </div>
           <div class="loan-card-grid">
-            <div><div class="loan-card-label">Número IDA</div><div class="loan-card-value" id="proj-ida" style="font-size:13px">P171880</div></div>
-            <div><div class="loan-card-label">Montante</div><div class="loan-card-value" id="proj-amount" style="font-size:13px">USD 80M</div></div>
-            <div><div class="loan-card-label">Categoria E&S</div><div class="loan-card-value" id="proj-cat" style="font-size:13px">Substancial</div></div>
-            <div><div class="loan-card-label">Data aprovação</div><div class="loan-card-value" id="proj-approval" style="font-size:13px">Mar 2024</div></div>
-            <div><div class="loan-card-label">Encerramento</div><div class="loan-card-value" id="proj-closure" style="font-size:13px">Dez 2028</div></div>
-            <div><div class="loan-card-label">Especialista E&S</div><div class="loan-card-value" id="proj-specialist" style="font-size:13px">BM Lisboa</div></div>
+            <div><div class="loan-card-label">Número IDA</div><div class="loan-card-value" id="proj-ida" style="font-size:13px">—</div></div>
+            <div><div class="loan-card-label">Montante</div><div class="loan-card-value" id="proj-amount" style="font-size:13px">—</div></div>
+            <div><div class="loan-card-label">Categoria E&S</div><div class="loan-card-value" id="proj-cat" style="font-size:13px">—</div></div>
+            <div><div class="loan-card-label">Fase</div><div class="loan-card-value" id="proj-approval" style="font-size:13px">—</div></div>
+            <div><div class="loan-card-label">País</div><div class="loan-card-value" id="proj-closure" style="font-size:13px">—</div></div>
+            <div><div class="loan-card-label">Fonte</div><div class="loan-card-value" id="proj-specialist" style="font-size:13px">Wizard</div></div>
           </div>
         </div>
 
@@ -996,217 +1034,6 @@ canvas { max-width: 100%; }
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- INTELIGÊNCIA COMERCIAL -->
-  <div class="page-content" id="page-comercial">
-    <div class="section-header">
-      <div><div class="section-title">Inteligência Comercial e Due Diligence</div><div class="section-sub">Base estruturada para venda, extração rápida e evolução do dashboard IFC / World Bank</div></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" onclick="copyCommercialPitch()">Copiar pitch</button>
-        <button class="btn primary" onclick="downloadCommercialJSON()">Exportar JSON</button>
-      </div>
-    </div>
-    <div class="grid-4" style="margin-bottom:20px">
-      <div class="metric-card"><div class="metric-label">Sellability demo</div><div class="metric-value green" id="sell-demo">8.5/10</div><div class="metric-sub">para apresentação comercial</div></div>
-      <div class="metric-card"><div class="metric-label">Paid pilot</div><div class="metric-value amber" id="sell-pilot">8.0/10</div><div class="metric-sub">com consultoria de onboarding</div></div>
-      <div class="metric-card"><div class="metric-label">Enterprise SaaS</div><div class="metric-value amber" id="sell-enterprise">7.0/10</div><div class="metric-sub">gaps sectoriais e FI preenchidas</div></div>
-      <div class="metric-card"><div class="metric-label">Modelo recomendado</div><div class="metric-value" style="font-size:22px" id="sell-model">Pilot+</div><div class="metric-sub">software + advisory</div></div>
-    </div>
-    <div class="intel-grid">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Veredicto do gestor</span><span class="badge green">Vendável</span></div>
-        <div class="card-body">
-          <div class="commercial-note" id="manager-verdict"></div>
-          <div class="intel-actions" id="positioning-tags"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Extração rápida</span><span class="badge blue">Sales-ready</span></div>
-        <div class="card-body">
-          <div class="intel-list" id="quick-extraction-list"></div>
-        </div>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:16px">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Motor local de apoio</span><span class="badge green">Offline-first</span></div>
-        <div class="card-body"><div class="intel-list" id="local-ai-stack"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Alertas rápidos no preenchimento</span><span class="badge red">Guardrails</span></div>
-        <div class="card-body"><div class="intel-list" id="local-decision-guards"></div></div>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:16px">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Base pronta para extração</span><span class="badge blue">Pré-indexada</span></div>
-        <div class="card-body"><div class="intel-list" id="preindexed-knowledge"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Mínimo antes de vender</span><span class="badge amber">Go-live</span></div>
-        <div class="card-body"><div class="intel-list" id="release-checklist"></div></div>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:16px">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Exclusion List IFC</span><span class="badge red">Intake gate</span></div>
-        <div class="card-body"><div class="intel-list" id="exclusion-list-check"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Intermediários Financeiros</span><span class="badge blue">Categoria FI</span></div>
-        <div class="card-body"><div class="intel-list" id="fi-workflow"></div></div>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:16px">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Broad Community Support</span><span class="badge amber">Gate</span></div>
-        <div class="card-body"><div class="intel-list" id="broad-community-support"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Módulos sectoriais</span><span class="badge purple">Extractivo · Infraestrutura</span></div>
-        <div class="card-body"><div class="intel-list" id="sector-specific-modules"></div></div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-header"><span class="card-title">Clareza de versão das fontes</span><span class="badge gray">2006 vs 2012</span></div>
-      <div class="card-body"><div class="intel-list" id="source-version-clarity"></div></div>
-    </div>
-    <div class="grid-2" style="margin-bottom:16px">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Compradores-alvo</span></div>
-        <div class="card-body"><div class="intel-list" id="buyer-targets"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Gaps antes de enterprise</span></div>
-        <div class="card-body"><div class="intel-list" id="enterprise-gaps"></div></div>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:16px">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Mapeamento IFC PS</span><span class="badge purple">PS1–PS8</span></div>
-        <div class="card-body" id="ifc-mapping"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Mapeamento World Bank ESF</span><span class="badge amber">ESS1–ESS10</span></div>
-        <div class="card-body" id="ess-mapping"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Fontes carregadas na base</span><span class="badge gray">Documentos + links oficiais</span></div>
-      <div class="card-body" id="commercial-sources"></div>
-    </div>
-  </div>
-
-  <!-- AUTOAVALIAÇÃO -->
-  <div class="page-content" id="page-diagnostico">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Diagnóstico IFC PS1–PS8</div>
-        <div class="section-sub">Descarregue o template PDF preenchível · preencha com dados da sua empresa · carregue para obter o relatório de conformidade automático</div>
-      </div>
-      <button class="btn primary" onclick="diagnostico_generatePDF()" id="btn-diag-download">⬇ Descarregar Template PDF</button>
-    </div>
-    <div class="alert-banner info" style="margin-bottom:20px">
-      📋 <strong>Como funciona:</strong> 1 — Descarregue o PDF preenchível &nbsp;·&nbsp; 2 — Preencha no Adobe Reader (S / N / D / NA) &nbsp;·&nbsp; 3 — Carregue o PDF preenchido abaixo &nbsp;·&nbsp; 4 — O sistema compara com IFC PS1–PS8 e mostra os gaps
-    </div>
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-header"><span class="card-title">📤 Carregar PDF Preenchido</span></div>
-      <div style="padding:20px">
-        <div id="diag-drop-zone"
-          style="border:2px dashed var(--border);border-radius:10px;padding:40px;text-align:center;cursor:pointer;transition:all 0.2s;background:#FAFAFA"
-          onclick="document.getElementById('diag-file-input').click()"
-          ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='#F0FDF9'"
-          ondragleave="this.style.borderColor='var(--border)';this.style.background='#FAFAFA'"
-          ondrop="event.preventDefault();this.style.borderColor='var(--border)';this.style.background='#FAFAFA';diagnostico_handleDrop(event)">
-          <div style="font-size:36px;margin-bottom:10px">📄</div>
-          <div style="font-weight:600;color:var(--text);margin-bottom:4px">Arrastar PDF aqui ou clicar para seleccionar</div>
-          <div style="font-size:12px;color:var(--text-2)">Apenas ficheiros .pdf gerados pelo template SGAS Pro</div>
-        </div>
-        <input type="file" id="diag-file-input" accept=".pdf" style="display:none" onchange="diagnostico_handleFile(this.files[0])">
-        <div id="diag-parse-status" style="display:none;margin-top:14px;padding:10px 14px;border-radius:6px;font-size:13px"></div>
-      </div>
-    </div>
-    <div id="diag-results" style="display:none">
-      <div id="diag-profile-card" class="card" style="margin-bottom:16px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="card">
-          <div class="card-header"><span class="card-title">📊 Pontuação por Padrão IFC</span></div>
-          <div id="diag-scores" style="padding:8px 20px 16px"></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">⚠️ Gaps Identificados</span></div>
-          <div id="diag-gaps" style="padding:8px 20px 16px;max-height:420px;overflow-y:auto"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="page-content" id="page-avaliacao">
-    <div class="section-header">
-      <div><div class="section-title">Autoavaliação SGAS</div><div class="section-sub">9 elementos IFC ESMS · Guia de Autoavaliação e Melhoria v2.3 · Escala 0–5</div></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" onclick="expandAllElems()">Expandir todos</button>
-        <button class="btn primary" onclick="saveAvaliacao()">✓ Guardar e actualizar dashboard</button>
-      </div>
-    </div>
-    <div class="alert-banner info">
-      📋 <strong>Instrução:</strong> Clica em cada elemento para expandir. Responde às perguntas do Guia IFC ESMS v2.3 numa escala 0–5. A média de cada elemento alimenta o radar, o dashboard e o plano de melhoria para due diligence.
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-header">
-        <span class="card-title">Ficha da autoavaliação</span>
-        <span class="badge blue">IFC ESMS Self-Assessment v2.3</span>
-      </div>
-      <div class="card-body">
-        <div class="assessment-field-grid">
-          <div class="form-group"><label class="form-label">Empresa / projecto</label><input class="form-input" id="ass-company" onchange="setAssessmentMeta('company',this.value)"></div>
-          <div class="form-group"><label class="form-label">Referência / loan</label><input class="form-input" id="ass-project-id" onchange="setAssessmentMeta('projectId',this.value)"></div>
-          <div class="form-group"><label class="form-label">Avaliador</label><input class="form-input" id="ass-assessor" onchange="setAssessmentMeta('assessor',this.value)"></div>
-          <div class="form-group"><label class="form-label">Data</label><input class="form-input" type="date" id="ass-date" onchange="setAssessmentMeta('date',this.value)"></div>
-        </div>
-        <div class="assessment-field-grid" style="margin-top:10px">
-          <div class="form-group"><label class="form-label">Função</label><input class="form-input" id="ass-role" onchange="setAssessmentMeta('role',this.value)"></div>
-          <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ass-email" onchange="setAssessmentMeta('email',this.value)"></div>
-          <div class="form-group"><label class="form-label">Tipo de uso</label><select class="form-select" id="ass-use" onchange="setAssessmentMeta('useCase',this.value)"><option>Preparação para due diligence</option><option>Supervisão pós-financiamento</option><option>Auditoria interna SGAS</option><option>Plano de melhoria pré-Board</option></select></div>
-          <div class="form-group"><label class="form-label">Fonte base</label><input class="form-input" value="Guia IFC ESMS v2.3 · 2015" disabled></div>
-        </div>
-      </div>
-    </div>
-    <!-- Summary metrics -->
-    <div class="grid-4" style="margin-bottom:20px" id="esms-summary-metrics"></div>
-    <!-- Radar + Progress -->
-    <div class="grid-2" style="margin-bottom:24px">
-      <div class="card">
-        <div class="card-header"><span class="card-title">📡 Radar de Maturidade SGAS</span></div>
-        <div class="card-body" style="display:flex;justify-content:center;padding:12px">
-          <canvas id="qa-radar" width="240" height="240"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">📊 Score por Elemento</span><span id="esms-overall-label" class="badge amber">—</span></div>
-        <div class="card-body" style="padding:12px 20px" id="esms-bars"></div>
-      </div>
-    </div>
-    <!-- Element accordion -->
-    <div id="esms-elements-container"></div>
-    <div style="margin-top:20px;display:flex;gap:10px;padding-bottom:4px">
-      <button class="btn primary" onclick="saveAvaliacao()">✓ Guardar e actualizar dashboard</button>
-      <button class="btn" onclick="exportAvaliacao()">↓ Exportar relatório PDF</button>
-    </div>
-  </div>
-
-  <!-- PS1-PS8 -->
-  <div class="page-content" id="page-ps">
-    <div class="section-header">
-      <div><div class="section-title">Padrões de Desempenho IFC</div><div class="section-sub">PS1–PS8 · Conformidade detalhada com requisitos do Banco Mundial</div></div>
-      <div style="display:flex;gap:8px">
-        <span class="badge green">✓ <span id="ps-conforme">0</span> conformes</span>
-        <span class="badge amber">◑ <span id="ps-parcial">0</span> parciais</span>
-        <span class="badge red">✗ <span id="ps-nc">0</span> NC</span>
-      </div>
-    </div>
-    <div id="ps-container"></div>
   </div>
 
   <!-- ESAP -->
@@ -2146,7 +1973,7 @@ canvas { max-width: 100%; }
   <div class="modal">
     <h2>Nova parte interessada</h2>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nome / Organização</label><input class="form-input" id="sh-name" placeholder="ex: Comunidade Bailundo Norte"></div>
+      <div class="form-group"><label class="form-label">Nome / Organização</label><input class="form-input" id="sh-name" placeholder="ex: Comunidade afectada norte"></div>
       <div class="form-group"><label class="form-label">Categoria</label><select class="form-select" id="sh-cat"><option value="community">Comunidade</option><option value="worker">Trabalhadores</option><option value="govt">Gov. / Autoridades</option><option value="ngo">ONGs / Media</option></select></div>
     </div>
     <div class="form-group"><label class="form-label">Interesses e preocupações</label><input class="form-input" id="sh-concerns" placeholder="ex: Ruído, empregos locais, poeira"></div>
@@ -2218,7 +2045,7 @@ canvas { max-width: 100%; }
     </div>
     <div class="form-group"><label class="form-label">Controlo / barreira</label><input class="form-input" id="ph-control" placeholder="ex: humidificação + EPI + registo diário"></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Comunidade / receptor afectado</label><input class="form-input" id="ph-community" placeholder="ex: Comunidade Bailundo Norte"></div>
+      <div class="form-group"><label class="form-label">Comunidade / receptor afectado</label><input class="form-input" id="ph-community" placeholder="ex: Comunidade afectada norte"></div>
       <div class="form-group"><label class="form-label">Evidência esperada</label><input class="form-input" id="ph-evidence" placeholder="ex: fotos + medição PM10"></div>
     </div>
     <div class="modal-actions">
@@ -2319,7 +2146,7 @@ canvas { max-width: 100%; }
     <h2>Registar comunicação comunitária</h2>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Data</label><input class="form-input" type="date" id="cr-date"></div>
-      <div class="form-group"><label class="form-label">Comunidade / público</label><input class="form-input" id="cr-community" placeholder="ex: Comunidade Bailundo Norte"></div>
+      <div class="form-group"><label class="form-label">Comunidade / público</label><input class="form-input" id="cr-community" placeholder="ex: Comunidade afectada norte"></div>
     </div>
     <div class="form-group"><label class="form-label">Tema comunicado</label><input class="form-input" id="cr-topic" placeholder="ex: Poeira, tráfego, emprego local, novo risco"></div>
     <div class="form-row">
@@ -2464,7 +2291,7 @@ canvas { max-width: 100%; }
     <h2>✉ Modelo de Carta do CEO / Director Geral</h2>
     <div class="alert-banner info" style="margin-bottom:14px">Este modelo serve como carta de compromisso da gestão de topo que acompanha a Declaração de Política SGAS.</div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nome da empresa</label><input class="form-input" id="ceo-company" placeholder="ex: Hospital Provincial do Bailundo"></div>
+      <div class="form-group"><label class="form-label">Nome da empresa</label><input class="form-input" id="ceo-company" placeholder="ex: Nome da empresa"></div>
       <div class="form-group"><label class="form-label">Nome do CEO / Director</label><input class="form-input" id="ceo-name" placeholder="ex: Dr. João Silva"></div>
     </div>
     <div class="form-row">
@@ -2501,7 +2328,7 @@ canvas { max-width: 100%; }
 <div class="modal-overlay" id="modal-pin-sh">
   <div class="modal" style="width:480px;max-width:95vw">
     <h2>Posicionar Parte Interessada no Mapa</h2>
-    <div class="form-group"><label class="form-label">Parte interessada</label><input class="form-input" id="pin-name" placeholder="ex: Comunidade do Bailundo"></div>
+    <div class="form-group"><label class="form-label">Parte interessada</label><input class="form-input" id="pin-name" placeholder="ex: Comunidade local"></div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Influência (0–100%)</label><input class="form-input" type="number" id="pin-influence" min="0" max="100" value="50" placeholder="0–100"></div>
       <div class="form-group"><label class="form-label">Impacto (0–100%)</label><input class="form-input" type="number" id="pin-impact" min="0" max="100" value="50" placeholder="0–100"></div>
@@ -2536,7 +2363,7 @@ function getSupaClient() {
 }
 
 // localStorage cache helpers
-const SGAS_CACHE_KEY = 'sgas_cache_v1';
+const SGAS_CACHE_KEY = 'sgas_cache_v2';
 function saveCache(data) {
   try { localStorage.setItem(SGAS_CACHE_KEY, JSON.stringify({...data, _ts: Date.now()})); } catch(_) {}
 }
@@ -2573,6 +2400,201 @@ const toDB = {
 
 // Current project (set on login in Phase 2 — placeholder until then)
 let ACTIVE_PROJECT_ID = localStorage.getItem('sgas_project_id') || null;
+let SGAS_READINESS_ASSESSMENT = null;
+let SGAS_READINESS_LOAD_DONE = false;
+
+function openReadinessWizard() {
+  const overlay = document.getElementById('readiness-wizard-overlay');
+  const frame   = document.getElementById('readiness-wizard-frame');
+  const pill    = document.getElementById('readiness-wizard-pill');
+  if (!overlay || !frame) {
+    window.open('/sgas-readiness-wizard.html', '_blank');
+    return;
+  }
+  const pid = ACTIVE_PROJECT_ID || localStorage.getItem('sgas_project_id') || '';
+  const src = '/sgas-readiness-wizard.html?embed=1' + (pid ? '&project_id=' + encodeURIComponent(pid) : '');
+  if (frame.getAttribute('src') !== src) frame.src = src;
+  overlay.classList.add('active');
+  if (pill) pill.classList.remove('active');
+}
+
+function minimizeReadinessWizard() {
+  const overlay = document.getElementById('readiness-wizard-overlay');
+  const pill    = document.getElementById('readiness-wizard-pill');
+  if (overlay) overlay.classList.remove('active');
+  if (pill)    pill.classList.add('active');
+}
+
+function restoreReadinessWizard() {
+  const overlay = document.getElementById('readiness-wizard-overlay');
+  const pill    = document.getElementById('readiness-wizard-pill');
+  if (overlay) overlay.classList.add('active');
+  if (pill)    pill.classList.remove('active');
+}
+
+function closeReadinessWizard() {
+  const overlay = document.getElementById('readiness-wizard-overlay');
+  const pill    = document.getElementById('readiness-wizard-pill');
+  const frame   = document.getElementById('readiness-wizard-frame');
+  if (overlay) overlay.classList.remove('active');
+  if (pill)    pill.classList.remove('active');
+  if (frame)   frame.src = '';
+}
+
+/* Called from auth.js after sign-in sync — opens wizard only if org has no assessment yet */
+window.openWizardIfNoAssessment = function() {
+  if (SGAS_READINESS_LOAD_DONE && !SGAS_READINESS_ASSESSMENT) {
+    openReadinessWizard();
+  }
+};
+
+function getAssessmentScore(profile, fallback) {
+  const raw = profile && (profile.score ?? profile.readiness_score);
+  const n = Number(raw);
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : fallback;
+}
+
+function applyReadinessProfile(profile, row) {
+  if (!profile || typeof profile !== 'object') return false;
+  const scores = profile.scores_by_ps || {};
+  const hasScores = scores && typeof scores === 'object';
+  if (hasScores) {
+    PS_DATA.forEach(ps => {
+      if (scores[ps.id] !== undefined && scores[ps.id] !== null) {
+        const n = Number(scores[ps.id]);
+        if (Number.isFinite(n)) ps.score = Math.max(0, Math.min(100, Math.round(n)));
+      }
+    });
+    const psIndex = { PS1:0, PS2:1, PS3:2, PS4:3, PS5:4, PS6:5, PS7:6, PS8:7 };
+    Object.keys(psIndex).forEach(ps => {
+      const n = Number(scores[ps]);
+      if (Number.isFinite(n)) sgasScores[psIndex[ps]] = Number((Math.max(0, Math.min(100, n)) / 20).toFixed(1));
+    });
+  }
+  const score = getAssessmentScore(profile, row && row.score);
+  const wizardProject = profile.project || {};
+  const projectName = wizardProject.name || wizardProject.projectName || 'A preencher pelo wizard';
+  const projectCountry = wizardProject.country || '—';
+  const projectSector = wizardProject.sector || '';
+  const projectPhase = wizardProject.phase || '—';
+  const projectGoal = wizardProject.goal === 'audit'
+    ? 'Prontidão para auditoria'
+    : wizardProject.goal === 'financing'
+      ? 'Prontidão para financiamento'
+      : 'Wizard';
+  const m = (window.projectConfig && window.projectConfig.metadata) ? window.projectConfig.metadata : {};
+  window.projectConfig = {
+    ...(window.projectConfig || {}),
+    metadata: {
+      ...m,
+      name: projectName,
+      country: projectCountry,
+      sector: projectSector,
+      desc: [projectSector, projectCountry].filter(v => v && v !== '—').join(' · ') || 'Dados preenchidos pelo wizard de prontidão.',
+      loanId: m.loanId && m.loanId !== '—' ? m.loanId : '—',
+      amount: m.amount && m.amount !== '—' ? m.amount : '—',
+      esCategory: m.esCategory && m.esCategory !== '—' ? m.esCategory : '—',
+      approvalDate: projectPhase,
+      closureDate: projectCountry,
+      esSpecialist: projectGoal,
+      readiness_score: score,
+      applicable_standards: profile.applicable_standards || [],
+      critical_gaps: profile.critical_gaps || [],
+      last_assessment_at: profile.assessed_at || (row && row.updated_at) || new Date().toISOString()
+    }
+  };
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  const meta = window.projectConfig.metadata;
+  setText('proj-pill-name', meta.name);
+  setText('proj-pill-loan', [meta.sector, meta.country].filter(v => v && v !== '—').join(' · ') || 'Wizard');
+  setText('proj-name', meta.name);
+  setText('proj-desc', meta.desc);
+  setText('proj-ida', meta.loanId);
+  setText('proj-amount', meta.amount);
+  setText('proj-cat', meta.esCategory);
+  setText('proj-approval', meta.approvalDate);
+  setText('proj-closure', meta.closureDate);
+  setText('proj-specialist', meta.esSpecialist);
+  SGAS_READINESS_ASSESSMENT = row || {
+    score,
+    profile,
+    updated_at: window.projectConfig.metadata.last_assessment_at
+  };
+  return true;
+}
+
+async function readActiveOrgId(client) {
+  const s = window.SGAS_SESSION || {};
+  if (s.orgId) return s.orgId;
+  const session = (await client.auth.getSession()).data.session;
+  if (!session) return null;
+  const { data, error } = await client
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', session.user.id)
+    .is('suspended_at', null)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? data.organization_id : null;
+}
+
+function isMissingReadinessTable(error) {
+  const code = error && error.code;
+  const msg = String((error && error.message) || '').toLowerCase();
+  return code === '42P01' || code === '42703' || msg.includes('readiness_assessments');
+}
+
+async function loadReadinessAssessmentFromSupabase() {
+  const client = getSupaClient();
+  if (!client) return false;
+  try {
+    const orgId = await readActiveOrgId(client);
+    if (!orgId) return false;
+    const { data, error } = await client
+      .from('readiness_assessments')
+      .select('*')
+      .eq('org_id', orgId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      if (isMissingReadinessTable(error)) {
+        console.warn('[SGAS] readiness_assessments ainda não existe; dashboard mantém estado local.');
+        return false;
+      }
+      throw error;
+    }
+    SGAS_READINESS_LOAD_DONE = true;
+    SGAS_READINESS_ASSESSMENT = data || null;
+    if (data && data.profile) applyReadinessProfile(data.profile, data);
+    return true;
+  } catch (e) {
+    console.warn('[SGAS] readiness load:', e.message || e);
+    return false;
+  }
+}
+
+window.addEventListener('message', function(event) {
+  if (event.origin !== window.location.origin) return;
+  const msg = event.data || {};
+  if (msg.type !== 'sgas-readiness-saved') return;
+  if (msg.profile) applyReadinessProfile(msg.profile, msg.row || null);
+  loadReadinessAssessmentFromSupabase().then(function() { renderAll(); });
+});
+
+document.addEventListener('click', function(event) {
+  const trigger = event.target.closest('[data-open-readiness-wizard]');
+  if (!trigger) return;
+  event.preventDefault();
+  openReadinessWizard();
+});
+
+window.openReadinessWizard   = openReadinessWizard;
+window.minimizeReadinessWizard = minimizeReadinessWizard;
+window.restoreReadinessWizard  = restoreReadinessWizard;
+window.closeReadinessWizard  = closeReadinessWizard;
+window.loadReadinessAssessmentFromSupabase = loadReadinessAssessmentFromSupabase;
 
 // Generic upsert helper — call from any save function
 async function dbUpsert(table, row, matchCol) {
@@ -2622,6 +2644,7 @@ async function syncFromSupabase() {
           sgasScores[psMap[r.ps_code]] = parseFloat((r.score / 20).toFixed(1));
       });
     }
+    await loadReadinessAssessmentFromSupabase();
     saveCache({ esapData, complaints, riskData, stakeholders, contractors, implementationEvidence, communityReports, legalRegister, ifcReports, lenderPackage, kpiProtocols, sourceWatchers, physicalRiskHotspots, processRiskMap });
     console.log('[SGAS] ✓ Dados sincronizados com Supabase');
     return true;
@@ -2652,7 +2675,7 @@ function restoreFromCache() {
 }
 
 // ===================== DATA =====================
-let sgasScores = [3,2,2,3,2,1,1,3,1];
+let sgasScores = [0,0,0,0,0,0,0,0,0];
 const ELEMS = [
   'Políticas',
   'Identificação de Riscos e Impactos',
@@ -2691,8 +2714,8 @@ let qaAnswers = {};
 let qaEvidence = {};
 
 const ASSESSMENT_META_DEFAULT = {
-  company:'Hospital Provincial do Bailundo',
-  projectId:'IDA-P171880',
+  company:'Projecto SGAS',
+  projectId:'—',
   assessor:'Consultor SGAS',
   role:'Gestor / Consultor A&S',
   email:'',
@@ -3074,886 +3097,23 @@ const PROJECT_OBLIGATIONS = {
   ]
 };
 
-const COMMERCIAL_INTELLIGENCE_DB = JSON.parse(String.raw`{
-  "$schema": "https://sgas.pro/schema/commercial-intelligence/v1",
-  "version": "1.3.0",
-  "lastUpdated": "2026-06-08",
-  "language": "pt",
-  "module": "commercial_intelligence",
-  "disclaimer": "Este dashboard apoia readiness/alinhamento. Não equivale a certificação, parecer jurídico ou aprovação IFC/World Bank.",
-  "projectRef": {
-    "name": "Hospital Provincial do Bailundo",
-    "id": "IDA-P171880",
-    "country": "Angola",
-    "region": "Huambo",
-    "sector": "Hospital construction / health infrastructure"
-  },
-  "positioning": "IFC / World Bank E&S Due Diligence Readiness Platform",
-  "verdict": "O dashboard é vendável hoje como cockpit de prontidão para due diligence IFC / World Bank E&S, sobretudo em modelo paid pilot com apoio consultivo. Com evidência de implementação real, mapa físico de riscos, mapeamento de processos, GRM completo, scorecard de contratantes, protocolos KPI, Source Version Watcher e Sala de Auditoria Banco Mundial, o produto está mais próximo de uma operação enterprise assistida.",
-  "recommendedOffer": "Software + advisory: diagnóstico inicial, configuração do SGAS, upload de evidências, gap analysis, ESAP/ESCP e relatório para financiador.",
-  "sellabilityScores": {
-    "scale": {
-      "min": 0,
-      "max": 10,
-      "precision": 1,
-      "unit": "points"
-    },
-    "demo": 8.5,
-    "paidPilot": 8.0,
-    "enterpriseSaaS": 8.3
-  },
-  "quickExtraction": [
-    {
-      "label": "Pitch",
-      "value": "Ajuda empresas a organizar evidências, riscos, ESAP/ESCP, stakeholders, reclamações, contratados e relatórios antes e durante due diligence IFC / World Bank."
-    },
-    {
-      "label": "Buyer pain",
-      "value": "Grandes empresas perdem tempo a provar prontidão E&S porque evidências ficam dispersas em PDFs, Excel, emails e pastas."
-    },
-    {
-      "label": "Best first sale",
-      "value": "Paid pilot para projecto em preparação de financiamento ou auditoria E&S, com configuração assistida."
-    },
-    {
-      "label": "Commercial warning",
-      "value": "Não prometer certificação IFC/World Bank; vender como readiness, evidence management e management cockpit."
-    },
-    {
-      "label": "Strategic correction",
-      "value": "Manter IFC PS1-PS8 para clientes IFC/MIGA e adicionar World Bank ESS1-ESS10 para borrowers IBRD/IDA."
-    },
-    {
-      "label": "Local AI requirement",
-      "value": "O cliente deve receber uma base local pré-indexada; o sistema não pode depender de leitura lenta dos PDFs durante o preenchimento."
-    },
-    {
-      "label": "Audit-readiness upgrade 1.2.0",
-      "value": "O SaaS passou a capturar evidência de implementação real, validação por gestor, comunicações às comunidades, versionamento documental, eficácia de formação e registo legal."
-    },
-    {
-      "label": "Audit-room upgrade 1.3.0",
-      "value": "O SaaS adicionou mapa físico de riscos, mapeamento de processos, GRM completo, scorecard de contratantes por 9 elementos, protocolos KPI, watcher de fontes oficiais e Sala de Auditoria Banco Mundial."
-    }
-  ],
-  "buyerTargets": [
-    "Empresas de construção e EPC em projectos financiados pelo Banco Mundial.",
-    "Empresas de energia, mineração, água, saúde, infraestrutura e agronegócio que procuram IFC/MIGA/DFI finance.",
-    "Project Implementation Units e donos de obra que precisam controlar evidências E&S.",
-    "Consultores ESG/HSE que preparam clientes para lender due diligence.",
-    "Subempreiteiros grandes que precisam demonstrar cláusulas laborais, HSE, resíduos e comunidade.",
-    "Intermediários financeiros (bancos, fundos de PE, MFIs) que precisam de ESMS para carteira IFC/DFI.",
-    "Empresas extractivas (petróleo, gás, mineração) sujeitas a requisitos de divulgação de receitas e governação."
-  ],
-  "enterpriseGaps": [
-    "Mapeamento World Bank ESS1-ESS10 e ESCP, além de IFC PS1-PS8 e ESAP.",
-    "Audit trail: quem alterou risco, documento, reclamação, contratante ou submissão.",
-    "Controlo de utilizadores e permissões: gestor, HSE, contractor, auditor, lender viewer.",
-    "Versionamento de evidências e anexos por requisito, acção e submissão.",
-    "Relatórios exportáveis PDF/DOCX/XLSX para due diligence, ESAP/ESCP, GRM, SEP e contractor compliance.",
-    "Multi-project portfolio view para grupos empresariais.",
-    "Motor local de apoio com base pré-indexada, regras instantâneas e LLM pequeno para explicações sem depender da internet.",
-    "Disclaimer legal visível em todos os exports: readiness não equivale a certificação ou aprovação IFC/World Bank.",
-    "Módulos sectoriais para indústrias extractivas (petróleo, gás, mineração): divulgação de receitas, HGA/IGA e avaliação de governação.",
-    "Módulo de infraestrutura essencial: divulgação de tarifas, padrões de serviço, obrigações de investimento e apoio governamental.",
-    "Verificação de Exclusion List IFC no intake de projecto: bloquear actividades proibidas antes de avançar.",
-    "Workflow específico para Intermediários Financeiros (Categoria FI): ESMS da carteira, Exclusion List para sub-projectos e distinção Categoria C/FI.",
-    "Broad Community Support como gate distinto: registo de expressões de apoio, investigação independente e evidência antes de submissão ao financiador."
-  ],
-  "localAiArchitecture": [
-    {
-      "label": "Base local",
-      "value": "Converter PDFs e páginas oficiais em requisitos curtos, checklists, gatilhos, evidências e exemplos; entregar isso junto com o SaaS."
-    },
-    {
-      "label": "Busca rápida",
-      "value": "Criar índice local por norma, requisito, módulo, risco, evidência, pergunta do formulário e palavras-chave em português/inglês."
-    },
-    {
-      "label": "Regras primeiro",
-      "value": "Validações críticas devem ser determinísticas e instantâneas; o LLM só explica a razão, recomenda acção e aponta evidência."
-    },
-    {
-      "label": "LLM pequeno",
-      "value": "Usar modelo local substituível para respostas curtas, sem enviar dados do cliente para fora do ambiente instalado."
-    },
-    {
-      "label": "Modo sem internet",
-      "value": "O cliente consegue preencher, receber alertas e gerar recomendações mesmo offline; internet só serve para verificar versões oficiais."
-    }
-  ],
-  "implementedAuditControls": [
-    {
-      "module": "Autoavaliação SGAS",
-      "control": "Cada resposta pode guardar tipo de evidência, referência/ficheiro, validador, estado e notas."
-    },
-    {
-      "module": "Evidência de Implementação Real",
-      "control": "Registo de observação visual, medição/teste, revisão documental, entrevista, foto/vídeo e validação por gestor."
-    },
-    {
-      "module": "Comunicações às Comunidades Afetadas",
-      "control": "Histórico com data, público, tema, canal, feedback recebido, novos riscos, evidência, responsável e estado."
-    },
-    {
-      "module": "Cofre de Documentos",
-      "control": "Controlo de versão, owner, aprovador, data de revisão, próxima revisão e documento obsoleto/substituído."
-    },
-    {
-      "module": "Plano de Formação",
-      "control": "Mede eficácia por quiz, avaliação prática, entrevista, assinatura e capacidade de explicar o procedimento."
-    },
-    {
-      "module": "ESAP",
-      "control": "Acções com objectivo, resultado esperado, KPI, orçamento/recurso, procedimento associado e stakeholders consultados."
-    },
-    {
-      "module": "Registo Legal Angola + IFC/ESS",
-      "control": "Requisitos, licenças, autoridade, validade, owner, evidência e alertas de vencimento para revisão de gestão."
-    },
-    {
-      "module": "Mapas de Risco",
-      "control": "Planta física com hotspots de poeira, ruído, tráfego, químicos, resíduos e comunidades afectadas, ligados a riscos e evidências."
-    },
-    {
-      "module": "Mapeamento de Processo",
-      "control": "Liga recepção de material, obra civil, transporte, armazenamento, resíduos, segurança, limpeza e emergência a riscos, controlos e responsáveis."
-    },
-    {
-      "module": "Mecanismo de Reclamações",
-      "control": "GRM completo com decisão aceite/não aceite, perfil do reclamante, método de notificação, evidência de encerramento, satisfação/apelo, recursos e pós-monitoramento."
-    },
-    {
-      "module": "Terceiros / Subempreiteiros",
-      "control": "Scorecard por contratante contra os 9 elementos SGAS: política, riscos, ESAP, formação, emergência, stakeholders, GRM, relatórios e monitoramento."
-    },
-    {
-      "module": "Monitoramento e KPIs",
-      "control": "Protocolos por KPI com frequência, método, equipamento, norma de referência, responsável, registo e acção correctiva automática."
-    },
-    {
-      "module": "Sala de Auditoria Banco Mundial",
-      "control": "Pacote lender-ready com documentos obrigatórios, evidências por requisito, auditorias/inspecções, ESAP/ESCP, GRM, SEP, legal register, contractor compliance e monitoramento."
-    },
-    {
-      "module": "Source Version Watcher",
-      "control": "Registo local de fontes oficiais IFC/World Bank, data de verificação, estado, URL e alerta para mudanças em templates, notas e checklists."
-    }
-  ],
-  "localDecisionGuards": [
-    {
-      "label": "Categoria A sem ESIA",
-      "standard": "IFC categorization / PS1 / ESS1",
-      "value": "Alerta crítico: projecto de alto risco não pode avançar sem ESIA, consulta pública robusta, ESAP e evidências."
-    },
-    {
-      "label": "Comunidades afectadas sem SEP/GRM",
-      "standard": "PS1 / ESS10",
-      "value": "Exigir plano de engajamento, mecanismo de reclamações e histórico de consultas."
-    },
-    {
-      "label": "Trabalhadores sem mecanismo laboral",
-      "standard": "PS2 / ESS2",
-      "value": "Exigir mecanismo de reclamação laboral, comunicação aos trabalhadores, registo de casos e prazos de resposta."
-    },
-    {
-      "label": "Subempreiteiro sem cláusulas E&S",
-      "standard": "PS2 / ESS2",
-      "value": "Bloquear conformidade até cláusulas, indução, HSE e evidências laborais estarem completas."
-    },
-    {
-      "label": "Biodiversidade sem triagem",
-      "standard": "PS6 / ESS6",
-      "value": "Exigir screening de habitats, espécies sensíveis, áreas protegidas e medidas de evitar/reduzir/mitigar/compensar."
-    },
-    {
-      "label": "Património cultural sem procedimento",
-      "standard": "PS8 / ESS8",
-      "value": "Exigir chance-find procedure, consulta a autoridades competentes e registo de achados quando aplicável."
-    },
-    {
-      "label": "Reassentamento marcado como não aplicável sem justificativa",
-      "standard": "PS5 / ESS5",
-      "value": "Exigir triagem documentada, mapa de afectados ou declaração técnica."
-    },
-    {
-      "label": "FPIC pendente",
-      "standard": "PS7 / ESS7",
-      "value": "Indicar pendência de consulta livre, prévia e informada quando comunidades tradicionais forem aplicáveis."
-    },
-    {
-      "label": "Actividade na Exclusion List IFC",
-      "standard": "IFC Environmental and Social Review Procedure – Exclusion List",
-      "value": "Bloquear criação de projecto: actividades proibidas pelo IFC não podem receber apoio de due diligence. Notificar utilizador e exigir reclassificação ou encerramento do registo."
-    },
-    {
-      "label": "Broad Community Support não documentado em projecto Categoria A",
-      "standard": "IFC Sustainability Policy §20 / PS1",
-      "value": "Exigir registo de expressões de apoio das comunidades afectadas (indivíduos ou representantes reconhecidos), documentação do processo de consulta livre, prévia e informada, e evidência de que não há oposição generalizada antes de submissão ao financiador. Broad support pode coexistir com objecções individuais mas não com rejeição sistemática de grupos afectados."
-    },
-    {
-      "label": "Intermediário financeiro sem ESMS de carteira",
-      "standard": "IFC Sustainability Policy §28-29 / ESS9",
-      "value": "Exigir que o FI estabeleça e mantenha Sistema de Gestão E&S para a carteira, aplique a Exclusion List a todos os sub-projectos, e aplique PS/ESS completos a sub-projectos com riscos E&S significativos. FI com riscos mínimos qualifica como Categoria C e fica isento de requisitos específicos."
-    },
-    {
-      "label": "Projecto extractivo significativo sem divulgação de receitas",
-      "standard": "IFC Sustainability Policy §22",
-      "value": "Projectos de petróleo, gás ou mineração que representem 10% ou mais das receitas governamentais são considerados significativos. Exigir divulgação pública de pagamentos materiais ao governo (royalties, impostos, partilha de lucros) e dos termos relevantes de HGA e IGA."
-    },
-    {
-      "label": "Infraestrutura essencial sob monopólio sem divulgação tarifária",
-      "standard": "IFC Sustainability Policy §23",
-      "value": "Para distribuição de água, electricidade, gás canalizado ou telecomunicações em regime de monopólio: encorajar divulgação pública de tarifas domésticas, mecanismos de ajuste, padrões de serviço, obrigações de investimento e apoio governamental. Em privatizações, incluir taxas de concessão ou receitas de privatização."
-    }
-  ],
-  "exclusionListCheck": {
-    "policyRef": "IFC Environmental and Social Review Procedure – Exclusion List",
-    "sustainabilityPolicyRef": "IFC Sustainability Policy §17",
-    "note": "A Exclusion List é mantida no Environmental and Social Review Procedure e actualizada pelo IFC. O SGAS deve verificar o sector e actividade do projecto no intake e bloquear o avanço se a actividade se enquadrar em categorias proibidas.",
-    "intakeGate": {
-      "trigger": "Criação ou edição do campo 'sector / actividade principal' do projecto",
-      "action": "Verificar contra lista de actividades excluídas; bloquear se positivo; requerer confirmação explícita do utilizador se borderline",
-      "outputOnBlock": "Alerta crítico com referência ao item da Exclusion List e instrução para contactar financiador antes de prosseguir"
-    },
-    "typicalExclusionCategories": [
-      "Produção ou comércio de armas e munições",
-      "Produção ou comércio de álcool (excepções aplicam-se)",
-      "Produção ou comércio de tabaco",
-      "Jogos de azar, cassinos e equiparados",
-      "Indústrias e actividades envolvendo trabalho forçado ou trabalho infantil prejudicial",
-      "Produção ou comércio de materiais radioactivos sem gestão adequada",
-      "Produção ou comércio de produtos contendo PCBs",
-      "Pesca de arrasto em águas internacionais",
-      "Madeira tropical sem certificação sustentável para comércio internacional",
-      "Actividades classificadas como Património Mundial da UNESCO sem aprovação de impacto",
-      "Produção, uso ou comércio de pesticidas/herbicidas proibidos internacionalmente"
-    ]
-  },
-  "financialIntermediaryWorkflow": {
-    "policyRef": "IFC Sustainability Policy §27-29",
-    "description": "Workflow específico para clientes IFC que são Intermediários Financeiros (FI): bancos, fundos de private equity, microfinanceiras, fundos de habitação e similares.",
-    "categoryDetermination": {
-      "categoryC_FI": {
-        "criteria": "FI com actividades de negócio que apresentam riscos E&S mínimos ou nulos",
-        "requirements": "Nenhum requisito E&S específico além do cumprimento da Exclusion List",
-        "dashboardBehaviour": "Módulo E&S simplificado; apenas Exclusion List obrigatória"
-      },
-      "categoryFI": {
-        "criteria": "Todos os outros FI que não se qualificam como Categoria C",
-        "requirements": [
-          "Aplicar a Exclusion List a todos os sub-projectos da carteira",
-          "Para financiamento corporativo ou de projecto de longo prazo: requerer ao destinatário seguir leis nacionais (risco E&S limitado) ou aplicar PS/ESS completos (risco E&S significativo)",
-          "Estabelecer e manter ESMS para a carteira",
-          "Reportar periodicamente ao IFC com base no ESMS"
-        ],
-        "dashboardBehaviour": "Módulo ESMS de carteira activado; triagem de sub-projectos; Exclusion List obrigatória; relatório de desempenho do ESMS"
-      }
-    },
-    "esmsPortfolioRequirements": [
-      "Política E&S do FI aprovada pela gestão",
-      "Procedimento de triagem E&S de sub-projectos por nível de risco",
-      "Aplicação da Exclusion List IFC a cada sub-projecto antes de aprovação",
-      "Due diligence E&S proporcional ao risco do sub-projecto",
-      "Monitoramento E&S da carteira com frequência definida",
-      "Mecanismo de reclamação acessível a comunidades afectadas por sub-projectos",
-      "Capacitação interna da equipa de crédito/investimento em riscos E&S",
-      "Relatório anual de desempenho E&S da carteira para o IFC"
-    ],
-    "subProjectRiskTiers": [
-      {
-        "tier": "Risco limitado",
-        "requirement": "Cumprimento de leis e regulamentos nacionais aplicáveis",
-        "dashboardModule": "Checklist de conformidade legal nacional"
-      },
-      {
-        "tier": "Risco significativo",
-        "requirement": "Aplicação dos Performance Standards IFC PS1-PS8 ou ESS1-ESS10 conforme o financiador",
-        "dashboardModule": "Módulo PS/ESS completo com ESAP e monitoramento"
-      }
-    ]
-  },
-  "broadCommunitySupport": {
-    "policyRef": "IFC Sustainability Policy §19-20",
-    "definition": "Conjunto de expressões das comunidades afectadas — através de indivíduos ou dos seus representantes reconhecidos — em apoio ao projecto. Pode existir apoio comunitário amplo mesmo quando alguns indivíduos ou grupos se opõem ao projecto.",
-    "applicability": "Obrigatório em projectos Categoria A e em qualquer projecto onde seja exigido processo de consulta livre, prévia e informada (FPIC), antes da submissão ao Conselho de Administração do financiador.",
-    "gate": {
-      "trigger": "Projecto classificado como Categoria A ou com PS7/ESS7 activado",
-      "blocksSubmission": true,
-      "requiredEvidenceBeforeSubmission": [
-        "Documentação do processo de consulta livre, prévia e informada com datas, participantes e métodos",
-        "Registo das expressões de apoio das comunidades afectadas (actas, declarações, cartas, vídeos ou equivalentes aceites pelo financiador)",
-        "Identificação e registo de objecções individuais ou de grupos, com resposta documentada do cliente",
-        "Avaliação de que não existe oposição generalizada ou sistemática de grupos afectados materialmente pelo projecto",
-        "Confirmação de que o processo de engajamento foi conduzido sem coerção, intimidação ou incentivos indevidos"
-      ],
-      "outputOnPending": "Alerta de bloqueio de submissão: Broad Community Support não demonstrado. O financiador conduzirá investigação própria antes de apresentar o projecto ao Conselho — cliente deve garantir que a documentação está disponível e consistente."
-    },
-    "postApprovalMonitoring": {
-      "requirement": "Após aprovação do financiador, monitorar continuamente o processo de engajamento comunitário do cliente como parte da supervisão de portfólio.",
-      "dashboardModule": "Registo contínuo de consultas, reclamações e expressões de apoio/oposição ao longo da vida do projecto"
-    }
-  },
-  "sectorSpecificModules": {
-    "policyRef": "IFC Sustainability Policy §21-23",
-    "extractiveIndustries": {
-      "sectors": ["Petróleo", "Gás", "Mineração"],
-      "policyRef": "IFC Sustainability Policy §22",
-      "governanceRiskAssessment": {
-        "required": true,
-        "significantProjectThreshold": "Projecto que representa 10% ou mais das receitas governamentais do país anfitrião",
-        "significantProjectRequirements": [
-          "Avaliação de riscos de governação com mitigação adequada documentada",
-          "Divulgação pública de pagamentos materiais ao governo: royalties, impostos, partilha de lucros",
-          "Divulgação dos termos relevantes de acordos de interesse público: HGA (Host Government Agreement) e IGA (Intergovernmental Agreement)"
-        ],
-        "smallerProjectRequirements": [
-          "Revisão de benefícios líquidos esperados e riscos de governação fraca",
-          "Avaliação da aceitabilidade do balanço benefícios/riscos antes de aprovação"
-        ]
-      },
-      "revenueTransparency": {
-        "mandatory": true,
-        "applicableFrom": "2007-01-01",
-        "scope": "Todos os projectos extractivos financiados pelo IFC, independentemente da dimensão",
-        "disclosureItems": [
-          "Pagamentos materiais ao(s) governo(s) anfitrião(ões) por projecto",
-          "Royalties",
-          "Impostos aplicáveis ao projecto",
-          "Partilha de lucros (profit sharing)"
-        ]
-      },
-      "dashboardModules": [
-        "Avaliação de risco de governação com score e mitigações",
-        "Registo de pagamentos ao governo com evidências (recibos, extractos, declarações)",
-        "Tracker de divulgação de HGA/IGA: estado, data de publicação e link",
-        "Calculadora de materialidade: percentagem estimada das receitas governamentais",
-        "Alerta de projecto significativo (≥10% receitas) com requisitos adicionais activados automaticamente"
-      ]
-    },
-    "infrastructure": {
-      "sectors": ["Água", "Electricidade", "Gás canalizado", "Telecomunicações"],
-      "policyRef": "IFC Sustainability Policy §23",
-      "applicabilityCondition": "Distribuição final de serviços essenciais ao público geral em condições de monopólio",
-      "disclosureItems": [
-        "Tarifas domésticas actuais e mecanismos de ajuste tarifário",
-        "Padrões de serviço comprometidos (níveis de qualidade, cobertura, tempo de resposta)",
-        "Obrigações de investimento do operador",
-        "Forma e extensão de qualquer apoio governamental em curso",
-        "Em privatizações: taxas de concessão ou receitas de privatização"
-      ],
-      "disclosureResponsibility": "Divulgação pode ser feita pela entidade governamental responsável (ex: regulador sectorial) ou pelo cliente",
-      "dashboardModules": [
-        "Registo de tarifas domésticas com histórico e fórmula de ajuste",
-        "Tracker de padrões de serviço: comprometido vs. realizado com evidências",
-        "Registo de obrigações de investimento e estado de cumprimento",
-        "Registo de apoio governamental: tipo, valor, prazo e condições",
-        "Módulo de privatização: taxas de concessão, receitas e documentação de divulgação"
-      ]
-    }
-  },
-  "sourceVersionClarity": {
-    "note": "O IFC mantém duas camadas documentais distintas que o SGAS usa em conjunto. É crítico não confundir os papéis de cada documento.",
-    "layers": [
-      {
-        "id": "ifc-sustainability-policy-2006-local",
-        "role": "governance",
-        "description": "Política de governação IFC 2006: define missão, categorização A/B/C/FI, responsabilidades IFC, CAO, disclosure e regras para FI e sectores específicos. Não é substituída pelos PS 2012 — permanece como quadro institucional.",
-        "useInSaaS": "Categorização de projectos, workflow FI, requisitos sectoriais (extractivo/infraestrutura), Broad Community Support, CAO e Exclusion List."
-      },
-      {
-        "id": "ifc-performance-standards-2012",
-        "role": "substantive_requirements",
-        "description": "PS1-PS8 versão 2012: são os requisitos substantivos operacionais actuais para clientes IFC/MIGA. Actualizam e superam a versão 2006 dos PS. São a referência principal para evidências, ESAP e monitoramento.",
-        "useInSaaS": "Todos os módulos de evidências, checklists, ESAP, contratados, GRM, SEP, biodiversidade, reassentamento, FPIC e monitoramento."
-      }
-    ]
-  },
-  "preIndexedKnowledge": [
-    {
-      "id": "ifc-ps-matrix",
-      "label": "Matriz IFC PS1-PS8",
-      "schema": "knowledge.ifcPerformanceStandards[]",
-      "sourceRef": "ifc-performance-standards-2012",
-      "fields": ["code", "dashboard", "requirements", "evidence", "guards"]
-    },
-    {
-      "id": "wb-ess-matrix",
-      "label": "Matriz World Bank ESS1-ESS10",
-      "schema": "knowledge.worldBankESS[]",
-      "sourceRef": "world-bank-esf-resources",
-      "fields": ["code", "dashboard", "requirements", "evidence", "guards"]
-    },
-    {
-      "id": "esms-toolkit-index",
-      "label": "Toolkit SGAS/ESMS em português",
-      "schema": "knowledge.esmsToolkit[]",
-      "sourceRef": "esms-toolkit-general-2016-pt",
-      "path": "/Users/hendrikribeiro/Library/Mobile Documents/com~apple~CloudDocs/untitled folder 2/112174-WP-PORTUGUESE-ESMS-Toolkit-General-2016-PUBLIC.pdf"
-    },
-    {
-      "id": "self-assessment-index",
-      "label": "Autoavaliação SGAS",
-      "schema": "knowledge.selfAssessment[]",
-      "sourceRef": "esms-self-assessment-2016-pt",
-      "path": "/Users/hendrikribeiro/Library/Mobile Documents/com~apple~CloudDocs/untitled folder 2/112104-WP-PORTUGUESE-ESMS-Self-Assessment-v2-3-PUBLIC.pdf",
-      "dashboardStatus": "implemented",
-      "dashboardModule": "Autoavaliação SGAS",
-      "elements": 9,
-      "questionCount": 42,
-      "scoring": "Escala 0-5; média das perguntas por elemento; média global dos 9 elementos.",
-      "dashboardFields": ["company", "projectId", "assessor", "role", "email", "date", "useCase", "questionScores", "elementAverage", "improvementPlan"]
-    },
-    {
-      "id": "exclusion-list-index",
-      "label": "Exclusion List IFC",
-      "schema": "knowledge.exclusionList[]",
-      "sourceRef": "ifc-esrp-exclusion-list",
-      "fields": ["category", "description", "exceptions", "dashboardTrigger"]
-    },
-    {
-      "id": "sector-extractive-index",
-      "label": "Requisitos sectoriais – Indústrias extractivas",
-      "schema": "knowledge.sectorSpecificModules.extractiveIndustries",
-      "sourceRef": "ifc-sustainability-policy-2006-local",
-      "fields": ["governanceRisk", "revenueDisclosure", "hga", "iga", "materialityThreshold"]
-    },
-    {
-      "id": "sector-infrastructure-index",
-      "label": "Requisitos sectoriais – Infraestrutura essencial",
-      "schema": "knowledge.sectorSpecificModules.infrastructure",
-      "sourceRef": "ifc-sustainability-policy-2006-local",
-      "fields": ["tariffs", "serviceStandards", "investmentObligations", "governmentSupport", "privatization"]
-    },
-    {
-      "id": "fi-workflow-index",
-      "label": "Workflow Intermediários Financeiros (FI)",
-      "schema": "knowledge.financialIntermediaryWorkflow",
-      "sourceRef": "ifc-sustainability-policy-2006-local",
-      "fields": ["categoryDetermination", "esmsRequirements", "subProjectTiers", "exclusionListApplication"]
-    },
-    {
-      "id": "broad-community-support-index",
-      "label": "Broad Community Support – gate e evidências",
-      "schema": "knowledge.broadCommunitySupport",
-      "sourceRef": "ifc-sustainability-policy-2006-local",
-      "fields": ["definition", "applicability", "requiredEvidence", "blockConditions", "postApprovalMonitoring"]
-    },
-    {
-      "id": "implementation-evidence-index",
-      "label": "Evidência de implementação real",
-      "schema": "dashboard.implementationEvidence[]",
-      "sourceRef": "esms-handbook-general-2016-pt",
-      "fields": ["date", "module", "procedure", "type", "ref", "validatedBy", "status", "notes"]
-    },
-    {
-      "id": "community-communications-index",
-      "label": "Comunicações às comunidades afectadas",
-      "schema": "dashboard.communityReports[]",
-      "sourceRef": "esms-handbook-general-2016-pt",
-      "fields": ["date", "community", "topic", "channel", "feedback", "newRisk", "evidence", "owner", "status"]
-    },
-    {
-      "id": "document-version-control-index",
-      "label": "Controlo de versões de documentos",
-      "schema": "dashboard.documents[]",
-      "sourceRef": "esms-handbook-general-2016-pt",
-      "fields": ["name", "version", "owner", "approver", "date", "nextReview", "replaces", "status"]
-    },
-    {
-      "id": "training-effectiveness-index",
-      "label": "Eficácia de formação SGAS",
-      "schema": "dashboard.trainingPlan[]",
-      "sourceRef": "esms-handbook-general-2016-pt",
-      "fields": ["topic", "target", "done", "total", "quiz", "practical", "interview", "explains", "signature", "proof"]
-    },
-    {
-      "id": "legal-register-index",
-      "label": "Registo Legal Angola + IFC/ESS",
-      "schema": "dashboard.legalRegister[]",
-      "sourceRef": "esms-handbook-general-2016-pt",
-      "fields": ["requirement", "source", "authority", "permit", "expiry", "owner", "evidence", "status"]
-    },
-    {
-      "id": "physical-risk-map-index",
-      "label": "Mapa físico de riscos e hotspots",
-      "schema": "dashboard.physicalRiskHotspots[]",
-      "sourceRef": "esms-toolkit-general-2016-pt",
-      "fields": ["id", "label", "type", "risk", "x", "y", "level", "control", "community", "evidence"]
-    },
-    {
-      "id": "process-risk-map-index",
-      "label": "Mapeamento de processo para risco e controlo",
-      "schema": "dashboard.processRiskMap[]",
-      "sourceRef": "esms-toolkit-general-2016-pt",
-      "fields": ["process", "step", "risks", "control", "evidence", "owner", "status"]
-    },
-    {
-      "id": "full-grm-index",
-      "label": "Registo de reclamações completo",
-      "schema": "dashboard.complaints[]",
-      "sourceRef": "esms-toolkit-general-2016-pt",
-      "fields": ["id", "data", "origem", "cat", "desc", "accepted", "profile", "notifyMethod", "closureEvidence", "satisfaction", "resources", "postMonitoring", "cao", "caoLink", "prazo"]
-    },
-    {
-      "id": "contractor-scorecard-index",
-      "label": "Scorecard de contratantes por 9 elementos SGAS",
-      "schema": "dashboard.contractors[].scorecard",
-      "sourceRef": "esms-toolkit-general-2016-pt",
-      "fields": ["policy", "risks", "esap", "training", "emergency", "stakeholders", "grm", "reporting", "monitoring"]
-    },
-    {
-      "id": "kpi-monitoring-protocol-index",
-      "label": "Protocolos de monitoramento por KPI",
-      "schema": "dashboard.kpiProtocols[]",
-      "sourceRef": "esms-handbook-general-2016-pt",
-      "fields": ["kpi", "frequency", "method", "equipment", "standard", "owner", "record", "action"]
-    },
-    {
-      "id": "source-version-watcher-index",
-      "label": "Watcher de versões oficiais IFC/World Bank",
-      "schema": "dashboard.sourceWatchers[]",
-      "sourceRef": "world-bank-esf-resources",
-      "fields": ["name", "current", "lastChecked", "status", "url", "owner", "note"]
-    },
-    {
-      "id": "world-bank-audit-room-index",
-      "label": "Sala de Auditoria Banco Mundial",
-      "schema": "dashboard.lenderPackage[]",
-      "sourceRef": "world-bank-esf-resources",
-      "fields": ["section", "owner", "evidence", "readiness", "status", "gap"]
-    },
-    {
-      "id": "source-register",
-      "label": "Registo de fontes e versão",
-      "schema": "sources[]",
-      "fields": ["id", "type", "name", "path", "url", "dateVerified", "documentDate", "sha256", "role"]
-    }
-  ],
-  "releaseChecklist": [
-    {
-      "gapRef": "enterpriseGaps[0]",
-      "item": "Mapear PS1-PS8, ESS1-ESS10, ESAP e ESCP em campos do dashboard."
-    },
-    {
-      "gapRef": "enterpriseGaps[1]",
-      "item": "Activar audit trail para alterações em risco, documento, reclamação, contratante e submissão."
-    },
-    {
-      "gapRef": "enterpriseGaps[2]",
-      "item": "Implementar perfis e permissões: gestor, HSE, contractor, auditor e lender viewer."
-    },
-    {
-      "gapRef": "enterpriseGaps[3]",
-      "item": "Adicionar versionamento de evidências e anexos por requisito, acção e submissão."
-    },
-    {
-      "gapRef": "enterpriseGaps[4]",
-      "item": "Gerar exports PDF/DOCX/XLSX para due diligence, ESAP/ESCP, GRM, SEP e contractor compliance."
-    },
-    {
-      "gapRef": "enterpriseGaps[5]",
-      "item": "Adicionar visão multi-projecto para grupos empresariais e donos de obra."
-    },
-    {
-      "gapRef": "enterpriseGaps[6]",
-      "item": "Empacotar base local pré-indexada, regras instantâneas e LLM pequeno offline-first."
-    },
-    {
-      "gapRef": "enterpriseGaps[7]",
-      "item": "Mostrar disclaimer legal em dashboard, relatórios, exports e JSON."
-    },
-    {
-      "gapRef": "enterpriseGaps[8]",
-      "item": "Implementar módulo sectorial extractivo: avaliação de risco de governação, calculadora de materialidade (≥10% receitas), tracker de divulgação de pagamentos, HGA e IGA."
-    },
-    {
-      "gapRef": "enterpriseGaps[9]",
-      "item": "Implementar módulo sectorial de infraestrutura: registo de tarifas, padrões de serviço, obrigações de investimento, apoio governamental e privatização."
-    },
-    {
-      "gapRef": "enterpriseGaps[10]",
-      "item": "Adicionar gate de Exclusion List no intake de projecto: verificar sector/actividade e bloquear com alerta crítico se enquadrado em actividade proibida."
-    },
-    {
-      "gapRef": "enterpriseGaps[11]",
-      "item": "Implementar workflow de Intermediário Financeiro: determinar Categoria C vs. FI, activar módulo ESMS de carteira, triagem de sub-projectos por risco e relatório de desempenho FI."
-    },
-    {
-      "gapRef": "enterpriseGaps[12]",
-      "item": "Implementar gate de Broad Community Support: activado automaticamente em Categoria A e PS7/ESS7; bloquear submissão ao financiador até evidências de consulta livre, prévia e informada e expressões de apoio comunitário estarem completas."
-    }
-  ],
-  "ifcPerformanceStandards": [
-    {
-      "code": "PS1",
-      "dashboard": "Autoavaliação SGAS, riscos, ESAP, documentos, relatórios, monitoramento"
-    },
-    {
-      "code": "PS2",
-      "dashboard": "Trabalho, HSE, formação, contratados, mecanismo laboral de reclamações"
-    },
-    {
-      "code": "PS3",
-      "dashboard": "Resíduos, água, energia, poluição, derrames, indicadores ambientais"
-    },
-    {
-      "code": "PS4",
-      "dashboard": "Saúde e segurança comunitária, tráfego, emergência, reclamações comunitárias"
-    },
-    {
-      "code": "PS5",
-      "dashboard": "Reassentamento / compensação quando aplicável"
-    },
-    {
-      "code": "PS6",
-      "dashboard": "Biodiversidade, habitats, recursos naturais vivos e compensação quando aplicável"
-    },
-    {
-      "code": "PS7",
-      "dashboard": "FPIC, povos indígenas / comunidades tradicionais e suporte comunitário amplo quando aplicável"
-    },
-    {
-      "code": "PS8",
-      "dashboard": "Património cultural, procedimento de achados fortuitos e consulta a autoridades quando aplicável"
-    }
-  ],
-  "worldBankESS": [
-    {
-      "code": "ESS1",
-      "dashboard": "Avaliação e gestão de riscos e impactos E&S; ESCP; monitoramento"
-    },
-    {
-      "code": "ESS2",
-      "dashboard": "Trabalho, condições laborais, HSE e trabalhadores de contratados"
-    },
-    {
-      "code": "ESS3",
-      "dashboard": "Eficiência de recursos, poluição, resíduos, água e energia"
-    },
-    {
-      "code": "ESS4",
-      "dashboard": "Saúde e segurança da comunidade, tráfego, emergência e segurança"
-    },
-    {
-      "code": "ESS5",
-      "dashboard": "Aquisição de terras, restrições de uso e reassentamento involuntário"
-    },
-    {
-      "code": "ESS6",
-      "dashboard": "Biodiversidade e recursos naturais vivos"
-    },
-    {
-      "code": "ESS7",
-      "dashboard": "Povos indígenas / comunidades tradicionais e FPIC quando aplicável"
-    },
-    {
-      "code": "ESS8",
-      "dashboard": "Património cultural"
-    },
-    {
-      "code": "ESS9",
-      "dashboard": "Intermediários financeiros: ESMS de carteira, triagem de sub-projectos, Exclusion List e relatório de desempenho"
-    },
-    {
-      "code": "ESS10",
-      "dashboard": "Stakeholder engagement, disclosure, SEP e grievance mechanism"
-    }
-  ],
-  "sources": [
-    {
-      "id": "ifc-sustainability-policy-2006-local",
-      "type": "local",
-      "role": "governance",
-      "roleNote": "Quadro institucional IFC: categorização, CAO, FI, sectores extractivo/infraestrutura, Broad Community Support e Exclusion List. Não substituído pelos PS 2012.",
-      "name": "IFC Policy on Social and Environmental Sustainability (2006)",
-      "fileName": "Safari 4.pdf",
-      "path": "/Users/hendrikribeiro/Library/Mobile Documents/com~apple~CloudDocs/untitled folder 2/Safari 4.pdf",
-      "url": null,
-      "documentDate": "2006",
-      "dateVerified": "2026-06-07",
-      "sha256": "42a71b965b0dcf66bd9985f87d0dee19c3992c38aa49635b8cc268bbce6ececf",
-      "use": "Política IFC 2006: categorização A/B/C/FI, relatórios de monitoramento, CAO, requisitos sectoriais extractivos e infraestrutura, workflow FI, Broad Community Support e Exclusion List."
-    },
-    {
-      "id": "esms-toolkit-general-2016-pt",
-      "type": "local",
-      "role": "implementation_tool",
-      "name": "IFC ESMS Toolkit General - Portuguese (2016)",
-      "fileName": "112174-WP-PORTUGUESE-ESMS-Toolkit-General-2016-PUBLIC.pdf",
-      "path": "/Users/hendrikribeiro/Library/Mobile Documents/com~apple~CloudDocs/untitled folder 2/112174-WP-PORTUGUESE-ESMS-Toolkit-General-2016-PUBLIC.pdf",
-      "url": null,
-      "documentDate": "2016",
-      "dateVerified": "2026-06-07",
-      "sha256": "2b07f63004cc992d424d467fdb1b9ae363f7245145e250ec7b5266e4bd510094",
-      "use": "Ferramentas SGAS, checklists, mecanismos de reclamação, contratados, indicadores e auditoria."
-    },
-    {
-      "id": "esms-handbook-general-2016-pt",
-      "type": "local",
-      "role": "implementation_tool",
-      "name": "IFC ESMS Implementation Handbook General - Portuguese (2016)",
-      "fileName": "esms-handbook-general-2016-portuguese.pdf",
-      "path": "/Users/hendrikribeiro/Library/Mobile Documents/com~apple~CloudDocs/untitled folder 2/esms-handbook-general-2016-portuguese.pdf",
-      "url": null,
-      "documentDate": "2016",
-      "dateVerified": "2026-06-07",
-      "sha256": "4f99c114de82e466843155be200f3747a331aa90d9ed6b37ce36c1f9e2345202",
-      "use": "Manual de implementação SGAS, nove elementos, cadeia de abastecimento, monitoramento e revisão."
-    },
-    {
-      "id": "esms-self-assessment-2016-pt",
-      "type": "local",
-      "role": "implementation_tool",
-      "name": "IFC ESMS Self-Assessment and Improvement Guide - Portuguese (2016)",
-      "fileName": "112104-WP-PORTUGUESE-ESMS-Self-Assessment-v2-3-PUBLIC.pdf",
-      "path": "/Users/hendrikribeiro/Library/Mobile Documents/com~apple~CloudDocs/untitled folder 2/112104-WP-PORTUGUESE-ESMS-Self-Assessment-v2-3-PUBLIC.pdf",
-      "url": null,
-      "documentDate": "2016",
-      "dateVerified": "2026-06-07",
-      "sha256": "3d19a347533c8acaa0b9fe1c17bf98293b88a8efb262c0c21341017e8c19a9d4",
-      "use": "Guia de autoavaliação e melhoria SGAS, maturidade 0-5 e plano de melhoria."
-    },
-    {
-      "id": "world-bank-esf",
-      "type": "official",
-      "role": "substantive_requirements",
-      "name": "World Bank Environmental and Social Framework",
-      "path": null,
-      "url": "https://www.worldbank.org/en/projects-operations/environmental-and-social-framework",
-      "documentDate": "2016",
-      "dateVerified": "2026-06-07",
-      "sha256": null,
-      "use": "ESF para borrowers IBRD/IDA e IPF."
-    },
-    {
-      "id": "world-bank-esf-resources",
-      "type": "official",
-      "role": "substantive_requirements",
-      "name": "World Bank ESF Resources",
-      "path": null,
-      "url": "https://www.worldbank.org/en/projects-operations/environmental-and-social-framework/brief/environmental-and-social-framework-resources",
-      "documentDate": "current-online",
-      "dateVerified": "2026-06-07",
-      "sha256": null,
-      "use": "Recursos ESS1-ESS10, templates e orientação operacional."
-    },
-    {
-      "id": "ifc-performance-standards-2012",
-      "type": "official",
-      "role": "substantive_requirements",
-      "roleNote": "PS1-PS8 versão operacional actual para clientes IFC/MIGA. Actualiza e supera a versão PS de 2006. Referência principal para evidências, ESAP e monitoramento no SGAS.",
-      "name": "IFC Performance Standards on Environmental and Social Sustainability",
-      "path": null,
-      "url": "https://www.ifc.org/en/insights-reports/2012/ifc-performance-standards",
-      "documentDate": "2012",
-      "dateVerified": "2026-06-07",
-      "sha256": null,
-      "use": "PS1-PS8 para clientes IFC/MIGA e project finance: requisitos substantivos, evidências, ESAP, GRM, SEP, monitoramento, contratados e todos os módulos de conformidade."
-    },
-    {
-      "id": "cao-complaints-process",
-      "type": "official",
-      "role": "accountability_mechanism",
-      "name": "CAO Complaints / Intake and Assessment",
-      "path": null,
-      "url": "https://www.cao-ombudsman.org/how-we-work/intake-assessment",
-      "documentDate": "current-online",
-      "dateVerified": "2026-06-07",
-      "sha256": null,
-      "use": "Mecanismo independente para reclamações de comunidades afectadas por projectos IFC/MIGA. Independente da gestão IFC; reporta ao Presidente do Grupo Banco Mundial."
-    },
-    {
-      "id": "ifc-esrp-exclusion-list",
-      "type": "official",
-      "role": "intake_gate",
-      "name": "IFC Environmental and Social Review Procedure – Exclusion List",
-      "path": null,
-      "url": "https://www.ifc.org/en/what-we-do/sector-expertise/environmental-social-governance/e-s-policies-standards/environmental-and-social-review-procedure",
-      "documentDate": "current-online",
-      "dateVerified": "2026-06-07",
-      "sha256": null,
-      "use": "Lista de actividades que o IFC não financia. Deve ser verificada no intake de projecto no SGAS; actividades excluídas bloqueiam avanço."
-    }
-  ],
-  "extractionTags": [
-    "due-diligence",
-    "ifc",
-    "world-bank",
-    "esms",
-    "sgas",
-    "ess",
-    "ps",
-    "esap",
-    "escp",
-    "grm",
-    "stakeholders",
-    "contractors",
-    "audit-readiness",
-    "angola",
-    "africa",
-    "construction",
-    "hse",
-    "fpic",
-    "cao",
-    "hospital",
-    "exclusion-list",
-    "financial-intermediary",
-    "broad-community-support",
-    "extractive-industries",
-    "infrastructure",
-    "revenue-disclosure",
-    "hga",
-    "iga",
-    "tariff-disclosure",
-    "governance-risk",
-    "category-fi",
-    "esms-portfolio",
-    "self-assessment-v2-3",
-    "esms-maturity",
-    "due-diligence-readiness",
-    "implementation-evidence",
-    "community-reporting",
-    "affected-communities",
-    "document-version-control",
-    "training-effectiveness",
-    "legal-register",
-    "management-review",
-    "field-observation",
-    "visual-observation",
-    "interviews",
-    "manager-validation",
-    "audit-room",
-    "physical-risk-map",
-    "process-risk-map",
-    "kpi-protocol",
-    "source-version-watcher",
-    "lender-package",
-    "contractor-scorecard",
-    "grm-closure",
-    "post-closure-monitoring",
-    "hotspots",
-    "process-mapping",
-    "world-bank-audit"
-  ]
-}`);
 
 const PS_DATA = [
-  { id:'PS1', name:'Avaliação e Gestão de Riscos E&S', color:'#1D9E75', score:72,
+  { id:'PS1', name:'Avaliação e Gestão de Riscos E&S', color:'#1D9E75', score:0,
     reqs:['ESMS documentado e implementado','Avaliação de impacto ambiental e social (ESIA)','Plano de Acção Ambiental e Social (ESAP)','Relatórios periódicos ao Banco Mundial','Mecanismo de reclamações activo','Plano de engajamento de stakeholders (SEP)'] },
-  { id:'PS2', name:'Trabalho e Condições Laborais', color:'#2563EB', score:85,
+  { id:'PS2', name:'Trabalho e Condições Laborais', color:'#2563EB', score:0,
     reqs:['Política de trabalho e condições laborais','Contratos de trabalho conformes','Procedimento de gestão de mão-de-obra','Saúde e segurança ocupacional documentada','Proibição de trabalho infantil e forçado','Mecanismo de reclamações para trabalhadores'] },
-  { id:'PS3', name:'Eficiência de Recursos e Prevenção de Poluição', color:'#7C3AED', score:60,
+  { id:'PS3', name:'Eficiência de Recursos e Prevenção de Poluição', color:'#7C3AED', score:0,
     reqs:['Plano de gestão de resíduos sólidos','Controlo de emissões e efluentes','Registo de consumo de água e energia','Gestão de substâncias perigosas','Plano de prevenção de derrames','Monitoramento de qualidade do ar e água'] },
-  { id:'PS4', name:'Saúde e Segurança Comunitária', color:'#D97706', score:65,
+  { id:'PS4', name:'Saúde e Segurança Comunitária', color:'#D97706', score:0,
     reqs:['Avaliação de riscos para a comunidade','Plano de saúde e segurança comunitária','Gestão de segurança em obra (acesso)','Protocolos COVID-19 e doenças infecciosas','Plano de gestão de tráfego','Informação pública sobre riscos da obra'] },
-  { id:'PS5', name:'Aquisição de Terras e Reassentamento', color:'#DC2626', score:65,
+  { id:'PS5', name:'Aquisição de Terras e Reassentamento', color:'#DC2626', score:0,
     reqs:['Triagem de aplicabilidade PS5/ESS5 documentada','Declaração de não-aplicabilidade ou Plano de Reassentamento aprovado','Consulta e compensação justa aos afectados (se aplicável)','Registo de afectados e monitoramento pós-reassentamento (se aplicável)'] },
-  { id:'PS6', name:'Conservação da Biodiversidade', color:'#059669', score:50,
+  { id:'PS6', name:'Conservação da Biodiversidade', color:'#059669', score:0,
     reqs:['Avaliação de impacto em biodiversidade','Plano de gestão de biodiversidade','Medidas de compensação de habitat','Monitoramento de espécies sensíveis'] },
-  { id:'PS7', name:'Povos Indígenas / Comunidades Tradicionais', color:'#0891B2', score:40,
+  { id:'PS7', name:'Povos Indígenas / Comunidades Tradicionais', color:'#0891B2', score:0,
     reqs:['Triagem de aplicabilidade PS7/ESS7 com justificação documentada','Consulta Livre, Prévia e Informada (CLPI/FPIC) quando aplicável','Plano de envolvimento culturalmente apropriado (se aplicável)','Evidência de Broad Community Support ou FPIC documentado','Mecanismo de reclamações acessível a comunidades tradicionais'] },
-  { id:'PS8', name:'Património Cultural', color:'#A16207', score:58,
+  { id:'PS8', name:'Património Cultural', color:'#A16207', score:0,
     reqs:['Triagem de património cultural tangível e intangível','Procedimento de achados fortuitos (chance find)','Consulta a autoridades competentes','Registo de achados e medidas de protecção'] },
 ];
 
@@ -3962,58 +3122,15 @@ PS_DATA.forEach(ps => {
   psReqStatus[ps.id] = ps.reqs.map((_,i) => ps.score > (i * (100/ps.reqs.length)) + 10 ? 'done' : 'none');
 });
 
-let esapData = [
-  { id:'ESAP-001', ps:'PS1', prio:'Crítica', desc:'Finalizar e submeter ESMS completo ao Banco Mundial', hierarchy:'', resp:'Dir. Ambiente', prazo:'2026-06-30', status:'Em curso', evid:'Documento ESMS v2' },
-  { id:'ESAP-002', ps:'PS1', prio:'Crítica', desc:'Activar mecanismo de reclamações com registo formal', hierarchy:'', resp:'J. Ladeiro', prazo:'2026-05-31', status:'Em atraso', evid:'Registo digital GRM' },
-  { id:'ESAP-003', ps:'PS2', prio:'Alta', desc:'Rever contratos subempreiteiros — cláusulas laborais IFC', hierarchy:'Minimizar', resp:'RH', prazo:'2026-07-15', status:'Não iniciada', evid:'Contratos actualizados' },
-  { id:'ESAP-004', ps:'PS3', prio:'Alta', desc:'Instalar sistema de monitoramento de qualidade da água', hierarchy:'Minimizar', resp:'Eng. Ambiente', prazo:'2026-08-01', status:'Em curso', evid:'Relatório laboratorial mensal' },
-  { id:'ESAP-005', ps:'PS1', prio:'Alta', desc:'Realizar consulta pública com comunidades afectadas', hierarchy:'', resp:'RSC', prazo:'2026-07-01', status:'Em atraso', evid:'Acta e lista de presença' },
-  { id:'ESAP-006', ps:'PS4', prio:'Alta', desc:'Implementar plano de gestão de tráfego pesado', hierarchy:'Minimizar', resp:'Dir. Obra', prazo:'2026-06-15', status:'Concluída', evid:'Plano aprovado + fotos' },
-  { id:'ESAP-007', ps:'PS2', prio:'Média', desc:'Realizar formação de indução A&S para 100% dos trabalhadores', hierarchy:'Minimizar', resp:'HST', prazo:'2026-06-20', status:'Em curso', evid:'Registos de formação' },
-  { id:'ESAP-008', ps:'PS3', prio:'Média', desc:'Implementar segregação de resíduos perigosos em obra', hierarchy:'Minimizar', resp:'Env. Officer', prazo:'2026-07-30', status:'Não iniciada', evid:'Fotos contentores + manifesto' },
-  { id:'ESAP-009', ps:'PS1', prio:'Alta', desc:'Submeter relatório semestral E&S ao especialista BM', hierarchy:'', resp:'Dir. Ambiente', prazo:'2026-06-30', status:'Em curso', evid:'Relatório semestral' },
-  { id:'ESAP-010', ps:'PS4', prio:'Alta', desc:'Actualizar e testar Plano de Emergência com simulacro', hierarchy:'Minimizar', resp:'N. Segunda', prazo:'2026-05-15', status:'Em atraso', evid:'Relatório simulacro + fotos' },
-  { id:'ESAP-011', ps:'PS6', prio:'Média', desc:'Concluir triagem de biodiversidade e habitats sensíveis', hierarchy:'Evitar', resp:'Eng. Ambiente', prazo:'2026-07-20', status:'Não iniciada', evid:'Screening PS6/ESS6 + mapa' },
-  { id:'ESAP-012', ps:'PS8', prio:'Média', desc:'Aprovar procedimento de achados fortuitos em obra', hierarchy:'Minimizar', resp:'Dir. Obra', prazo:'2026-07-25', status:'Não iniciada', evid:'Chance-find procedure + indução' },
-  { id:'ESAP-013', ps:'PS5', prio:'Média', desc:'Triagem PS5 — documentar não-aplicabilidade de reassentamento involuntário', hierarchy:'Evitar', resp:'Dir. Ambiente', prazo:'2026-07-10', status:'Em curso', evid:'Declaração técnica PS5/ESS5 + mapa de afectados', objective:'Confirmar e documentar formalmente que o projecto não envolve aquisição de terras nem deslocamento de pessoas', outcome:'Declaração técnica assinada, arquivada no Cofre de Documentos e disponível para due diligence', kpi:'Triagem concluída e arquivada', procedure:'PROC-PS5-SCREENING', stakeholders:'Comunidades vizinhas, Município, MINAMB' },
-  { id:'ESAP-014', ps:'PS7', prio:'Média', desc:'Triagem PS7 / FPIC — verificar presença de comunidades tradicionais e aplicabilidade de CLPI', hierarchy:'Evitar', resp:'RSC', prazo:'2026-07-10', status:'Em curso', evid:'Triagem PS7/ESS7 + justificação de não aplicabilidade ou plano FPIC', objective:'Determinar se existem comunidades indígenas ou tradicionais na área de influência do projecto', outcome:'Declaração técnica arquivada; FPIC activado se aplicável; Broad Community Support documentado para Categoria A', kpi:'Triagem concluída e arquivada', procedure:'PROC-PS7-FPIC', stakeholders:'Administração Municipal, líderes comunitários, MINAMB' },
-];
+let esapData = [];
 
-let riskData = [
-  { id:'R-001', type:'HSE', ps:'PS2', act:'Trabalho em altura — andaimes', imp:'Queda fatal', sev:5, prob:3, hierarchy:'Mitigado', ctrl:'Guarda-corpos + arnês', status:'Activo' },
-  { id:'R-002', type:'Ambiental', ps:'PS3', act:'Gestão de resíduos de construção', imp:'Contaminação do solo', sev:3, prob:3, hierarchy:'Reduzido', ctrl:'Contentor segregado', status:'Activo' },
-  { id:'R-003', type:'Comunitário', ps:'PS4', act:'Transporte de agregados', imp:'Acidente com civís', sev:5, prob:2, hierarchy:'Reduzido', ctrl:'Plano de tráfego', status:'Activo' },
-  { id:'R-004', type:'Social', ps:'PS1', act:'Operação de geradores', imp:'Ruído — comunidade vizinha', sev:3, prob:4, hierarchy:'Mitigado', ctrl:'Limitação horário', status:'Activo' },
-  { id:'R-005', type:'Ambiental', ps:'PS3', act:'Armazenamento de combustível', imp:'Derrame / contaminação água', sev:4, prob:2, hierarchy:'Evitado', ctrl:'Bacia de retenção + kit', status:'Monitorado' },
-  { id:'R-006', type:'HSE', ps:'PS2', act:'Exposição a poeiras (sílica)', imp:'Doenças respiratórias', sev:4, prob:3, hierarchy:'Mitigado', ctrl:'EPI respiratório + humidificação', status:'Activo' },
-  { id:'R-007', type:'Ambiental', ps:'PS6', act:'Supressão vegetal / preparação do terreno', imp:'Perda de habitat ou espécies sensíveis', sev:3, prob:2, hierarchy:'Reduzido', ctrl:'Triagem PS6/ESS6 + demarcação', status:'A avaliar' },
-  { id:'R-008', type:'Social', ps:'PS8', act:'Escavações e movimentação de solos', imp:'Achado cultural não identificado', sev:3, prob:2, hierarchy:'Mitigado', ctrl:'Chance-find procedure + paragem controlada', status:'A avaliar' },
-  { id:'R-009', type:'Social', ps:'PS5', act:'Construção / preparação do terreno', imp:'Deslocamento involuntário ou restrição de uso de terra não documentada', sev:4, prob:1, hierarchy:'Evitado', ctrl:'Triagem PS5/ESS5 — confirmação de não-aplicabilidade com declaração técnica', status:'A avaliar' },
-  { id:'R-010', type:'Social', ps:'PS7', act:'Actividades na área de influência do projecto', imp:'Impacto sobre comunidades tradicionais sem FPIC documentado', sev:4, prob:1, hierarchy:'Evitado', ctrl:'Triagem PS7/ESS7 — verificação de presença de comunidades tradicionais e activação de FPIC se aplicável', status:'A avaliar' },
-];
+let riskData = [];
 
-let stakeholders = [
-  { name:'Comunidade Bailundo Norte', cat:'community', initials:'CB', concerns:'Ruído, poeiras, acesso a estrada', method:'Reunião presencial', freq:'Mensal', last:'2026-05-10', fpic:'A avaliar', support:'Pendente' },
-  { name:'Município do Bailundo', cat:'govt', initials:'MB', concerns:'Conformidade licenças, relatórios', method:'Correspondência oficial', freq:'Trimestral', last:'2026-04-22', fpic:'Não', support:'Sim' },
-  { name:'Ministério do Ambiente (MINAMB)', cat:'govt', initials:'MA', concerns:'ESIA, monitoramento ambiental', method:'Reunião técnica', freq:'Semestral', last:'2026-02-15', fpic:'Não', support:'Sim' },
-  { name:'Trabalhadores (representante sindical)', cat:'worker', initials:'TR', concerns:'Salários, HST, condições laborais', method:'Reunião presencial', freq:'Mensal', last:'2026-05-28', fpic:'Não', support:'Sim' },
-  { name:'ONG Direitos e Ambiente Angola', cat:'ngo', initials:'DA', concerns:'Impacto ambiental, comunidade', method:'Consulta pública', freq:'Trimestral', last:'2026-03-18', fpic:'Não', support:'Pendente' },
-  { name:'Ministério da Saúde (MINSA)', cat:'govt', initials:'MS', concerns:'Qualidade obra, prazo entrega', method:'Visita de campo', freq:'Trimestral', last:'2026-04-05', fpic:'Não', support:'Sim' },
-];
+let stakeholders = [];
 
-let complaints = [
-  { id:'GRM-001', data:'2026-05-12', origem:'Comunidade', cat:'Ambiental', desc:'Poeira excessiva na via de acesso', resp:'O. Tange', status:'Em análise', accepted:'Aceite', profile:'Morador adulto / comunidade vizinha', notifyMethod:'Reunião presencial', closureEvidence:'Fotos antes/depois pendentes', satisfaction:'Pendente', resources:'Rega adicional + 1 equipa', postMonitoring:'Visita semanal por 30 dias', cao:'Não', caoLink:'', prazo:'2026-05-27' },
-  { id:'GRM-002', data:'2026-05-20', origem:'Trabalhador', cat:'Laboral', desc:'Pagamento de horas extra não efectuado', resp:'RH', status:'Em análise', accepted:'Aceite', profile:'Trabalhador directo / confidencial', notifyMethod:'SMS / WhatsApp', closureEvidence:'Recibo salarial pendente', satisfaction:'Pendente', resources:'Revisão folha salarial', postMonitoring:'Confirmação no próximo ciclo salarial', cao:'Não', caoLink:'', prazo:'2026-06-04' },
-  { id:'GRM-003', data:'2026-04-08', origem:'Comunidade', cat:'Segurança', desc:'Veículos a excesso de velocidade junto escola', resp:'Dir. Obra', status:'Resolvida', accepted:'Aceite', profile:'Representante escolar', notifyMethod:'Carta', closureEvidence:'Fotos sinalização + acta', satisfaction:'Satisfeito', resources:'Sinalização + redutor + briefing condutores', postMonitoring:'Sem incidentes por 45 dias', cao:'Não', caoLink:'', prazo:'2026-04-23' },
-  { id:'GRM-004', data:'2026-04-15', origem:'Anónimo', cat:'Social', desc:'Preferência por mão-de-obra estrangeira vs local', resp:'RH', status:'Resolvida', accepted:'Em triagem', profile:'Anónimo / comunidade', notifyMethod:'Canal anónimo', closureEvidence:'Relatório RH + vagas publicadas', satisfaction:'N/A', resources:'Auditoria RH + divulgação local', postMonitoring:'Indicador emprego local mensal', cao:'Sim', caoLink:'https://www.cao-ombudsman.org/', prazo:'2026-04-30' },
-];
+let complaints = [];
 
-let contractors = [
-  { name:'Prefangol', scope:'Fornecimento de inertes', ps:'PS2, PS3, PS4', clauses:'Pendente', induction:'Concluída', score:64, scorecard:[68,62,58,74,60,55,50,45,60], status:'Acção pendente', action:'Actualizar cláusulas IFC e licenças de origem' },
-  { name:'Segurança Privada Bailundo', scope:'Controlo de acessos', ps:'PS2, PS4', clauses:'Incluídas', induction:'Concluída', score:82, scorecard:[88,82,78,90,84,76,74,80,82], status:'Conforme', action:'Revisão mensal de incidentes comunitários' },
-  { name:'TransLog Angola', scope:'Transporte de materiais', ps:'PS2, PS3, PS4', clauses:'Em falta', induction:'Pendente', score:48, scorecard:[52,48,40,45,42,38,35,34,44], status:'Não conforme', action:'Bloquear nova ordem até assinatura de adenda IFC' },
-  { name:'Limpeza & Resíduos Huambo', scope:'Gestão de resíduos', ps:'PS2, PS3', clauses:'Incluídas', induction:'Pendente', score:72, scorecard:[78,74,70,65,68,62,58,66,70], status:'Acção pendente', action:'Submeter manifesto de resíduos perigosos' },
-];
+let contractors = [];
 
 let ifcReports = [
   { title:'Relatório semestral E&S Jan-Jun 2026', due:'2026-06-30', submitted:'', status:'Pendente', ref:'IFC-ES-2026-H1' },
@@ -4031,9 +3148,9 @@ let implementationEvidence = [
 ];
 
 let communityReports = [
-  { date:'2026-04-28', community:'Comunidade Bailundo Norte', topic:'Poeira, tráfego e empregos locais', channel:'Reunião pública', feedback:'Pedido de rega adicional na via e prioridade para mão-de-obra local.', newRisk:'Sim', evidence:'Ata SEP-2026-04 + lista de presença', owner:'RSC', status:'Comunicado' },
+  { date:'2026-04-28', community:'Comunidade afectada norte', topic:'Poeira, tráfego e empregos locais', channel:'Reunião pública', feedback:'Pedido de rega adicional na via e prioridade para mão-de-obra local.', newRisk:'Sim', evidence:'Ata SEP-2026-04 + lista de presença', owner:'RSC', status:'Comunicado' },
   { date:'2026-05-28', community:'Trabalhadores / representantes', topic:'Mecanismo de reclamações e horas extra', channel:'Grupo focal', feedback:'Solicitada divulgação visual do canal de reclamações em obra.', newRisk:'Não', evidence:'Acta RH-TRN-2026-05', owner:'RH', status:'Comunicado' },
-  { date:'2026-06-05', community:'Município do Bailundo', topic:'Estado do ESAP e medidas de tráfego', channel:'Correspondência oficial', feedback:'Solicitada actualização mensal durante fase de transporte intensivo.', newRisk:'Sim', evidence:'Carta MB-2026-06-05', owner:'Dir. Obra', status:'Em seguimento' },
+  { date:'2026-06-05', community:'Município local', topic:'Estado do ESAP e medidas de tráfego', channel:'Correspondência oficial', feedback:'Solicitada actualização mensal durante fase de transporte intensivo.', newRisk:'Sim', evidence:'Carta MUNIC-2026-06-05', owner:'Dir. Obra', status:'Em seguimento' },
 ];
 
 let legalRegister = [
@@ -4044,12 +3161,12 @@ let legalRegister = [
 ];
 
 let physicalRiskHotspots = [
-  { id:'MAP-001', label:'Poeira / sílica', type:'Poeira', risk:'R-006', x:68, y:28, level:'Alto', control:'Humidificação + EPI respiratório + medição PM10', community:'Comunidade Bailundo Norte', evidence:'Fotos + registo PM10 semanal' },
+  { id:'MAP-001', label:'Poeira / sílica', type:'Poeira', risk:'R-006', x:68, y:28, level:'Alto', control:'Humidificação + EPI respiratório + medição PM10', community:'Comunidade afectada norte', evidence:'Fotos + registo PM10 semanal' },
   { id:'MAP-002', label:'Tráfego pesado', type:'Tráfego', risk:'R-003', x:18, y:72, level:'Crítico', control:'Plano de tráfego + velocidade 20 km/h + sinaleiro', community:'Escola junto à via', evidence:'Checklist condutores + fotos sinalização' },
   { id:'MAP-003', label:'Combustível', type:'Químicos', risk:'R-005', x:74, y:70, level:'Alto', control:'Bacia de retenção + kit derrame + inspeção diária', community:'Linha de água a jusante', evidence:'Inspecção semanal + foto bacia' },
   { id:'MAP-004', label:'Resíduos perigosos', type:'Resíduos', risk:'R-002', x:52, y:78, level:'Moderado', control:'Contentor segregado + manifesto operador licenciado', community:'Trabalhadores e solo', evidence:'Manifesto + fotos contentores' },
   { id:'MAP-005', label:'Ruído geradores', type:'Ruído', risk:'R-004', x:33, y:30, level:'Moderado', control:'Horário limitado + barreira acústica + medição', community:'Casas a norte', evidence:'Medição dB(A) mensal' },
-  { id:'MAP-006', label:'Comunidade afectada', type:'Comunidade afectada', risk:'R-003, R-004, R-006', x:9, y:18, level:'Alto', control:'SEP + comunicações mensais + GRM visível', community:'Bailundo Norte', evidence:'Actas + fotos + registo GRM' },
+  { id:'MAP-006', label:'Comunidade afectada', type:'Comunidade afectada', risk:'R-003, R-004, R-006', x:9, y:18, level:'Alto', control:'SEP + comunicações mensais + GRM visível', community:'Comunidade afectada norte', evidence:'Actas + fotos + registo GRM' },
 ];
 
 let processRiskMap = [
@@ -4245,7 +3362,6 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 // ===================== NAVIGATION =====================
 const PAGE_META = {
   dashboard:{title:'Dashboard',sub:'Visão geral · Junho 2026',action:'+ Nova acção',fn:'openModal("modal-esap")'},
-  comercial:{title:'Inteligência Comercial',sub:'Sellability · buyer fit · due diligence readiness',action:'Copiar pitch',fn:'copyCommercialPitch()'},
   avaliacao:{title:'Autoavaliação SGAS',sub:'9 elementos IFC PS1 · Escala 0–5',action:'Calcular pontuação',fn:'calcAvaliacao()'},
   ps:{title:'Padrões de Desempenho IFC',sub:'PS1–PS8 · Conformidade detalhada',action:'Exportar relatório',fn:''},
   esap:{title:'Plano ESAP',sub:'Medidas contratuais Banco Mundial',action:'+ Nova medida',fn:'openModal("modal-esap")'},
@@ -4272,7 +3388,7 @@ const PAGE_META = {
   auditoria:{title:'Guia de Auditoria Interna SGAS',sub:'Ficha 9B · 7 Secções A–G',action:'📄 Exportar',fn:'exportAudit()'},
 };
 var PAGE_GROUP = {
-  dashboard:'principal', comercial:'principal',
+  dashboard:'principal',
   diagnostico:'conformidade', avaliacao:'conformidade', ps:'conformidade', esap:'conformidade',
   riscos:'conformidade', 'mapas-risco':'conformidade', terceiros:'conformidade',
   stakeholders:'partes', comunidades:'partes', reclamacoes:'partes',
@@ -4401,344 +3517,6 @@ async function submitCreateProject() {
   if (typeof syncFromSupabase === 'function') syncFromSupabase().catch(function(){});
 }
 
-// ===================== COMMERCIAL INTELLIGENCE =====================
-function formatSellabilityScore(value, scale){
-  const precision = scale && Number.isInteger(scale.precision) ? scale.precision : 1;
-  const max = scale && scale.max ? scale.max : 10;
-  return `${Number(value).toFixed(precision)}/${max}`;
-}
-
-function intelItemHtml(item, dotStyle=''){
-  if(typeof item === 'string'){
-    return `<div class="intel-item"><span class="intel-dot" ${dotStyle}></span><div>${item}</div></div>`;
-  }
-  const label = item.label || item.item || item.id || 'Item';
-  const value = item.value || item.description || '';
-  const meta = [
-    item.standard,
-    item.schema,
-    item.sourceRef ? `source: ${item.sourceRef}` : '',
-    item.gapRef ? `gap: ${item.gapRef}` : '',
-    item.path ? `path: ${item.path}` : '',
-    item.url ? `url: ${item.url}` : ''
-  ].filter(Boolean).join('<br>');
-  return `<div class="intel-item"><span class="intel-dot" ${dotStyle}></span><div><strong>${label}</strong>${value}${meta?`<div class="field-note">${meta}</div>`:''}</div></div>`;
-}
-
-function listItemsHtml(items, dotStyle=''){
-  return (items||[]).map(item=>intelItemHtml(item,dotStyle)).join('');
-}
-
-function simpleListHtml(items, dotStyle=''){
-  return (items||[]).map(item=>`<div class="intel-item"><span class="intel-dot" ${dotStyle}></span><div>${item}</div></div>`).join('');
-}
-
-function renderCommercialIntelligence(){
-  const db=COMMERCIAL_INTELLIGENCE_DB;
-  const scale=db.sellabilityScores.scale;
-  const demoScore=db.sellabilityScores.demo;
-  const pilotScore=db.sellabilityScores.paidPilot;
-  const enterpriseScore=db.sellabilityScores.enterpriseSaaS;
-
-  // ── Scores (commercial page) ──
-  document.getElementById('sell-demo').textContent=formatSellabilityScore(demoScore,scale);
-  document.getElementById('sell-pilot').textContent=formatSellabilityScore(pilotScore,scale);
-  document.getElementById('sell-enterprise').textContent=formatSellabilityScore(enterpriseScore,scale);
-
-  // ── Sync dashboard badges ──
-  const dDemo=document.getElementById('dash-sell-demo');
-  const dPilot=document.getElementById('dash-sell-pilot');
-  const dEnt=document.getElementById('dash-sell-enterprise');
-  if(dDemo){dDemo.textContent=`Demo: ${formatSellabilityScore(demoScore,scale)}`;dDemo.className='badge '+(demoScore>=8?'green':demoScore>=6?'amber':'red');}
-  if(dPilot){dPilot.textContent=`Paid pilot: ${formatSellabilityScore(pilotScore,scale)}`;dPilot.className='badge '+(pilotScore>=8?'green':pilotScore>=6?'amber':'red');}
-  if(dEnt){dEnt.textContent=`Enterprise SaaS: ${formatSellabilityScore(enterpriseScore,scale)}`;dEnt.className='badge '+(enterpriseScore>=8?'green':enterpriseScore>=6?'amber':'red');}
-
-  // ── Veredicto ──
-  document.getElementById('manager-verdict').innerHTML=`
-    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:6px">${db.positioning}</div>
-    <p style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:12px">${db.verdict}</p>
-    <div style="padding:10px 12px;background:var(--accent-light);border-radius:var(--radius);margin-bottom:8px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--accent-dark);margin-bottom:3px">Oferta recomendada</div>
-      <div style="font-size:13px;color:var(--text)">${db.recommendedOffer}</div>
-    </div>
-    <div style="padding:8px 12px;background:#FFFBEB;border-radius:var(--radius);border-left:3px solid var(--warning)">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--warning);margin-bottom:2px">Disclaimer legal</div>
-      <div style="font-size:12px;color:#92400E">${db.disclaimer}</div>
-    </div>`;
-
-  // ── Tags (compactas, sem dominar o ecrã) ──
-  document.getElementById('positioning-tags').innerHTML=`
-    <details style="margin-top:12px">
-      <summary style="font-size:11px;font-weight:600;color:var(--text-3);cursor:pointer;text-transform:uppercase;letter-spacing:.06em;list-style:none">
-        ▸ ${db.extractionTags.length} tags de extração
-      </summary>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
-        ${db.extractionTags.map(t=>`<span class="badge gray" style="font-size:10px">${t}</span>`).join('')}
-      </div>
-    </details>`;
-
-  // ── Extração rápida ──
-  document.getElementById('quick-extraction-list').innerHTML=db.quickExtraction.map(item=>`
-    <div style="padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:#FAFAFA">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:4px">${item.label}</div>
-      <div style="font-size:13px;color:var(--text);line-height:1.5">${item.value}</div>
-    </div>`).join('');
-
-  // ── Motor local de apoio ──
-  document.getElementById('local-ai-stack').innerHTML=db.localAiArchitecture.map(item=>`
-    <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #F3F4F6">
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px"></div>
-      <div><div style="font-size:12px;font-weight:600;color:var(--text)">${item.label}</div>
-      <div style="font-size:12px;color:var(--text-2);margin-top:2px;line-height:1.5">${item.value}</div></div>
-    </div>`).join('');
-
-  // ── Alertas / Guardrails (cards com severidade) ──
-  const G={
-    crit:{bg:'#FEE2E2',brd:'#FCA5A5',txt:'#991B1B',icon:'🔴'},
-    warn:{bg:'#FFFBEB',brd:'#FCD34D',txt:'#92400E',icon:'⚠️'},
-    info:{bg:'#EFF6FF',brd:'#BFDBFE',txt:'#1E40AF',icon:'ℹ️'},
-  };
-  function guardStyle(v){
-    if(/^Bloquear|^Alerta crítico/.test(v)) return G.crit;
-    if(/^Indicar|^Para distribuição/.test(v)) return G.info;
-    return G.warn;
-  }
-  document.getElementById('local-decision-guards').innerHTML=db.localDecisionGuards.map(g=>{
-    const s=guardStyle(g.value);
-    return `<div style="padding:10px 12px;border:1px solid ${s.brd};border-radius:var(--radius);margin-bottom:8px;background:${s.bg}">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap">
-        <span style="font-size:13px">${s.icon}</span>
-        <strong style="font-size:12px;color:${s.txt};flex:1">${g.label}</strong>
-        <span style="font-size:10px;font-weight:600;color:${s.txt};opacity:.65;white-space:nowrap">${g.standard}</span>
-      </div>
-      <div style="font-size:12px;color:${s.txt};line-height:1.55;padding-left:20px">${g.value}</div>
-    </div>`;
-  }).join('');
-
-  // ── Base pré-indexada (sem schemas/paths internos) ──
-  const srcShort=id=>id.replace('ifc-','').replace('world-bank-','wb-').replace(/-2016-pt|-2006-local|-2012/g,'').replace(/-/g,' ');
-  document.getElementById('preindexed-knowledge').innerHTML=db.preIndexedKnowledge.map(item=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6">
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0"></div>
-      <div style="flex:1;font-size:13px;color:var(--text)">${item.label}</div>
-      ${item.sourceRef?`<span class="badge gray" style="font-size:10px;white-space:nowrap">${srcShort(item.sourceRef)}</span>`:''}
-    </div>`).join('');
-
-  // ── Release checklist (numerado com progresso) ──
-  const total=db.releaseChecklist.length;
-  document.getElementById('release-checklist').innerHTML=`
-    <div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:12px;color:var(--text-2)">${total} itens para go-live enterprise</span>
-        <span class="badge amber">Em desenvolvimento</span>
-      </div>
-      <div style="height:5px;background:#F3F4F6;border-radius:3px"><div style="height:5px;background:var(--warning);border-radius:3px;width:0%"></div></div>
-    </div>
-    ${db.releaseChecklist.map((item,i)=>`
-      <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #F9FAFB">
-        <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid #D1D5DB;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text-3);flex-shrink:0">${i+1}</div>
-        <div style="font-size:12px;color:var(--text);line-height:1.5">${item.item}</div>
-      </div>`).join('')}`;
-
-  // ── Exclusion List (gate visual) ──
-  const el=db.exclusionListCheck;
-  document.getElementById('exclusion-list-check').innerHTML=`
-    <div style="padding:12px;background:#FEE2E2;border-radius:var(--radius);border:1px solid #FCA5A5;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:#991B1B;text-transform:uppercase;margin-bottom:3px">🚫 Trigger de intake</div>
-      <div style="font-size:12px;color:#7F1D1D;line-height:1.5;margin-bottom:6px">${el.intakeGate.trigger}</div>
-      <div style="font-size:12px;color:#991B1B;font-style:italic">${el.intakeGate.action}</div>
-    </div>
-    <div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Categorias bloqueadas</div>
-    ${el.typicalExclusionCategories.map(cat=>`
-      <div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #FEE2E2;font-size:12px;color:var(--text)">
-        <span style="color:#DC2626;flex-shrink:0;font-weight:700">✕</span>${cat}
-      </div>`).join('')}`;
-
-  // ── FI Workflow (dois estados + checklist ESMS) ──
-  const fi=db.financialIntermediaryWorkflow;
-  document.getElementById('fi-workflow').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="padding:10px;background:var(--success-bg);border:1px solid #A7F3D0;border-radius:var(--radius)">
-        <div style="font-size:10px;font-weight:700;color:var(--success);text-transform:uppercase;margin-bottom:4px">✓ Categoria C</div>
-        <div style="font-size:12px;color:var(--text);line-height:1.4">${fi.categoryDetermination.categoryC_FI.dashboardBehaviour}</div>
-      </div>
-      <div style="padding:10px;background:var(--info-bg);border:1px solid #BFDBFE;border-radius:var(--radius)">
-        <div style="font-size:10px;font-weight:700;color:var(--info);text-transform:uppercase;margin-bottom:4px">→ Categoria FI</div>
-        <div style="font-size:12px;color:var(--text);line-height:1.4">${fi.categoryDetermination.categoryFI.dashboardBehaviour}</div>
-      </div>
-    </div>
-    <div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Requisitos ESMS de carteira</div>
-    ${fi.esmsPortfolioRequirements.map(r=>`
-      <div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #F3F4F6;font-size:12px;color:var(--text)">
-        <span style="color:var(--accent);flex-shrink:0">✓</span>${r}
-      </div>`).join('')}`;
-
-  // ── Broad Community Support (gate numerado) ──
-  const bcs=db.broadCommunitySupport;
-  document.getElementById('broad-community-support').innerHTML=`
-    <div style="padding:10px 12px;background:var(--warning-bg);border:1px solid #FCD34D;border-radius:var(--radius);margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:#92400E;text-transform:uppercase;margin-bottom:3px">⚠️ Gate — Bloqueia submissão ao financiador</div>
-      <div style="font-size:12px;color:#92400E;line-height:1.5">${bcs.applicability}</div>
-    </div>
-    <div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Evidências obrigatórias antes da submissão</div>
-    ${bcs.gate.requiredEvidenceBeforeSubmission.map((e,i)=>`
-      <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #F3F4F6;font-size:12px;color:var(--text)">
-        <span style="width:18px;height:18px;border-radius:50%;border:1.5px solid #D97706;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#D97706;flex-shrink:0">${i+1}</span>${e}
-      </div>`).join('')}
-    <div style="margin-top:10px;padding:8px 10px;background:var(--accent-light);border-radius:var(--radius);font-size:12px;color:var(--accent-dark)">
-      <strong>Pós-aprovação:</strong> ${bcs.postApprovalMonitoring.requirement}
-    </div>`;
-
-  // ── Módulos sectoriais ──
-  // §22-23 IFC Policy 2006 — Sector-specific disclosure trackers
-  const sectorDisc=JSON.parse(localStorage.getItem('sector-disc')||'{"extractive":{"materiality":"no","royalties":"pendente","taxes":"pendente","profits":"pendente","hga":"pendente","iga":"pendente"},"infra":{"tariff":"pendente","standards":"pendente","investment":"pendente","govSupport":"pendente"}}');
-  const statusBadge=s=>s==='divulgado'?'<span class="badge green">Divulgado</span>':s==='nao-aplicavel'?'<span class="badge gray">N/A</span>':'<span class="badge amber">Pendente</span>';
-  const saveDisc=()=>localStorage.setItem('sector-disc',JSON.stringify(sectorDisc));
-  document.getElementById('sector-specific-modules').innerHTML=`
-    <div style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:18px">⛏️</span>
-        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">Indústrias Extractivas — §22 Política IFC 2006</div><div style="font-size:11px;color:var(--text-3)">Petróleo · Gás · Mineração · Gatilho: ≥10% receitas gov.</div></div>
-        <span class="badge purple">§22</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:var(--bg-3);border-radius:6px">
-        <div style="font-size:12px;flex:1">O projecto representa ≥10% das receitas governamentais?</div>
-        <select class="form-select" style="width:120px;font-size:11px" onchange="const sd=JSON.parse(localStorage.getItem('sector-disc')||'{}');if(!sd.extractive)sd.extractive={};sd.extractive.materiality=this.value;localStorage.setItem('sector-disc',JSON.stringify(sd));renderCommercialIntelligence()" >
-          <option value="no" ${sectorDisc.extractive.materiality==='no'?'selected':''}>Não / N/A</option>
-          <option value="yes" ${sectorDisc.extractive.materiality==='yes'?'selected':''}>Sim — aplicável</option>
-          <option value="unknown" ${sectorDisc.extractive.materiality==='unknown'?'selected':''}>Desconhecido</option>
-        </select>
-      </div>
-      ${sectorDisc.extractive.materiality==='yes'?`
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${[['royalties','Pagamentos de royalties ao governo'],['taxes','Impostos e taxas sectoriais'],['profits','Partilha de lucros (profit sharing)'],['hga','Acordos de Interesse Público (HGA)'],['iga','Acordos Intergovernamentais (IGA)']].map(([k,label])=>`
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg-3);border-radius:4px">
-          <div style="font-size:12px;flex:1">${label}</div>
-          <select class="form-select" style="width:140px;font-size:11px" onchange="const sd=JSON.parse(localStorage.getItem('sector-disc')||'{}');if(!sd.extractive)sd.extractive={};sd.extractive['${k}']=this.value;localStorage.setItem('sector-disc',JSON.stringify(sd));renderCommercialIntelligence()">
-            <option value="pendente" ${(sectorDisc.extractive[k]||'pendente')==='pendente'?'selected':''}>Pendente</option>
-            <option value="divulgado" ${sectorDisc.extractive[k]==='divulgado'?'selected':''}>Divulgado</option>
-            <option value="nao-aplicavel" ${sectorDisc.extractive[k]==='nao-aplicavel'?'selected':''}>N/A</option>
-          </select>
-          ${statusBadge(sectorDisc.extractive[k]||'pendente')}
-        </div>`).join('')}
-      </div>`:'<div style="font-size:11px;color:var(--text-3);padding:6px 0">Marcar "Sim" acima para activar o tracker de divulgação.</div>'}
-    </div>
-    <div style="padding-top:12px;border-top:1px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:18px">🏗️</span>
-        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">Infraestrutura Essencial — §23 Política IFC 2006</div><div style="font-size:11px;color:var(--text-3)">Água · Electricidade · Gás · Telecomunicações · Monopólio</div></div>
-        <span class="badge blue">§23</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${[['tariff','Tarifas domésticas e mecanismos de ajuste tarifário'],['standards','Padrões de serviço e metas de qualidade'],['investment','Obrigações de investimento'],['govSupport','Apoio governamental (subsídios, garantias, concessões)']].map(([k,label])=>`
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg-3);border-radius:4px">
-          <div style="font-size:12px;flex:1">${label}</div>
-          <select class="form-select" style="width:140px;font-size:11px" onchange="const sd=JSON.parse(localStorage.getItem('sector-disc')||'{}');if(!sd.infra)sd.infra={};sd.infra['${k}']=this.value;localStorage.setItem('sector-disc',JSON.stringify(sd));renderCommercialIntelligence()">
-            <option value="pendente" ${(sectorDisc.infra[k]||'pendente')==='pendente'?'selected':''}>Pendente</option>
-            <option value="divulgado" ${sectorDisc.infra[k]==='divulgado'?'selected':''}>Divulgado</option>
-            <option value="nao-aplicavel" ${sectorDisc.infra[k]==='nao-aplicavel'?'selected':''}>N/A</option>
-          </select>
-          ${statusBadge(sectorDisc.infra[k]||'pendente')}
-        </div>`).join('')}
-      </div>
-    </div>`;
-
-  // ── Clareza de versão das fontes ──
-  const svc=db.sourceVersionClarity;
-  document.getElementById('source-version-clarity').innerHTML=`
-    <div style="padding:10px 12px;background:var(--info-bg);border:1px solid #BFDBFE;border-radius:var(--radius);margin-bottom:14px;font-size:13px;color:#1E40AF;line-height:1.5">${svc.note}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      ${svc.layers.map(layer=>`
-        <div style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:#FAFAFA">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--accent);margin-bottom:5px">${layer.role==='governance'?'🏛 Quadro institucional':'📋 Requisitos substantivos'}</div>
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">${layer.id.includes('2006')?'IFC Sustainability Policy 2006':'IFC Performance Standards 2012'}</div>
-          <div style="font-size:12px;color:var(--text-2);line-height:1.5">${layer.description}</div>
-        </div>`).join('')}
-    </div>`;
-
-  // ── Compradores-alvo (numerados) ──
-  document.getElementById('buyer-targets').innerHTML=db.buyerTargets.map((item,i)=>`
-    <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6">
-      <div style="width:20px;height:20px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0">${i+1}</div>
-      <div style="font-size:13px;color:var(--text);line-height:1.5">${item}</div>
-    </div>`).join('');
-
-  // ── Gaps com marcação v1.0 vs v1.1 ──
-  document.getElementById('enterprise-gaps').innerHTML=db.enterpriseGaps.map((item,i)=>{
-    const isNew=i>=8;
-    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #F3F4F6">
-      <span class="badge ${isNew?'green':'amber'}" style="font-size:10px;flex-shrink:0">${isNew?'✓ v1.1':'→'}</span>
-      <div style="font-size:12px;color:var(--text);line-height:1.5">${item}</div>
-    </div>`;
-  }).join('')+`<div style="margin-top:8px;font-size:11px;color:var(--text-3)">
-    <span class="badge green" style="font-size:10px">✓ v1.1</span> preenchido em v1.1.0 &nbsp;·&nbsp; <span class="badge amber" style="font-size:10px">→</span> pendente de implementação
-  </div>`;
-
-  // ── Mapeamentos PS/ESS (tabela limpa) ──
-  document.getElementById('ifc-mapping').innerHTML=db.ifcPerformanceStandards.map(m=>`
-    <div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #F3F4F6">
-      <span style="background:#F5F3FF;color:#7C3AED;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;flex-shrink:0">${m.code}</span>
-      <span style="font-size:12px;color:var(--text-2);line-height:1.4">${m.dashboard}</span>
-    </div>`).join('');
-  document.getElementById('ess-mapping').innerHTML=db.worldBankESS.map(m=>`
-    <div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #F3F4F6">
-      <span style="background:var(--warning-bg);color:#B45309;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;flex-shrink:0">${m.code}</span>
-      <span style="font-size:12px;color:var(--text-2);line-height:1.4">${m.dashboard}</span>
-    </div>`).join('');
-
-  // ── Fontes (sem sha256/paths internos) ──
-  const roleIcon={governance:'🏛',substantive_requirements:'📋',implementation_tool:'🔧',accountability_mechanism:'⚖️',intake_gate:'🚫'};
-  const roleLabel={governance:'Governação',substantive_requirements:'Requisitos',implementation_tool:'Ferramenta',accountability_mechanism:'Responsabilização',intake_gate:'Gate intake'};
-  document.getElementById('commercial-sources').innerHTML=db.sources.map(s=>`
-    <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F3F4F6">
-      <div style="font-size:22px;flex-shrink:0;line-height:1">${roleIcon[s.role]||'📄'}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px">${s.name}</div>
-        <div style="font-size:12px;color:var(--text-2);margin-bottom:6px;line-height:1.5">${s.roleNote||s.use}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <span class="badge ${s.type==='official'?'blue':'gray'}" style="font-size:10px">${s.type}</span>
-          <span class="badge gray" style="font-size:10px">${roleLabel[s.role]||s.role}</span>
-          <span style="font-size:11px;color:var(--text-3)">doc: ${s.documentDate} · verificado: ${s.dateVerified}</span>
-          ${s.url?`<a href="${s.url}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;font-weight:600">→ abrir</a>`:''}
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function commercialPitchText(){
-  const db=COMMERCIAL_INTELLIGENCE_DB;
-  return [
-    db.positioning,
-    '',
-    db.quickExtraction.map(i=>`${i.label}: ${i.value}`).join('\n'),
-    '',
-    `Sellability: demo ${formatSellabilityScore(db.sellabilityScores.demo,db.sellabilityScores.scale)}; paid pilot ${formatSellabilityScore(db.sellabilityScores.paidPilot,db.sellabilityScores.scale)}; enterprise SaaS ${formatSellabilityScore(db.sellabilityScores.enterpriseSaaS,db.sellabilityScores.scale)}.`,
-    `Recommended offer: ${db.recommendedOffer}`,
-    `Disclaimer: ${db.disclaimer}`
-  ].join('\n');
-}
-
-function copyCommercialPitch(){
-  const text=commercialPitchText();
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(()=>alert('Pitch comercial copiado.')).catch(()=>alert(text));
-  } else {
-    alert(text);
-  }
-}
-
-function downloadCommercialJSON(){
-  const payload=JSON.stringify(COMMERCIAL_INTELLIGENCE_DB,null,2);
-  const blob=new Blob([payload],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='sgas-commercial-intelligence.json';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
 
 // ===================== RENDER DASHBOARD =====================
 function setProjectCategory(cat){
@@ -4785,11 +3563,24 @@ function renderDashboard(){
   renderProjectCategory();
   // PS bars
   let h='';
-  PS_DATA.forEach(ps=>{
-    const c = ps.score>=80?'#1D9E75':ps.score>=60?'#D97706':'#DC2626';
-    h+=`<div class="prog-wrap"><div class="prog-label-row"><span class="prog-label-text"><strong>${ps.id}</strong> — ${ps.name}</span><span class="prog-val">${ps.score}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${ps.score}%;background:${c}"></div></div></div>`;
-  });
-  document.getElementById('ps-bars').innerHTML=h;
+  if (SGAS_READINESS_LOAD_DONE && !SGAS_READINESS_ASSESSMENT) {
+    h = `<div class="readiness-empty">
+      <strong>Ainda não há diagnóstico de prontidão.</strong>
+      Completa o wizard PS1–PS8 para alimentar o dashboard, os gráficos e o assistente IA com dados reais.
+      <button type="button" data-open-readiness-wizard="true">Abrir diagnóstico</button>
+    </div>`;
+  } else {
+    PS_DATA.forEach(ps=>{
+      const c = ps.score>=80?'#1D9E75':ps.score>=60?'#D97706':'#DC2626';
+      h+=`<div class="prog-wrap"><div class="prog-label-row"><span class="prog-label-text"><strong>${ps.id}</strong> — ${ps.name}</span><span class="prog-val">${ps.score}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${ps.score}%;background:${c}"></div></div></div>`;
+    });
+    if (SGAS_READINESS_ASSESSMENT) {
+      const updated = SGAS_READINESS_ASSESSMENT.updated_at ? new Date(SGAS_READINESS_ASSESSMENT.updated_at).toLocaleString('pt-PT') : 'agora';
+      h += `<div class="readiness-source-note">Dados reais do último diagnóstico · ${updated}</div>`;
+    }
+  }
+  const psBars = document.getElementById('ps-bars');
+  if (psBars) psBars.innerHTML=h;
 
   // Critical actions
   const critical = esapData.filter(e=>e.status==='Em atraso'||e.status==='Em curso').slice(0,5);
@@ -4816,7 +3607,7 @@ function updateReadiness(){
   const sgasAvg = parseFloat(avg(sgasScores));
   const sgasScore = Math.round(sgasAvg/5*100);
   const psAvg = Math.round(PS_DATA.reduce((a,b)=>a+b.score,0)/PS_DATA.length);
-  const esapDone = esapData.filter(e=>e.status==='Concluída').length/esapData.length;
+  const esapDone = esapData.length ? esapData.filter(e=>e.status==='Concluída').length/esapData.length : 0;
   const implementationScore = implementationEvidence.length ? Math.round(implementationEvidence.filter(e=>e.status==='Validada').length/implementationEvidence.length*100) : 0;
   const legalScore = legalRegister.length ? Math.round(legalRegister.filter(l=>l.status==='Conforme'&&(!l.expiry||daysUntil(l.expiry)>30)).length/legalRegister.length*100) : 0;
   const riskMapScore = Math.round(((physicalRiskHotspots.length>=5?50:physicalRiskHotspots.length*10) + (processRiskMap.length>=6?50:processRiskMap.length*8.3)));
@@ -4824,24 +3615,29 @@ function updateReadiness(){
   const contractorScore = contractors.length ? Math.round(contractors.reduce((a,b)=>a+(b.score||0),0)/contractors.length) : 0;
   const kpiProtocolScore = Math.min(100,kpiProtocols.length*20);
   const auditRoomScore = lenderPackage.length ? Math.round(lenderPackage.reduce((a,b)=>a+(b.readiness||0),0)/lenderPackage.length) : 0;
-  const score = Math.round(docScore*0.18 + sgasScore*0.14 + psAvg*0.15 + esapDone*100*0.11 + implementationScore*0.10 + legalScore*0.08 + riskMapScore*0.08 + grmScore*0.06 + contractorScore*0.04 + kpiProtocolScore*0.03 + auditRoomScore*0.03);
-  document.getElementById('readiness-text').textContent=`Prontidão auditoria: ${score}%`;
-  document.getElementById('dash-readiness').textContent=score+'%';
+  const computedScore = Math.round(docScore*0.18 + sgasScore*0.14 + psAvg*0.15 + esapDone*100*0.11 + implementationScore*0.10 + legalScore*0.08 + riskMapScore*0.08 + grmScore*0.06 + contractorScore*0.04 + kpiProtocolScore*0.03 + auditRoomScore*0.03);
+  const assessmentScore = SGAS_READINESS_ASSESSMENT ? Number(SGAS_READINESS_ASSESSMENT.score ?? SGAS_READINESS_ASSESSMENT.profile?.score) : NaN;
+  const score = Number.isFinite(assessmentScore) ? Math.round(assessmentScore) : (Number.isFinite(computedScore) ? computedScore : 0);
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  setText('readiness-text', `Prontidão auditoria: ${score}%`);
+  setText('dash-readiness', score+'%');
   const pill=document.getElementById('readiness-pill');
   const dot=document.getElementById('readiness-dot');
-  if(score>=80){pill.className='audit-score-pill';dot.className='audit-score-dot';}
-  else if(score>=60){pill.className='audit-score-pill warn';dot.className='audit-score-dot warn';}
-  else{pill.className='audit-score-pill danger';dot.className='audit-score-dot danger';}
-  document.getElementById('dash-maturity').textContent=avg(sgasScores)+' / 5';
-  document.getElementById('dash-overdue').textContent=esapData.filter(e=>e.status==='Em atraso').length;
-  document.getElementById('dash-complaints').textContent=complaints.filter(c=>c.status==='Em análise').length;
-  document.getElementById('badge-esap').textContent=esapData.filter(e=>e.status==='Em atraso').length;
-  document.getElementById('badge-rec').textContent=complaints.filter(c=>c.status==='Em análise').length;
+  if(pill && dot){
+    if(score>=80){pill.className='audit-score-pill';dot.className='audit-score-dot';}
+    else if(score>=60){pill.className='audit-score-pill warn';dot.className='audit-score-dot warn';}
+    else{pill.className='audit-score-pill danger';dot.className='audit-score-dot danger';}
+  }
+  setText('dash-maturity', avg(sgasScores)+' / 5');
+  setText('dash-overdue', esapData.filter(e=>e.status==='Em atraso').length);
+  setText('dash-complaints', complaints.filter(c=>c.status==='Em análise').length);
+  setText('badge-esap', esapData.filter(e=>e.status==='Em atraso').length);
+  setText('badge-rec', complaints.filter(c=>c.status==='Em análise').length);
   let missCount = 0;
   DOC_SECTIONS.forEach(s=>s.docs.forEach(d=>{ if(d.status==='missing') missCount++; }));
-  document.getElementById('badge-docs').textContent=missCount;
-  document.getElementById('badge-contractors').textContent=contractors.filter(c=>c.status!=='Conforme').length;
-  document.getElementById('badge-reports').textContent=ifcReports.filter(r=>r.status==='Pendente'||r.status==='Atrasado'||r.status==='Em preparação').length;
+  setText('badge-docs', missCount);
+  setText('badge-contractors', contractors.filter(c=>c.status!=='Conforme').length);
+  setText('badge-reports', ifcReports.filter(r=>r.status==='Pendente'||r.status==='Atrasado'||r.status==='Em preparação').length);
 }
 
 // ===================== RADAR CHART =====================
@@ -6728,7 +5524,7 @@ function renderEmergencias(){
 
 // ===================== MAPEAMENTO DE PARTES INTERESSADAS (Elemento 6) =====================
 let shPins = [
-  {id:'SP1',name:'Comunidade Bailundo',concern:'Ruído e empregos',method:'Reuniões públicas',freq:'Trimestral',influence:75,impact:80,color:'#059669'},
+  {id:'SP1',name:'Comunidade local',concern:'Ruído e empregos',method:'Reuniões públicas',freq:'Trimestral',influence:75,impact:80,color:'#059669'},
   {id:'SP2',name:'Ministério da Saúde',concern:'Regulação e licenças',method:'Correspondência formal',freq:'Quando necessário',influence:90,impact:40,color:'#2563EB'},
   {id:'SP3',name:'Trabalhadores',concern:'Condições de trabalho',method:'Grupos focais',freq:'Mensal',influence:60,impact:85,color:'#D97706'},
   {id:'SP4',name:'ONGs Locais',concern:'Impacto ambiental',method:'Reuniões periódicas',freq:'Semestral',influence:30,impact:55,color:'#7C3AED'},
@@ -6980,6 +5776,24 @@ async function exportAudit() {
     const amber  = [217, 119,   6];
     const green  = [  5, 150, 105];
     const W = 210, M = 14, CW = W - 2 * M;
+    const meta = (window.projectConfig && window.projectConfig.metadata) || {};
+    const cleanMeta = (value) => {
+      const text = String(value || '').trim();
+      if (!text || text === '—' || text === 'A preencher pelo wizard') return '';
+      return text;
+    };
+    const projectNamePdf = cleanMeta(meta.name) || cleanMeta(assessmentMeta.company) || 'Projecto SGAS';
+    const projectRefPdf = [
+      cleanMeta(meta.loanId) || cleanMeta(assessmentMeta.projectId),
+      cleanMeta(meta.country),
+      cleanMeta(meta.esCategory) ? 'Categoria ' + cleanMeta(meta.esCategory).replace(/^Categoria\s+/i, '') : '',
+      'Banco Mundial / IFC'
+    ].filter(Boolean).join(' · ') || 'Dados preenchidos pelo wizard de prontidão';
+    const projectDescPdf = [
+      cleanMeta(meta.sector) || cleanMeta(meta.desc),
+      cleanMeta(meta.approvalDate) ? 'Fase: ' + cleanMeta(meta.approvalDate) : ''
+    ].filter(Boolean).join(' · ') || 'Diagnóstico SGAS baseado nos dados do wizard';
+    const projectFooterRef = cleanMeta(meta.loanId) || cleanMeta(assessmentMeta.projectId);
     let Y;
 
     // ── CAPA ──────────────────────────────────────────────────────────────
@@ -6999,10 +5813,10 @@ async function exportAudit() {
     doc.setFillColor(240, 253, 248); doc.setDrawColor(167, 243, 208); doc.setLineWidth(0.4);
     doc.roundedRect(M, Y, CW, 26, 2, 2, 'FD');
     doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark);
-    doc.text('Hospital Provincial do Bailundo', W / 2, Y + 9, { align: 'center' });
+    doc.text(projectNamePdf, W / 2, Y + 9, { align: 'center' });
     doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.setTextColor(...gray);
-    doc.text('IDA-P171880 · Angola · Huambo · Categoria B · Banco Mundial / IDA', W / 2, Y + 17, { align: 'center' });
-    doc.text('Construção hospitalar / Infraestrutura de saúde · Fase: Construção activa', W / 2, Y + 23, { align: 'center' });
+    doc.text(projectRefPdf, W / 2, Y + 17, { align: 'center' });
+    doc.text(projectDescPdf, W / 2, Y + 23, { align: 'center' });
     Y += 34;
 
     doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark);
@@ -7178,7 +5992,7 @@ async function exportAudit() {
       const PH = doc.internal.pageSize.height;
       doc.setFillColor(...brand); doc.rect(0, PH - 11, W, 11, 'F');
       doc.setFontSize(7.5); doc.setFont(undefined, 'normal'); doc.setTextColor(255, 255, 255);
-      doc.text('SGAS.pro · Hospital Provincial do Bailundo · IDA-P171880 · Confidencial', M, PH - 3.8);
+      doc.text('SGAS.pro · ' + projectNamePdf + (projectFooterRef ? ' · ' + projectFooterRef : '') + ' · Confidencial', M, PH - 3.8);
       doc.text('Gerado em ' + datePT + ' · Pág. ' + p + '/' + totalPages, W - M, PH - 3.8, { align: 'right' });
     }
 
@@ -7247,7 +6061,6 @@ function renderAuditoria(){
 // ===================== MASTER RENDER =====================
 function renderAll(){
   renderDashboard();
-  renderCommercialIntelligence();
   renderRadar();
   renderAvaliacao();
   renderPS();
@@ -7425,28 +6238,28 @@ restoreFromCache();
 
   const DEMO_CONFIGS = { 'demo-bank': DEMO_BANK, 'demo-ngo': DEMO_NGO };
 
-  /* ── Load: URL param → localStorage → null (Hospital defaults) ── */
+  /* ── Load: URL param only — wizard feeds data via Supabase ── */
   function _load() {
+    // Clear legacy localStorage key that may contain old demo data
+    localStorage.removeItem('projectConfig');
     const urlId = new URLSearchParams(window.location.search).get('projectId');
     if (urlId) {
       if (DEMO_CONFIGS[urlId]) return { ...DEMO_CONFIGS[urlId], _source: 'url:' + urlId };
       const custom = localStorage.getItem('projectConfig_' + urlId);
       if (custom) try { return { ...JSON.parse(custom), _source: 'localStorage:' + urlId }; } catch(e) {}
     }
-    const override = localStorage.getItem('projectConfig');
-    if (override) try { return { ...JSON.parse(override), _source: 'localStorage' }; } catch(e) {}
     return null;
   }
 
   /* ── Apply: overwrite globals + update DOM ── */
   function _apply(cfg) {
     const DEFAULT_META = {
-      name: 'Hospital Distrital do Kibala', loanId: 'P171880',
-      country: 'Angola', desc: 'Construção de infra-estrutura de saúde · Angola',
-      amount: 'USD 80M', esCategory: 'Substancial',
-      approvalDate: 'Mar 2024', closureDate: 'Dez 2028',
-      esSpecialist: 'BM Lisboa', projectCategory: 'B',
-      sgasScores: [3,2,2,3,2,1,1,3,1],
+      name: 'A preencher pelo wizard', loanId: '—',
+      country: '—', desc: 'Completa o diagnóstico para alimentar este cartão.',
+      amount: '—', esCategory: '—',
+      approvalDate: '—', closureDate: '—',
+      esSpecialist: 'Wizard', projectCategory: 'B',
+      sgasScores: [0,0,0,0,0,0,0,0,0],
     };
     const m = (cfg && cfg.metadata) ? cfg.metadata : DEFAULT_META;
 
@@ -7477,7 +6290,7 @@ restoreFromCache();
     // DOM updates
     const $s = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.textContent = v; };
     $s('proj-pill-name', m.name);
-    $s('proj-pill-loan', m.loanId + ' · ' + m.country);
+    $s('proj-pill-loan', [m.loanId, m.country].filter(v => v && v !== '—').join(' · ') || 'Wizard pendente');
     $s('proj-name', m.name);
     $s('proj-desc', m.desc || (m.sector + ' · ' + m.country));
     $s('proj-ida', m.loanId);
@@ -7486,7 +6299,7 @@ restoreFromCache();
     $s('proj-approval', m.approvalDate || '—');
     $s('proj-closure', m.closureDate || '—');
     $s('proj-specialist', m.esSpecialist || '—');
-    $s('legal-title', 'Registo Legal ' + m.country + ' + IFC/ESS');
+    $s('legal-title', 'Registo Legal ' + (m.country && m.country !== '—' ? m.country : 'do projecto') + ' + IFC/ESS');
 
     window.projectConfig = { metadata: m, _source: cfg ? (cfg._source || 'custom') : 'default' };
     console.log('[SGAS] projectConfig:', m.name, '|', window.projectConfig._source);
@@ -7500,6 +6313,7 @@ restoreFromCache();
 renderAll();
 // Background sync from Supabase — re-renders if live data differs from cache
 syncFromSupabase().then(ok => { if (ok) renderAll(); });
+loadReadinessAssessmentFromSupabase().then(ok => { if (ok) renderAll(); });
 // URL-based deep linking: ?page=monitoring
 const _urlPage=new URLSearchParams(location.search).get('page');
 if(_urlPage){ const _navEl=document.querySelector(`[onclick*="'${_urlPage}'"]`); if(_navEl) _navEl.click(); }
@@ -7990,11 +6804,12 @@ async function ai_buildProjectContext() {
     if (!ctx) ctx = ai_buildLocalContext();
 
     // Update context sidebar
-    const ctxEl = document.getElementById('ai-context-display');
-    if (ctxEl) {
-      const proj  = ctx.project || {};
-      const name  = proj.name || proj.company || 'Hospital Provincial do Bailundo';
-      const ref   = proj.reference || proj.id || 'IDA-P171880';
+  const ctxEl = document.getElementById('ai-context-display');
+  if (ctxEl) {
+    const proj  = ctx.project || {};
+    const meta = (window.projectConfig && window.projectConfig.metadata) || {};
+    const name  = proj.name || proj.company || meta.name || 'Projecto SGAS';
+    const ref   = proj.reference || proj.id || meta.loanId || '—';
       const score = ctx.compliance?.score ?? 'N/A';
       const total = (ctx.esap?.total||0) + (ctx.risks?.total||0) +
                     (ctx.grievances?.total||0) + (ctx.evidence?.total||0);
@@ -8028,15 +6843,16 @@ function ai_buildLocalContext() {
   const _legal = typeof legalRegister !== 'undefined' ? legalRegister : [];
   const _stkh  = typeof stakeholders  !== 'undefined' ? stakeholders  : [];
   const _cat   = typeof projectCategory !== 'undefined' ? projectCategory : 'B';
+  const meta = (window.projectConfig && window.projectConfig.metadata) || {};
 
   return {
     project: {
-      name: 'Hospital Provincial do Bailundo',
-      reference: 'IDA-P171880',
-      country: 'Angola',
-      region: 'Huambo',
+      name: meta.name || 'Projecto SGAS',
+      reference: meta.loanId || '—',
+      country: meta.country || '—',
+      region: meta.region || '—',
       category: _cat,
-      sector: 'Construção hospitalar / infraestrutura de saúde',
+      sector: meta.sector || meta.desc || 'A preencher pelo wizard',
       financier: 'Banco Mundial / IDA'
     },
     compliance: {
@@ -8361,7 +7177,7 @@ async function ai_generateDailyDigest() {
     <div style="display:flex;flex-direction:column;gap:14px;">
       <div>
         <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:4px;">Nome do projecto *</label>
-        <input id="cpf-name" type="text" placeholder="Ex: Kibala 330 kV" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;outline:none;">
+        <input id="cpf-name" type="text" placeholder="Ex: Linha de transmissão 330 kV" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;outline:none;">
       </div>
       <div>
         <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:4px;">País *</label>
@@ -8391,5 +7207,21 @@ async function ai_generateDailyDigest() {
   </div>
 </div>
 
+<script>
+/* INTERNAL_MODE — gates the commercial-intelligence module.
+   Access via ?internal=1  or  localStorage.setItem('sgas_internal','1') */
+(function(){
+  var INTERNAL_MODE =
+    new URLSearchParams(location.search).get('internal') === '1' ||
+    localStorage.getItem('sgas_internal') === '1';
+  if (INTERNAL_MODE) {
+    document.getElementById('commercial-intel-mount') &&
+      (document.getElementById('commercial-intel-mount').style.display = '');
+    var s = document.createElement('script');
+    s.src = 'internal/commercial-intel.js';
+    document.body.appendChild(s);
+  }
+})();
+</script>
 </body>
 </html>
