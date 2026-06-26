@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGAS Pro — Diagnóstico de Prontidão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/config.js"></script>
+<style>
+:root{
+  --bg:#0A1F14;--panel:#0D2E1E;--panel-2:#0F3826;
+  --ink:#F4ECD8;--ink-dim:rgba(244,236,216,.62);--ink-faint:rgba(244,236,216,.40);
+  --teal:#1D9E75;--teal-bright:#2BC78F;--amber:#E0A84B;--red:#D9645A;
+  --line:rgba(244,236,216,.09);--line-2:rgba(244,236,216,.16);
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{min-height:100vh;line-height:1.5}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+button{font-family:inherit;cursor:pointer}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:4px}
+.card::before,.card::after{content:"";position:absolute;width:8px;height:8px}
+.card::before{top:-1px;left:-1px;border-top:1px solid var(--line-2);border-left:1px solid var(--line-2)}
+.card::after{bottom:-1px;right:-1px;border-bottom:1px solid var(--line-2);border-right:1px solid var(--line-2)}
+
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:16px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;
+  background:rgba(10,31,20,.92);backdrop-filter:blur(8px);z-index:5}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .dot{width:10px;height:10px;border-radius:2px;background:var(--teal);box-shadow:0 0 0 3px rgba(29,158,117,.18)}
+.brand b{letter-spacing:.04em;font-weight:600}
+.brand .sub{font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:.14em;text-transform:uppercase}
+.langs{display:flex;gap:2px;border:1px solid var(--line);border-radius:999px;padding:3px}
+.langs button{background:none;border:none;color:var(--ink-dim);font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:5px 11px;border-radius:999px}
+.langs button[aria-pressed="true"]{background:var(--teal);color:#04140C;font-weight:500}
+.back-link{display:flex;align-items:center;gap:6px;color:var(--ink-dim);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.04em}
+.back-link:hover{color:var(--ink)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:30px 24px 80px}
+.stage-grid{display:grid;grid-template-columns:1fr 300px;gap:26px;align-items:start}
+@media(max-width:860px){.stage-grid{grid-template-columns:1fr}.rail{order:-1}}
+
+.progress{display:flex;align-items:center;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+.progress .seg{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);display:flex;align-items:center;gap:8px}
+.progress .seg.active{color:var(--teal-bright)}
+.progress .seg.done{color:var(--ink-dim)}
+.progress .sep{color:var(--ink-faint)}
+
+h1.q{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;margin:6px 0 4px;letter-spacing:.01em}
+@media(max-width:560px){h1.q{font-size:27px}}
+.lead{color:var(--ink-dim);font-size:15px;max-width:60ch}
+.panel-pad{padding:30px 32px}
+@media(max-width:560px){.panel-pad{padding:22px 20px}}
+
+/* Transparency screen */
+.why-block{margin-top:24px;display:flex;flex-direction:column;gap:16px}
+.why-item{border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:var(--panel-2)}
+.why-item .why-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+.why-item p{margin:0;font-size:13.5px;color:var(--ink-dim);line-height:1.6}
+
+/* Rationale tooltip */
+.ps-rationale{margin-bottom:20px;padding:14px 16px;border-left:2px solid var(--teal);background:rgba(29,158,117,.06);border-radius:0 4px 4px 0;font-size:13px;color:var(--ink-dim);line-height:1.6}
+.ps-rationale .ps-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+.help{margin-top:14px;padding:12px 14px;border-left:2px solid var(--line-2);background:rgba(244,236,216,.025);font-size:13px;color:var(--ink-dim);border-radius:0 4px 4px 0}
+.help .ref{font-family:var(--mono);font-size:10.5px;color:var(--teal);letter-spacing:.06em}
+
+.answers{display:flex;flex-direction:column;gap:10px;margin-top:26px}
+.ans{display:flex;align-items:center;gap:14px;text-align:left;width:100%;
+  background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+  padding:15px 16px;border-radius:4px;transition:border-color .15s,background .15s,transform .05s}
+.ans:hover{border-color:var(--line-2)}
+.ans:active{transform:translateY(1px)}
+.ans .glyph{width:26px;height:26px;flex:none;border-radius:3px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:13px;border:1px solid var(--line-2);color:var(--ink-dim)}
+.ans .txt{flex:1}
+.ans .txt b{display:block;font-weight:500;font-size:14.5px}
+.ans .txt span{font-size:12px;color:var(--ink-faint)}
+.ans[aria-pressed="true"]{border-color:var(--teal);background:rgba(29,158,117,.10)}
+.ans[aria-pressed="true"] .glyph{background:var(--teal);color:#04140C;border-color:var(--teal)}
+.ans.k-prog[aria-pressed="true"]{border-color:var(--amber);background:rgba(224,168,75,.10)}
+.ans.k-prog[aria-pressed="true"] .glyph{background:var(--amber);color:#1a1206}
+.ans.k-no[aria-pressed="true"]{border-color:var(--red);background:rgba(217,100,90,.10)}
+.ans.k-no[aria-pressed="true"] .glyph{background:var(--red);color:#1a0606}
+.ans.k-na[aria-pressed="true"]{border-color:var(--line-2);background:rgba(244,236,216,.05)}
+.ans.k-na[aria-pressed="true"] .glyph{background:var(--ink-faint);color:#04140C}
+
+.note{margin-top:14px}
+.note label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}
+.note textarea{width:100%;min-height:52px;resize:vertical;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:4px;padding:10px 12px;font-family:var(--sans);font-size:13px}
+.note textarea:focus{outline:none;border-color:var(--teal)}
+
+.navrow{display:flex;justify-content:space-between;align-items:center;margin-top:26px;gap:12px;flex-wrap:wrap}
+.btn{border:1px solid var(--line-2);background:none;color:var(--ink);padding:11px 20px;border-radius:4px;font-size:13.5px;font-weight:500;letter-spacing:.01em}
+.btn:hover{border-color:var(--ink-dim)}
+.btn.primary{background:var(--teal);color:#04140C;border-color:var(--teal);font-weight:600}
+.btn.primary:hover{background:var(--teal-bright)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{border-color:transparent;color:var(--ink-dim);padding-left:4px}
+
+/* Intro fields */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
+.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:4px;padding:12px 13px;font-family:var(--sans);font-size:14px}
+.field input:focus,.field select:focus{outline:none;border-color:var(--teal)}
+.field select option{background:#0D2E1E}
+.goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 6px}
+@media(max-width:560px){.goal-grid{grid-template-columns:1fr}}
+.goal-btn{text-align:left;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:16px}
+.goal-btn[aria-pressed="true"]{border-color:var(--teal);background:rgba(29,158,117,.10)}
+.goal-btn b{display:block;font-weight:600;margin-bottom:4px}
+.goal-btn span{font-size:12.5px;color:var(--ink-dim)}
+
+/* Trial teaser */
+.teaser{margin-top:24px;border:1px dashed var(--line-2);border-radius:6px;padding:28px;text-align:center}
+.teaser .lock{font-size:32px;margin-bottom:12px}
+.teaser h3{margin:0 0 8px;font-size:18px;font-weight:600}
+.teaser p{margin:0 0 18px;font-size:13.5px;color:var(--ink-dim);max-width:44ch;margin-left:auto;margin-right:auto}
+.teaser a.cta{display:inline-block;padding:10px 22px;background:var(--teal);color:#04140C;border-radius:4px;font-weight:700;font-size:13px;text-decoration:none}
+.teaser a.cta:hover{background:var(--teal-bright)}
+
+/* Rail */
+.rail{position:sticky;top:90px;display:flex;flex-direction:column;gap:16px}
+.meter{padding:20px}
+.meter .num{font-family:var(--serif);font-size:52px;line-height:1;letter-spacing:.01em}
+.meter .num small{font-size:20px;color:var(--ink-faint)}
+.bar{height:6px;border-radius:3px;background:rgba(244,236,216,.08);overflow:hidden;margin:12px 0 4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-bright));transition:width .4s ease}
+.legend{display:flex;flex-direction:column;gap:9px;margin-top:14px;font-size:12px}
+.legend .row{display:flex;align-items:center;justify-content:space-between;color:var(--ink-dim)}
+.legend .row .l{display:flex;align-items:center;gap:8px}
+.pip{width:9px;height:9px;border-radius:2px}
+.scope{padding:18px 20px}
+.scope h4{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 12px}
+.scope .ps-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px dotted var(--line);font-size:12.5px}
+.scope .ps-row:last-child{border-bottom:none}
+.scope .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.tag.in{color:var(--teal-bright);border:1px solid rgba(43,199,143,.4)}
+.tag.out{color:var(--ink-faint);border:1px solid var(--line)}
+.tag.locked{color:var(--amber);border:1px solid rgba(224,168,75,.4)}
+.disc{font-size:11px;color:var(--ink-faint);line-height:1.5;border-top:1px solid var(--line);padding:14px 20px}
+
+/* Report */
+.report-hero{padding:30px 32px;display:flex;gap:30px;align-items:center;flex-wrap:wrap}
+.big-score{font-family:var(--serif);font-size:84px;line-height:.9}
+.big-score small{font-size:30px;color:var(--ink-faint)}
+.verdict{flex:1;min-width:240px}
+.verdict .label{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:10px}
+.v-block{background:rgba(217,100,90,.12);color:#f0a59d;border:1px solid rgba(217,100,90,.3)}
+.v-near{background:rgba(224,168,75,.12);color:#f0cd92;border:1px solid rgba(224,168,75,.3)}
+.v-ready{background:rgba(43,199,143,.12);color:#9fe7cb;border:1px solid rgba(43,199,143,.3)}
+.partial-banner{margin:0 0 18px;padding:14px 18px;background:rgba(224,168,75,.10);border:1px solid rgba(224,168,75,.3);border-radius:4px;font-size:13px;color:#f0cd92}
+.crit-list{margin-top:6px}
+.crit-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px dotted var(--line);font-size:13.5px}
+.crit-ps{font-family:var(--mono);font-size:10px;color:var(--red);flex:none;width:54px;letter-spacing:.05em;padding-top:2px}
+.psblock{margin-top:14px;padding:18px 22px}
+.psblock h3{margin:0 0 4px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.psblock h3 .pct{font-family:var(--mono);font-size:13px;color:var(--ink-dim)}
+.gap{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px dotted var(--line);font-size:13px}
+.gap:last-child{border-bottom:none}
+.gap .gst{flex:none;width:8px;height:8px;border-radius:2px;margin-top:5px}
+.gap .gtxt{flex:1}
+.gap .gnote{display:block;color:var(--ink-faint);font-size:11.5px;margin-top:2px}
+.export-card{padding:18px 22px}
+.export-card textarea{width:100%;min-height:130px;background:var(--bg);border:1px solid var(--line);color:var(--ink-dim);border-radius:4px;padding:12px;font-family:var(--mono);font-size:11px;resize:vertical}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
+  background:var(--teal);color:#04140C;font-weight:600;font-size:13px;padding:11px 20px;border-radius:6px;transition:.25s;pointer-events:none;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);display:inline-block;margin-left:8px;transition:background .3s}
+.save-dot.saving{background:var(--amber)}
+.save-dot.saved{background:var(--teal)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:2px solid var(--teal-bright);outline-offset:2px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="dot"></span>
+    <div>
+      <b>SGAS&nbsp;PRO</b>&nbsp;
+      <span class="sub" id="brandSub">Diagnóstico de Prontidão</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span class="save-dot" id="saveDot" title=""></span>
+    <div class="langs" role="group" aria-label="Language">
+      <button data-lang="pt" aria-pressed="true">PT</button>
+      <button data-lang="en" aria-pressed="false">EN</button>
+      <button data-lang="fr" aria-pressed="false">FR</button>
+    </div>
+    <a href="/sgas-pro.html" class="back-link">← App</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="progress" id="progress"></div>
+  <div class="stage-grid">
+    <main id="stage" class="card panel-pad" aria-live="polite"></main>
+    <aside class="rail">
+      <div class="card meter">
+        <div class="eyebrow" id="meterLabel">Prontidão estimada</div>
+        <div class="num"><span id="meterNum">—</span><small id="meterPct"></small></div>
+        <div class="bar"><i id="meterBar" style="width:0%"></i></div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="card scope">
+        <h4 id="scopeLabel">Âmbito aplicável</h4>
+        <div id="scopeList"></div>
+      </div>
+      <div class="disc" id="disclaimer"></div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   SGAS Pro — Conversational Readiness Wizard
+   IFC Performance Standards (2012) PS1–PS8
+   Features: transparency layer, trial gating (PS1–3 free),
+             Supabase persistence (readiness_assessments)
+   ============================================================ */
+
+/* ── Translations ─────────────────────────────────────────── */
+var T = {
+  pt:{
+    sub:"Diagnóstico de Prontidão",
+    meter:"Prontidão estimada",scope:"Âmbito aplicável",
+    legend:{ev:"Com evidência",claim:"Sem evidência",prog:"Em curso",miss:"Em falta"},
+    in:"Aplica",out:"N/A",locked:"Pago",
+    disclaimer:"Avaliação de <b>completude documental</b> alinhada às Normas de Desempenho da IFC (2012). Não constitui certificação, parecer jurídico nem garantia de aprovação de financiamento.",
+    steps:["Transparência","Projeto","Triagem","Avaliação","Relatório"],
+    back:"Voltar",next:"Continuar",skip:"Saltar",seeReport:"Ver relatório",restart:"Recomeçar",agree:"Compreendi, avançar",
+    a:{
+      yesE:{t:"Sim — e tenho o documento",s:"Existe e está disponível"},
+      yes:{t:"Sim — mas sem documento",s:"Foi feito, ainda não documentado"},
+      prog:{t:"Em curso",s:"Em desenvolvimento / parcial"},
+      no:{t:"Não / não existe",s:""},
+      na:{t:"Não aplicável",s:"Com justificação"}
+    },
+    naReason:"Justificação (porque não se aplica)",
+    notePh:"Nota ou referência do documento (opcional)",
+    introTitle:"Vamos ver o quão pronto está o seu projeto.",
+    introLead:"Algumas perguntas conversacionais. No fim, recebe um relatório do que falta para estar pronto para financiamento ou auditoria — sem rodeios.",
+    goalLabel:"Qual é o objetivo?",
+    g1t:"Pronto para financiamento",g1s:"O que um DFI/banco espera na avaliação (ESIA, SGAS, planos, engajamento).",
+    g2t:"Pronto para auditoria",g2s:"Evidência operacional contínua (monitorização, ações fechadas, registos).",
+    pName:"Nome do projeto",pSector:"Setor",pCountry:"País",pPhase:"Fase",
+    sectors:["Saúde / Hospitalar","Construção / Infraestrutura","Energia / Petróleo & Gás","Água / Saneamento","Agro / Indústria","Outro"],
+    phases:["Conceção / Pré-construção","Construção","Operação","Desativação"],
+    begin:"Começar diagnóstico",
+    screenTitle:"Que normas se aplicam ao seu projeto?",
+    screenLead:"Nem todas as 8 Normas de Desempenho se aplicam. Estas perguntas definem o âmbito — não vamos penalizá-lo por algo que nunca precisou.",
+    sYes:"Sim",sNo:"Não",
+    reportIntro:"Relatório de prontidão",
+    overall:"Prontidão global",
+    critTitle:"Bloqueadores críticos",
+    critNone:"Sem bloqueadores críticos. Os requisitos essenciais estão cobertos.",
+    critSub:"Itens essenciais em falta que impedem a submissão a financiamento:",
+    byStd:"Detalhe por norma",
+    exportTitle:"Perfil SGAS (JSON)",
+    exportSub:"Alimenta o projectConfig. Copie ou descarregue.",
+    copy:"Copiar JSON",download:"Descarregar",copied:"Copiado",
+    vBlock:"Não pronto",vNear:"Quase lá",vReady:"Pronto",
+    of:"de",applicable:"aplicáveis",
+    partialBanner:"Relatório parcial — calculado apenas sobre PS1–PS3. Faltam {N} normas por avaliar (PS4–PS8). Desbloqueie a avaliação completa para o seu relatório de prontidão definitivo.",
+    teaserTitle:"Esta norma faz parte da avaliação completa.",
+    teaserBody:"O seu teste gratuito de 3 dias dá-lhe acesso ao PS1, PS2 e PS3. Desbloqueie PS4–PS8 para concluir o seu diagnóstico de prontidão.",
+    teaserCta:"Falar connosco"
+  },
+  en:{
+    sub:"Readiness Diagnostic",
+    meter:"Estimated readiness",scope:"Applicable scope",
+    legend:{ev:"Evidenced",claim:"No evidence",prog:"In progress",miss:"Missing"},
+    in:"Applies",out:"N/A",locked:"Paid",
+    disclaimer:"A <b>documentation-completeness</b> assessment aligned to the IFC Performance Standards (2012). Not a certification, legal opinion, or guarantee of financing approval.",
+    steps:["Transparency","Project","Screening","Assessment","Report"],
+    back:"Back",next:"Continue",skip:"Skip",seeReport:"See report",restart:"Restart",agree:"Understood, continue",
+    a:{
+      yesE:{t:"Yes — and I have the document",s:"It exists and can be attached"},
+      yes:{t:"Yes — but no document",s:"Done, but not yet documented"},
+      prog:{t:"In progress",s:"Being developed / partial"},
+      no:{t:"No / doesn't exist",s:""},
+      na:{t:"Not applicable",s:"With justification"}
+    },
+    naReason:"Justification (why it doesn't apply)",
+    notePh:"Note or document reference (optional)",
+    introTitle:"Let's see how ready your project really is.",
+    introLead:"A few conversational questions. At the end you get a straight report of what's missing to be financing- or audit-ready — no spin.",
+    goalLabel:"What's the goal?",
+    g1t:"Financing-ready",g1s:"What a DFI/bank expects at appraisal (ESIA, ESMS, plans, engagement).",
+    g2t:"Audit-ready",g2s:"Ongoing operational evidence (monitoring, closed actions, records).",
+    pName:"Project name",pSector:"Sector",pCountry:"Country",pPhase:"Phase",
+    sectors:["Health / Hospital","Construction / Infrastructure","Energy / Oil & Gas","Water / Sanitation","Agro / Industry","Other"],
+    phases:["Design / Pre-construction","Construction","Operation","Decommissioning"],
+    begin:"Start diagnostic",
+    screenTitle:"Which standards apply to your project?",
+    screenLead:"Not all 8 Performance Standards apply. These questions set the scope — we won't penalise you for something you never needed.",
+    sYes:"Yes",sNo:"No",
+    reportIntro:"Readiness report",
+    overall:"Overall readiness",
+    critTitle:"Critical blockers",
+    critNone:"No critical blockers. The essential requirements are covered.",
+    critSub:"Essential items missing that block a financing submission:",
+    byStd:"Detail by standard",
+    exportTitle:"SGAS profile (JSON)",
+    exportSub:"Feeds the client's projectConfig. Copy or download.",
+    copy:"Copy JSON",download:"Download",copied:"Copied",
+    vBlock:"Not ready",vNear:"Almost there",vReady:"Ready",
+    of:"of",applicable:"applicable",
+    partialBanner:"Partial report — computed on PS1–PS3 only. {N} standards remain to assess (PS4–PS8). Unlock the full assessment for your definitive readiness report.",
+    teaserTitle:"This standard is part of the full assessment.",
+    teaserBody:"Your free 3-day trial gives you access to PS1, PS2 and PS3. Unlock PS4–PS8 to complete your readiness diagnostic.",
+    teaserCta:"Talk to us"
+  },
+  fr:{
+    sub:"Diagnostic de préparation",
+    meter:"Préparation estimée",scope:"Portée applicable",
+    legend:{ev:"Avec preuve",claim:"Sans preuve",prog:"En cours",miss:"Manquant"},
+    in:"S'applique",out:"N/A",locked:"Payant",
+    disclaimer:"Évaluation de la <b>complétude documentaire</b> alignée sur les Normes de performance de l'IFC (2012). Ce n'est ni une certification, ni un avis juridique, ni une garantie d'approbation de financement.",
+    steps:["Transparence","Projet","Filtrage","Évaluation","Rapport"],
+    back:"Retour",next:"Continuer",skip:"Passer",seeReport:"Voir le rapport",restart:"Recommencer",agree:"Compris, continuer",
+    a:{
+      yesE:{t:"Oui — et j'ai le document",s:"Existe et peut être joint"},
+      yes:{t:"Oui — mais sans document",s:"Fait, mais pas encore documenté"},
+      prog:{t:"En cours",s:"En développement / partiel"},
+      no:{t:"Non / n'existe pas",s:""},
+      na:{t:"Non applicable",s:"Avec justification"}
+    },
+    naReason:"Justification (pourquoi cela ne s'applique pas)",
+    notePh:"Note ou référence du document (facultatif)",
+    introTitle:"Voyons à quel point votre projet est prêt.",
+    introLead:"Quelques questions conversationnelles. À la fin, vous obtenez un rapport clair de ce qui manque — sans détour.",
+    goalLabel:"Quel est l'objectif ?",
+    g1t:"Prêt pour le financement",g1s:"Ce qu'un IFD/banque attend à l'évaluation (EIES, SGES, plans, engagement).",
+    g2t:"Prêt pour l'audit",g2s:"Preuve opérationnelle continue (suivi, actions clôturées, registres).",
+    pName:"Nom du projet",pSector:"Secteur",pCountry:"Pays",pPhase:"Phase",
+    sectors:["Santé / Hôpital","Construction / Infrastructure","Énergie / Pétrole & Gaz","Eau / Assainissement","Agro / Industrie","Autre"],
+    phases:["Conception / Pré-construction","Construction","Exploitation","Démantèlement"],
+    begin:"Lancer le diagnostic",
+    screenTitle:"Quelles normes s'appliquent à votre projet ?",
+    screenLead:"Les 8 Normes de performance ne s'appliquent pas toutes. Ces questions définissent la portée.",
+    sYes:"Oui",sNo:"Non",
+    reportIntro:"Rapport de préparation",
+    overall:"Préparation globale",
+    critTitle:"Blocages critiques",
+    critNone:"Aucun blocage critique. Les exigences essentielles sont couvertes.",
+    critSub:"Éléments essentiels manquants qui bloquent une soumission de financement :",
+    byStd:"Détail par norme",
+    exportTitle:"Profil SGES (JSON)",
+    exportSub:"Alimente le projectConfig. Copiez ou téléchargez.",
+    copy:"Copier le JSON",download:"Télécharger",copied:"Copié",
+    vBlock:"Pas prêt",vNear:"Presque",vReady:"Prêt",
+    of:"sur",applicable:"applicables",
+    partialBanner:"Rapport partiel — calculé uniquement sur NP1–NP3. Il reste {N} normes à évaluer (NP4–NP8). Débloquez l'évaluation complète pour votre rapport définitif.",
+    teaserTitle:"Cette norme fait partie de l'évaluation complète.",
+    teaserBody:"Votre essai gratuit de 3 jours vous donne accès à NP1, NP2 et NP3. Débloquez NP4–NP8 pour terminer votre diagnostic.",
+    teaserCta:"Parlons-en"
+  }
+};
+
+/* ── PS names ─────────────────────────────────────────────── */
+var PS = {
+  PS1:{pt:"PS1 · Avaliação e Gestão de Riscos E&S",en:"PS1 · Assessment & Management of E&S Risks",fr:"NP1 · Évaluation et gestion des risques E&S"},
+  PS2:{pt:"PS2 · Condições de Emprego e Trabalho",en:"PS2 · Labour & Working Conditions",fr:"NP2 · Main-d'œuvre et conditions de travail"},
+  PS3:{pt:"PS3 · Eficiência de Recursos e Poluição",en:"PS3 · Resource Efficiency & Pollution",fr:"NP3 · Efficacité des ressources et pollution"},
+  PS4:{pt:"PS4 · Saúde e Segurança da Comunidade",en:"PS4 · Community Health & Safety",fr:"NP4 · Santé et sécurité communautaires"},
+  PS5:{pt:"PS5 · Aquisição de Terra e Reassentamento",en:"PS5 · Land Acquisition & Resettlement",fr:"NP5 · Acquisition de terres et réinstallation"},
+  PS6:{pt:"PS6 · Biodiversidade",en:"PS6 · Biodiversity Conservation",fr:"NP6 · Biodiversité"},
+  PS7:{pt:"PS7 · Povos Indígenas",en:"PS7 · Indigenous Peoples",fr:"NP7 · Peuples autochtones"},
+  PS8:{pt:"PS8 · Património Cultural",en:"PS8 · Cultural Heritage",fr:"NP8 · Patrimoine culturel"}
+};
+
+/* ── PS Rationale — §B (why we ask, shown at top of each PS step) ── */
+var PS_RATIONALE = {
+  PS1:{
+    pt:"É a espinha de todo o sistema. A IFC exige um SGAS com sete elementos — política, identificação de riscos, programas de gestão, capacidade organizacional, emergências, engajamento das partes interessadas e monitorização — além de mecanismo de reclamação e Plano de Ação E&S (ESAP). Os bancos avaliam o PS1 primeiro: é através dele que todas as outras normas são geridas.",
+    en:"This is the backbone of the whole system. IFC requires an ESMS with seven elements — policy, risk identification, management programmes, organisational capacity, emergency response, stakeholder engagement and monitoring — plus a grievance mechanism and an E&S Action Plan (ESAP). Banks assess PS1 first: every other standard is managed through it.",
+    fr:"C'est la colonne vertébrale de tout le système. L'IFC exige un SGES avec sept éléments — politique, identification des risques, programmes de gestion, capacité organisationnelle, urgences, engagement des parties prenantes et suivi — plus un mécanisme de plaintes et un Plan d'action E&S (PAES). Les banques évaluent la NP1 en premier."
+  },
+  PS2:{
+    pt:"Protege os direitos dos trabalhadores: políticas de RH, condições por escrito, mecanismo de reclamação de trabalhadores, controlos contra trabalho infantil e forçado, e um sistema de Saúde e Segurança Ocupacional. É um foco central da due diligence reputacional — um único caso de trabalho infantil ou acidente fatal pode inviabilizar um financiamento.",
+    en:"Protects workers' rights: HR policies, written terms, a worker grievance mechanism, controls against child and forced labour, and an Occupational Health & Safety system. It's a central focus of reputational due diligence — a single child-labour or fatal-accident finding can sink a deal.",
+    fr:"Protège les droits des travailleurs : politiques RH, conditions écrites, mécanisme de plaintes, contrôles contre le travail des enfants et forcé, et un système de santé et sécurité. C'est un point central de la due diligence réputationnelle."
+  },
+  PS3:{
+    pt:"Cobre eficiência de recursos e poluição: gestão de resíduos (operador licenciado + cadeia de custódia), controlo de poluição, materiais perigosos e quantificação de GEE acima de 25.000 t CO₂e/ano. É onde vivem a maioria das licenças ambientais e dos limites das Diretrizes EHS.",
+    en:"Covers resource efficiency and pollution: waste management (licensed operator + chain of custody), pollution control, hazardous materials, and GHG quantification above 25,000 t CO₂e/year. This is where most environmental permits and EHS Guideline thresholds live.",
+    fr:"Couvre l'efficacité des ressources et la pollution : gestion des déchets (opérateur agréé), contrôle de la pollution, matières dangereuses, et quantification des GES au-delà de 25 000 t CO₂e/an."
+  },
+  PS4:{
+    pt:"Trata dos riscos do projeto para as comunidades vizinhas: avaliação de riscos, segurança da infraestrutura, exposição a materiais perigosos e doenças (incl. influxo de mão de obra), resposta a emergências com a comunidade e conduta do pessoal de segurança. Crítico em contextos periurbanos densos e de pós-conflito.",
+    en:"Addresses the project's risks to surrounding communities: risk assessment, infrastructure safety, exposure to hazardous materials and disease (incl. labour influx), emergency response with the community, and security-personnel conduct. Critical in dense peri-urban and post-conflict contexts.",
+    fr:"Traite des risques du projet pour les communautés voisines : évaluation des risques, sécurité des infrastructures, exposition aux matières dangereuses et maladies (incl. afflux de main-d'œuvre), réponse aux urgences et conduite du personnel de sécurité."
+  },
+  PS5:{
+    pt:"Aplica-se só se houver aquisição de terras ou restrição de uso que cause deslocamento físico ou perda de meios de subsistência. Exige RAP/LRP, indemnização ao custo de reposição, censo com prazo de elegibilidade e mecanismo de reclamação. É a norma mais litigada e de maior risco reputacional.",
+    en:"Applies only if there is land acquisition or use restriction causing physical displacement or loss of livelihood. Requires a RAP/LRP, replacement-cost compensation, a census with an eligibility cut-off, and a grievance mechanism. It is the most litigated and reputationally dangerous standard.",
+    fr:"Ne s'applique que s'il y a acquisition de terres ou restriction causant un déplacement physique. Exige un PAR/plan de restauration, une indemnisation au coût de remplacement, un recensement avec date butoir et un mécanisme de plaintes."
+  },
+  PS6:{
+    pt:"Aplica-se em/perto de habitat natural ou crítico, ou em produção de recursos naturais vivos. Exige identificação de impactos, classificação de habitat, Plano de Ação para a Biodiversidade (se habitat crítico) e gestão de espécies exóticas invasoras.",
+    en:"Applies in/near natural or critical habitat, or in living-resource production. Requires impact identification, habitat classification, a Biodiversity Action Plan (if critical habitat) and management of invasive alien species.",
+    fr:"S'applique dans/près d'un habitat naturel ou critique, ou en production de ressources vivantes. Exige l'identification des impacts, la classification de l'habitat, un Plan d'action pour la biodiversité et la gestion des espèces invasives."
+  },
+  PS7:{
+    pt:"Aplica-se se houver Povos Indígenas na área de influência. Exige Consulta Informada e Participação (CIP) e, em circunstâncias definidas (terras tradicionais, realocação, património cultural crítico), o Consentimento Livre, Prévio e Informado (CLPI) — uma barreira que, se não cumprida, bloqueia o projeto.",
+    en:"Applies if Indigenous Peoples are in the area of influence. Requires Informed Consultation & Participation (ICP) and, in defined circumstances (traditional lands, relocation, critical cultural heritage), Free, Prior & Informed Consent (FPIC) — a hard gate that blocks the project if unmet.",
+    fr:"S'applique s'il y a des Peuples autochtones dans la zone d'influence. Exige une Consultation et participation éclairées (CPE) et, dans des circonstances définies, le Consentement libre, préalable et éclairé (CLPE) — un seuil bloquant s'il n'est pas obtenu."
+  },
+  PS8:{
+    pt:"Aplica-se se a construção ou operação puder afetar património cultural, arqueológico, religioso — ou se houver risco de descobertas durante escavações. Exige identificação e proteção, procedimento de descobertas aleatórias (chance finds), consulta às comunidades e regras reforçadas para património cultural crítico.",
+    en:"Applies if construction or operations could affect cultural, archaeological or religious heritage — or if there's a risk of chance finds during excavation. Requires identification and protection, a chance-finds procedure, community consultation, and stricter rules for critical cultural heritage.",
+    fr:"S'applique si la construction peut affecter le patrimoine culturel ou archéologique. Exige l'identification et la protection, une procédure de découvertes fortuites, la consultation des communautés et des règles renforcées pour le patrimoine critique."
+  }
+};
+
+/* ── Transparency copy — §A ──────────────────────────────── */
+var OPEN_COPY = {
+  pt:{
+    eyebrow:"Antes de começar",
+    title:"Porque é que perguntamos isto",
+    why:{
+      label:"Porque perguntamos",
+      text:"Estas perguntas seguem as Normas de Desempenho da IFC (2012), PS1 a PS8, e as Normas Ambientais e Sociais do Banco Mundial (ESS) — exatamente o quadro que um banco de desenvolvimento (DFI) usa para avaliar o seu projeto. Não estamos a julgar a sua empresa: estamos a verificar se os documentos e evidências que estas normas esperam realmente existem, para lhe dizer, sem rodeios, o que falta para estar pronto para financiamento ou auditoria."
+    },
+    conf:{
+      label:"Confidencialidade",
+      text:"As suas respostas são confidenciais. São usadas apenas para gerar o seu relatório de prontidão e ficam guardadas numa base de dados dedicada e isolada por inquilino (row-level security), separada de qualquer outro cliente. Nunca vendemos nem partilhamos os seus dados com terceiros."
+    },
+    legal:{
+      label:"Aviso legal",
+      text:"Este diagnóstico mede a completude da sua documentação face às normas IFC/Banco Mundial. Não é uma certificação, não é parecer jurídico e não garante a aprovação de financiamento. A qualidade dos documentos exige a revisão de um especialista E&S. Não substitui a certificação da IFC ou do Banco Mundial."
+    }
+  },
+  en:{
+    eyebrow:"Before we start",
+    title:"Here's why we ask this",
+    why:{
+      label:"Why we ask",
+      text:"These questions follow the IFC Performance Standards (2012), PS1–PS8, and the World Bank Environmental & Social Standards (ESS) — the exact framework a development bank (DFI) uses to appraise your project. We're not judging your company: we're checking whether the documents and evidence those standards expect actually exist, so we can tell you plainly what's missing to be financing- or audit-ready."
+    },
+    conf:{
+      label:"Confidentiality",
+      text:"Your answers are confidential. They are used only to generate your readiness report and are stored in a dedicated, tenant-isolated database (row-level security), separate from every other client. We never sell or share your data with third parties."
+    },
+    legal:{
+      label:"Legal notice",
+      text:"This diagnostic measures the completeness of your documentation against the IFC/World Bank standards. It is not a certification, not legal advice, and does not guarantee financing approval. Document quality requires review by an E&S specialist. It does not replace IFC or World Bank certification."
+    }
+  },
+  fr:{
+    eyebrow:"Avant de commencer",
+    title:"Voici pourquoi nous posons ces questions",
+    why:{
+      label:"Pourquoi nous demandons",
+      text:"Elles suivent les Normes de performance de l'IFC (2012), NP1–NP8, et les Normes environnementales et sociales de la Banque mondiale (NES) — le cadre exact qu'une banque de développement (IFD) utilise pour évaluer votre projet. Nous ne jugeons pas votre entreprise : nous vérifions si les documents et preuves attendus par ces normes existent réellement."
+    },
+    conf:{
+      label:"Confidentialité",
+      text:"Vos réponses sont confidentielles. Elles servent uniquement à générer votre rapport de préparation et sont conservées dans une base de données dédiée et isolée par locataire (row-level security), séparée de tout autre client. Nous ne vendons ni ne partageons jamais vos données avec des tiers."
+    },
+    legal:{
+      label:"Avis juridique",
+      text:"Ce diagnostic mesure la complétude de votre documentation au regard des normes IFC/Banque mondiale. Ce n'est ni une certification, ni un avis juridique, et il ne garantit pas l'approbation d'un financement. La qualité des documents nécessite la revue d'un spécialiste E&S."
+    }
+  }
+};
+
+/* ── Screening questions ──────────────────────────────────── */
+var SCREEN = [
+  {id:"sc5",ps:"PS5",
+   pt:"O projeto adquire terras ou restringe o uso de terras/recursos de alguém, causando deslocamento físico ou perda de meios de subsistência?",
+   en:"Does the project acquire land or restrict anyone's land/resource use, causing physical displacement or loss of livelihood?",
+   fr:"Le projet acquiert-il des terres ou restreint-il l'usage de terres/ressources, causant un déplacement physique ou une perte de moyens de subsistance ?"},
+  {id:"sc7",ps:"PS7",
+   pt:"Existem Povos Indígenas (grupo social/cultural distinto, ligado a território ancestral) na área de influência?",
+   en:"Are there Indigenous Peoples (a distinct social/cultural group attached to ancestral territory) in the area of influence?",
+   fr:"Y a-t-il des Peuples autochtones (groupe social/culturel distinct lié à un territoire ancestral) dans la zone d'influence ?"},
+  {id:"sc6",ps:"PS6",
+   pt:"O projeto situa-se em/perto de habitat natural, área protegida, ou envolve produção de recursos naturais vivos (agricultura, floresta, pesca)?",
+   en:"Is the project in/near natural habitat or a protected area, or does it involve living natural-resource production (agriculture, forestry, fishing)?",
+   fr:"Le projet est-il dans/près d'un habitat naturel ou d'une aire protégée, ou implique-t-il une production de ressources naturelles vivantes ?"},
+  {id:"sc8",ps:"PS8",
+   pt:"A construção ou operação pode afetar património cultural, arqueológico, religioso — ou há risco de descobertas durante escavações?",
+   en:"Could construction or operations affect cultural, archaeological or religious heritage — or is there a risk of chance finds during excavation?",
+   fr:"La construction ou l'exploitation peut-elle affecter un patrimoine culturel, archéologique ou religieux — ou y a-t-il un risque de découvertes fortuites ?"}
+];
+
+/* ── Question bank (PS1–PS8) ─────────────────────────────── */
+var Q = [
+  // PS1 — ESMS spine (always applicable)
+  {ps:"PS1",crit:1,ref:"PS1 §6",
+   pt:"Tem uma Política Ambiental e Social aprovada e comunicada à organização?",
+   en:"Do you have an approved E&S Policy, communicated across the organisation?",
+   fr:"Disposez-vous d'une Politique E&S approuvée et communiquée ?"},
+  {ps:"PS1",crit:1,ref:"PS1 §7–12",
+   pt:"Existe um processo de identificação de riscos e impactos (ESIA ou avaliação E&S do projeto)?",
+   en:"Is there a risk-and-impact identification process (ESIA or project E&S assessment)?",
+   fr:"Existe-t-il un processus d'identification des risques et impacts (EIES) ?"},
+  {ps:"PS1",crit:0,ref:"PS1 §13–15",
+   pt:"Tem programas de gestão / Plano de Gestão Ambiental (PGA) com hierarquia de mitigação?",
+   en:"Do you have management programmes / an ESMP with a mitigation hierarchy?",
+   fr:"Avez-vous des programmes de gestion / un PGES avec hiérarchie d'atténuation ?"},
+  {ps:"PS1",crit:1,ref:"PS1 §16",
+   pt:"Existe um Plano de Ação E&S (ESAP) com ações, responsáveis e prazos?",
+   en:"Is there an E&S Action Plan (ESAP) with actions, owners and deadlines?",
+   fr:"Existe-t-il un Plan d'action E&S (PAES) avec actions, responsables et échéances ?"},
+  {ps:"PS1",crit:0,ref:"PS1 §17–19",
+   pt:"Há uma estrutura organizacional E&S com responsáveis designados?",
+   en:"Is there an E&S organisational structure with designated responsibles?",
+   fr:"Existe-t-il une structure organisationnelle E&S avec responsables désignés ?"},
+  {ps:"PS1",crit:0,ref:"PS1 §20–21",
+   pt:"Existe um Plano de Preparação e Resposta a Emergências?",
+   en:"Is there an Emergency Preparedness & Response Plan?",
+   fr:"Existe-t-il un Plan de préparation et de réponse aux urgences ?"},
+  {ps:"PS1",crit:1,ref:"PS1 §25–28",
+   pt:"Tem um Plano de Engajamento das Partes Interessadas (SEP)?",
+   en:"Do you have a Stakeholder Engagement Plan (SEP)?",
+   fr:"Avez-vous un Plan d'engagement des parties prenantes (PEPP) ?"},
+  {ps:"PS1",crit:0,ref:"PS1 §29",
+   pt:"Divulga informação relevante do projeto às comunidades afetadas?",
+   en:"Do you disclose relevant project information to affected communities?",
+   fr:"Divulguez-vous les informations pertinentes aux communautés affectées ?"},
+  {ps:"PS1",crit:1,ref:"PS1 §35",
+   pt:"Existe um mecanismo de reclamação comunitário acessível e funcional?",
+   en:"Is there an accessible, functioning community grievance mechanism?",
+   fr:"Existe-t-il un mécanisme de gestion des plaintes communautaire fonctionnel ?"},
+  {ps:"PS1",crit:0,ref:"PS1 §22–24,36",
+   pt:"Tem procedimentos de monitorização e relatórios periódicos de desempenho E&S?",
+   en:"Do you have monitoring procedures and periodic E&S performance reporting?",
+   fr:"Avez-vous des procédures de suivi et des rapports périodiques de performance E&S ?"},
+  // PS2 — Labour (always applicable)
+  {ps:"PS2",crit:0,ref:"PS2 §8",
+   pt:"Tem políticas e procedimentos de recursos humanos documentados?",
+   en:"Do you have documented human-resources policies and procedures?",
+   fr:"Avez-vous des politiques et procédures RH documentées ?"},
+  {ps:"PS2",crit:0,ref:"PS2 §9",
+   pt:"Os trabalhadores recebem por escrito os seus direitos e condições de trabalho?",
+   en:"Are workers given written information on their rights and working conditions?",
+   fr:"Les travailleurs reçoivent-ils par écrit leurs droits et conditions de travail ?"},
+  {ps:"PS2",crit:0,ref:"PS2 §20",
+   pt:"Existe um mecanismo de reclamação para trabalhadores?",
+   en:"Is there a worker grievance mechanism?",
+   fr:"Existe-t-il un mécanisme de plaintes pour les travailleurs ?"},
+  {ps:"PS2",crit:1,ref:"PS2 §21–22",
+   pt:"Tem controlos contra trabalho infantil e trabalho forçado?",
+   en:"Do you have controls against child and forced labour?",
+   fr:"Avez-vous des contrôles contre le travail des enfants et le travail forcé ?"},
+  {ps:"PS2",crit:1,ref:"PS2 §23",
+   pt:"Existe um sistema de Saúde e Segurança Ocupacional (SSO) com perigos, EPI, registo de acidentes e formação?",
+   en:"Is there an Occupational Health & Safety system (hazards, PPE, incident logging, training)?",
+   fr:"Existe-t-il un système de santé et sécurité au travail (SST) avec dangers, EPI, registre d'accidents et formation ?"},
+  {ps:"PS2",crit:0,ref:"PS2 §24–26",
+   pt:"Gere e monitoriza o desempenho E&S dos subcontratados?",
+   en:"Do you manage and monitor contractors' E&S performance?",
+   fr:"Gérez-vous la performance E&S des sous-traitants ?"},
+  {ps:"PS2",crit:0,ref:"PS2 §27–29",
+   pt:"Avalia o risco de trabalho infantil ou forçado na cadeia de abastecimento principal?",
+   en:"Do you assess the risk of child or forced labour in the primary supply chain?",
+   fr:"Évaluez-vous le risque de travail des enfants dans la chaîne d'approvisionnement principale ?"},
+  // PS3 — Resource efficiency & pollution (always applicable)
+  {ps:"PS3",crit:0,ref:"PS3 §6",
+   pt:"Implementa medidas de eficiência de recursos (energia, água)?",
+   en:"Do you implement resource-efficiency measures (energy, water)?",
+   fr:"Mettez-vous en œuvre des mesures d'efficacité des ressources (énergie, eau) ?"},
+  {ps:"PS3",crit:0,ref:"PS3 §10–11",
+   pt:"Tem medidas de prevenção e controlo de poluição (ar, água, solo, ruído)?",
+   en:"Do you have pollution prevention and control measures (air, water, soil, noise)?",
+   fr:"Avez-vous des mesures de prévention et de contrôle de la pollution ?"},
+  {ps:"PS3",crit:1,ref:"PS3 §12",
+   pt:"Existe um Plano de Gestão de Resíduos (perigosos e não perigosos) com operador licenciado e cadeia de custódia?",
+   en:"Is there a Waste Management Plan (hazardous & non-hazardous) with a licensed operator and chain of custody?",
+   fr:"Existe-t-il un Plan de gestion des déchets (dangereux et non dangereux) avec opérateur agréé ?"},
+  {ps:"PS3",crit:0,ref:"PS3 §13",
+   pt:"Gere materiais perigosos (armazenamento, contenção de derrames, rotulagem)?",
+   en:"Do you manage hazardous materials (storage, spill containment, labelling)?",
+   fr:"Gérez-vous les matières dangereuses (stockage, confinement, étiquetage) ?"},
+  {ps:"PS3",crit:0,ref:"PS3 §15",
+   pt:"Quantifica as suas emissões de gases de efeito de estufa (GEE)?",
+   en:"Do you quantify your greenhouse gas (GHG) emissions?",
+   fr:"Quantifiez-vous vos émissions de gaz à effet de serre (GES) ?"},
+  // PS4 — Community Health & Safety (always applicable)
+  {ps:"PS4",crit:1,ref:"PS4 §7",
+   pt:"Existe uma avaliação de riscos do projeto para a saúde e segurança das comunidades vizinhas?",
+   en:"Is there a project risk assessment for community health and safety?",
+   fr:"Existe-t-il une évaluation des risques du projet pour la santé et la sécurité des communautés voisines ?"},
+  {ps:"PS4",crit:0,ref:"PS4 §9",
+   pt:"A segurança da infraestrutura crítica (barragens, taludes, estradas) é avaliada e monitorizada?",
+   en:"Is the safety of critical infrastructure (dams, slopes, roads) assessed and monitored?",
+   fr:"La sécurité des infrastructures critiques (barrages, talus, routes) est-elle évaluée et surveillée ?"},
+  {ps:"PS4",crit:0,ref:"PS4 §10",
+   pt:"Avalia e mitiga a exposição das comunidades a materiais perigosos e poluição do projeto?",
+   en:"Do you assess and mitigate community exposure to hazardous materials and project pollution?",
+   fr:"Évaluez-vous et atténuez-vous l'exposition des communautés aux matières dangereuses du projet ?"},
+  {ps:"PS4",crit:0,ref:"PS4 §11",
+   pt:"Tem um plano para gerir os riscos de doenças (incluindo influxo de mão de obra)?",
+   en:"Do you have a plan to manage disease risks (including labour influx)?",
+   fr:"Avez-vous un plan pour gérer les risques de maladies (y compris l'afflux de main-d'œuvre) ?"},
+  {ps:"PS4",crit:1,ref:"PS4 §12",
+   pt:"Tem um Plano de Resposta a Emergências testado, que inclua a comunidade?",
+   en:"Do you have a tested Emergency Response Plan that includes the community?",
+   fr:"Avez-vous un Plan de réponse aux urgences testé, incluant la communauté ?"},
+  {ps:"PS4",crit:1,ref:"PS4 §13",
+   pt:"O pessoal de segurança física opera com código de conduta baseado nos Princípios Voluntários (VPs)?",
+   en:"Does security personnel operate with a code of conduct based on the Voluntary Principles (VPs)?",
+   fr:"Le personnel de sécurité opère-t-il avec un code de conduite basé sur les Principes volontaires (PV) ?"},
+  // PS5 — Land Acquisition (conditional: sc5)
+  {ps:"PS5",crit:1,ref:"PS5 §8",cond:"sc5",
+   pt:"Existe um Plano de Ação de Reassentamento (PAR) ou Plano de Restauro de Meios de Vida (PRMV) aprovado?",
+   en:"Is there an approved Resettlement Action Plan (RAP) or Livelihood Restoration Plan (LRP)?",
+   fr:"Existe-t-il un Plan d'action de réinstallation (PAR) ou Plan de restauration des moyens de subsistance approuvé ?"},
+  {ps:"PS5",crit:1,ref:"PS5 §9",cond:"sc5",
+   pt:"Foi realizado um censo de pessoas afetadas com prazo de elegibilidade definido?",
+   en:"Was a census of affected persons conducted with a defined eligibility cut-off date?",
+   fr:"Un recensement des personnes affectées a-t-il été réalisé avec une date butoir d'éligibilité définie ?"},
+  {ps:"PS5",crit:1,ref:"PS5 §10",cond:"sc5",
+   pt:"As compensações são calculadas ao custo de reposição completo (não valor de mercado)?",
+   en:"Are compensations calculated at full replacement cost (not market value)?",
+   fr:"Les compensations sont-elles calculées au coût de remplacement complet (pas à la valeur marchande) ?"},
+  {ps:"PS5",crit:0,ref:"PS5 §14",cond:"sc5",
+   pt:"Existe um mecanismo de reclamação específico para as pessoas afetadas pelo reassentamento?",
+   en:"Is there a specific grievance mechanism for persons affected by resettlement?",
+   fr:"Existe-t-il un mécanisme de plaintes spécifique pour les personnes affectées par la réinstallation ?"},
+  // PS6 — Biodiversity (conditional: sc6)
+  {ps:"PS6",crit:0,ref:"PS6 §7",cond:"sc6",
+   pt:"Os impactos do projeto em habitats e biodiversidade foram identificados e classificados?",
+   en:"Have the project's impacts on habitats and biodiversity been identified and classified?",
+   fr:"Les impacts du projet sur les habitats et la biodiversité ont-ils été identifiés et classifiés ?"},
+  {ps:"PS6",crit:1,ref:"PS6 §16",cond:"sc6",
+   pt:"Se houver habitat crítico, existe um Plano de Ação para a Biodiversidade (PAB) aprovado?",
+   en:"If critical habitat is present, is there an approved Biodiversity Action Plan (BAP)?",
+   fr:"En cas d'habitat critique, existe-t-il un Plan d'action pour la biodiversité (PAB) approuvé ?"},
+  {ps:"PS6",crit:0,ref:"PS6 §19",cond:"sc6",
+   pt:"Tem medidas para prevenir e gerir espécies exóticas invasoras?",
+   en:"Do you have measures to prevent and manage invasive alien species?",
+   fr:"Avez-vous des mesures pour prévenir et gérer les espèces exotiques envahissantes ?"},
+  // PS7 — Indigenous Peoples (conditional: sc7)
+  {ps:"PS7",crit:1,ref:"PS7 §9",cond:"sc7",
+   pt:"Realizou um processo de Consulta Informada e Participação (CIP) com as comunidades indígenas?",
+   en:"Did you conduct an Informed Consultation & Participation (ICP) process with indigenous communities?",
+   fr:"Avez-vous conduit un processus de Consultation et participation éclairées (CPE) avec les communautés autochtones ?"},
+  {ps:"PS7",crit:1,ref:"PS7 §14–16",cond:"sc7",
+   pt:"Onde aplicável (terras tradicionais, realocação, património crítico), obteve o Consentimento Livre, Prévio e Informado (CLPI)?",
+   en:"Where applicable (traditional lands, relocation, critical heritage), did you obtain Free, Prior & Informed Consent (FPIC)?",
+   fr:"Le cas échéant (terres traditionnelles, relocalisation, patrimoine critique), avez-vous obtenu le Consentement libre, préalable et éclairé (CLPE) ?"},
+  {ps:"PS7",crit:0,ref:"PS7 §11",cond:"sc7",
+   pt:"Existe um plano de engajamento culturalmente apropriado, aprovado em conjunto com as comunidades?",
+   en:"Is there a culturally appropriate engagement plan, co-developed with the communities?",
+   fr:"Existe-t-il un plan d'engagement culturellement approprié, co-développé avec les communautés ?"},
+  // PS8 — Cultural Heritage (conditional: sc8)
+  {ps:"PS8",crit:0,ref:"PS8 §7",cond:"sc8",
+   pt:"Foi realizada uma triagem para identificar e proteger sítios de património cultural na área do projeto?",
+   en:"Was a screening conducted to identify and protect cultural heritage sites in the project area?",
+   fr:"Un filtrage a-t-il été réalisé pour identifier et protéger les sites du patrimoine culturel dans la zone du projet ?"},
+  {ps:"PS8",crit:1,ref:"PS8 §9",cond:"sc8",
+   pt:"Existe um procedimento de descobertas fortuitas (chance finds) implementado na obra?",
+   en:"Is there a chance-finds procedure implemented on site?",
+   fr:"Existe-t-il une procédure de découvertes fortuites mise en œuvre sur le chantier ?"},
+  {ps:"PS8",crit:0,ref:"PS8 §11",cond:"sc8",
+   pt:"As comunidades afetadas foram consultadas sobre impactos no seu património cultural?",
+   en:"Were affected communities consulted about impacts on their cultural heritage?",
+   fr:"Les communautés affectées ont-elles été consultées sur les impacts sur leur patrimoine culturel ?"}
+];
+
+/* ── Trial gating ────────────────────────────────────────── */
+var TRIAL_PS = ['PS1','PS2','PS3'];
+var MAILTO_CTA = 'mailto:geral@hsilva.org?subject=SGAS%20Pro%20%E2%80%94%20upgrade%20plano%20completo';
+
+/* ── State ───────────────────────────────────────────────── */
+var LANG = 'pt';
+var STEP = 0; // 0=transparency, 1=project, 2=screening, 3-10=PS1-PS8, 11=report
+var PLAN = 'trial'; // 'trial' | 'paid'
+var STATE = {
+  project: {name:'',sector:'',country:'',phase:'',goal:'financing'},
+  screen: {},   // {sc5: true/false, sc6: true/false, sc7: true/false, sc8: true/false}
+  answers: {},  // {qIdx: {val:'yesE'|'yes'|'prog'|'no'|'na', note:'', naReason:''}}
+  completed: false
+};
+
+/* PS ordering for steps 3–10 */
+var PS_ORDER = ['PS1','PS2','PS3','PS4','PS5','PS6','PS7','PS8'];
+
+/* ── Supabase client ─────────────────────────────────────── */
+var _sb = null;
+function getClient() {
+  if (window.SGAS_AUTH && window.SGAS_AUTH.client) return window.SGAS_AUTH.client;
+  if (_sb) return _sb;
+  var cfg = window.SGAS_CONFIG || {};
+  if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return null;
+  _sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true }
+  });
+  return _sb;
+}
+
+async function detectPlan() {
+  try {
+    var sb = getClient();
+    if (!sb) return;
+    var session = (await sb.auth.getSession()).data.session;
+    if (!session) return;
+
+    var memRes = await sb
+      .from('organization_members')
+      .select('organization_id, organizations(trial_ends_at, entitlement)')
+      .eq('user_id', session.user.id)
+      .is('suspended_at', null)
+      .limit(1)
+      .maybeSingle();
+
+    if (memRes.data && memRes.data.organizations) {
+      var org = memRes.data.organizations;
+      // If entitlement field exists and is 'paid', unlock all
+      if (org.entitlement === 'paid') { PLAN = 'paid'; return; }
+      // Otherwise derive from trial_ends_at: null = paid, set = trial
+      if (!org.trial_ends_at) { PLAN = 'paid'; } else { PLAN = 'trial'; }
+    }
+  } catch (_) { /* default to trial — safe fallback */ }
+}
+
+/* ── Helpers ─────────────────────────────────────────────── */
+function t(key) { return T[LANG][key] || T.pt[key] || key; }
+function psName(code) { return PS[code][LANG] || PS[code].pt; }
+function psRationale(code) { return PS_RATIONALE[code][LANG] || PS_RATIONALE[code].pt; }
+function h(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function isTrial() { return PLAN !== 'paid'; }
+function entitlementAllows(ps) { return !isTrial() || TRIAL_PS.includes(ps); }
+
+function activeQuestions() {
+  return Q.filter(function(q) {
+    if (q.cond && !STATE.screen[q.cond]) return false;
+    return true;
+  });
+}
+
+function activeQuestionsForPS(ps) {
+  return activeQuestions().filter(function(q) { return q.ps === ps; });
+}
+
+function applicablePS() {
+  // PS1–PS4 always in scope; PS5/6/7/8 gated by screening
+  var always = ['PS1','PS2','PS3','PS4'];
+  var conditional = [
+    {ps:'PS5', sc:'sc5'}, {ps:'PS6', sc:'sc6'},
+    {ps:'PS7', sc:'sc7'}, {ps:'PS8', sc:'sc8'}
+  ];
+  var result = always.slice();
+  conditional.forEach(function(c) { if (STATE.screen[c.sc]) result.push(c.ps); });
+  return result;
+}
+
+function globalQIndex(ps, localIdx) {
+  var all = activeQuestions();
+  var count = 0;
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].ps === ps) { if (count === localIdx) return i; count++; }
+  }
+  return -1;
+}
+
+/* ── Scoring ─────────────────────────────────────────────── */
+function scoreVal(val) {
+  if (val === 'yesE') return 1.0;
+  if (val === 'yes')  return 0.7;
+  if (val === 'prog') return 0.3;
+  if (val === 'no')   return 0.0;
+  return null; // na or unanswered
+}
+
+function scorePS(ps) {
+  var qs = activeQuestionsForPS(ps);
+  if (!qs.length) return null;
+  var scored = [], total = 0;
+  qs.forEach(function(q, li) {
+    var gi = globalQIndex(ps, li);
+    var ans = STATE.answers[gi];
+    var s = ans ? scoreVal(ans.val) : null;
+    if (s !== null) { scored.push(s); total += s; }
+  });
+  if (!scored.length) return null;
+  return Math.round((total / scored.length) * 100);
+}
+
+function globalScore() {
+  var app = applicablePS().filter(entitlementAllows);
+  var scores = [], total = 0;
+  app.forEach(function(ps) {
+    var s = scorePS(ps);
+    if (s !== null) { scores.push(s); total += s; }
+  });
+  if (!scores.length) return null;
+  return Math.round(total / scores.length);
+}
+
+function criticalGaps() {
+  var gaps = [];
+  var qs = activeQuestions();
+  qs.forEach(function(q, gi) {
+    if (!q.crit) return;
+    if (!entitlementAllows(q.ps)) return;
+    var ans = STATE.answers[gi];
+    var s = ans ? scoreVal(ans.val) : 0;
+    if (s === null) return;
+    if (s < 1.0) gaps.push({ps: q.ps, ref: q.ref, text: q[LANG] || q.pt, val: ans ? ans.val : 'no'});
+  });
+  return gaps;
+}
+
+function profileJSON() {
+  var app = applicablePS();
+  return {
+    wizard_version: '1.0',
+    plan: PLAN,
+    lang: LANG,
+    assessed_at: new Date().toISOString(),
+    project: STATE.project,
+    applicable_standards: app,
+    screened_out: PS_ORDER.filter(function(p) { return !app.includes(p); }),
+    screen_answers: STATE.screen,
+    score: globalScore(),
+    scores_by_ps: (function(){
+      var out = {};
+      app.forEach(function(ps) { out[ps] = entitlementAllows(ps) ? scorePS(ps) : null; });
+      return out;
+    })(),
+    critical_gaps: criticalGaps(),
+    answers: STATE.answers,
+    status: STATE.completed ? 'complete' : 'partial'
+  };
+}
+
+/* ── Supabase persistence ────────────────────────────────── */
+var _saveTimer = null;
+function scheduleSave(delay) {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveAssessment, delay || 1500);
+}
+
+async function saveAssessment() {
+  var sb = getClient();
+  if (!sb) return;
+  try {
+    setSaveDot('saving');
+    var session = (await sb.auth.getSession()).data.session;
+    if (!session) { setSaveDot(''); return; }
+
+    // Get org + project
+    var memRes = await sb
+      .from('organization_members')
+      .select('organization_id')
+      .eq('user_id', session.user.id)
+      .is('suspended_at', null)
+      .limit(1)
+      .maybeSingle();
+
+    if (!memRes.data) { setSaveDot(''); return; }
+    var orgId = memRes.data.organization_id;
+
+    // Get active project
+    var projId = (typeof ACTIVE_PROJECT_ID !== 'undefined' && ACTIVE_PROJECT_ID)
+      ? ACTIVE_PROJECT_ID
+      : localStorage.getItem('sgas_project_id');
+
+    var profile = profileJSON();
+    var payload = {
+      org_id: orgId,
+      project_id: projId || null,
+      plan: PLAN,
+      lang: LANG,
+      status: STATE.completed ? 'complete' : 'partial',
+      score: profile.score,
+      applicable_standards: profile.applicable_standards,
+      critical_gaps: profile.critical_gaps,
+      answers: STATE.answers,
+      profile: profile,
+      updated_at: new Date().toISOString()
+    };
+
+    // Upsert by org_id + lang (one active assessment per org per language)
+    var res = await sb
+      .from('readiness_assessments')
+      .upsert(payload, { onConflict: 'org_id,lang', ignoreDuplicates: false });
+
+    if (res.error && res.error.code !== '42P01') {
+      console.warn('[SGAS Wizard] Save error:', res.error.message);
+      setSaveDot('');
+    } else {
+      setSaveDot('saved');
+      setTimeout(function() { setSaveDot(''); }, 3000);
+      // Update projectConfig in sgas-pro.html if available
+      updateProjectConfig(profile);
+    }
+  } catch (e) {
+    console.warn('[SGAS Wizard] Save exception:', e.message);
+    setSaveDot('');
+  }
+}
+
+function updateProjectConfig(profile) {
+  // If wizard is embedded or opened alongside sgas-pro.html, update shared state
+  if (window.opener && window.opener.ACTIVE_PROJECT_ID) {
+    try {
+      var sb = getClient();
+      if (!sb || !window.opener.ACTIVE_PROJECT_ID) return;
+      sb.from('projects').update({
+        metadata: {
+          readiness_score: profile.score,
+          applicable_standards: profile.applicable_standards,
+          critical_gaps: profile.critical_gaps,
+          last_assessment_at: profile.assessed_at
+        }
+      }).eq('id', window.opener.ACTIVE_PROJECT_ID).then(function(){});
+    } catch(_){}
+  }
+}
+
+function setSaveDot(state) {
+  var dot = document.getElementById('saveDot');
+  if (!dot) return;
+  dot.className = 'save-dot' + (state ? ' ' + state : '');
+  dot.title = state === 'saving' ? 'A guardar…' : state === 'saved' ? 'Guardado' : '';
+}
+
+/* ── Progress bar ────────────────────────────────────────── */
+function renderProgress() {
+  var steps = t('steps');
+  // Map STEP to segment: 0→0, 1→1, 2→2, 3-10→3, 11→4
+  var seg = STEP === 0 ? 0 : STEP === 1 ? 1 : STEP === 2 ? 2 : STEP <= 10 ? 3 : 4;
+  var html = steps.map(function(s, i) {
+    var cls = i < seg ? 'seg done' : i === seg ? 'seg active' : 'seg';
+    return '<span class="' + cls + '">' + h(s) + '</span>' +
+      (i < steps.length-1 ? '<span class="sep">···</span>' : '');
+  }).join('');
+  document.getElementById('progress').innerHTML = html;
+}
+
+/* ── Rail (meter + scope) ────────────────────────────────── */
+function renderRail() {
+  var score = globalScore();
+  var mNum = document.getElementById('meterNum');
+  var mPct = document.getElementById('meterPct');
+  var mBar = document.getElementById('meterBar');
+  document.getElementById('meterLabel').textContent = t('meter');
+
+  if (score === null) {
+    mNum.textContent = '—'; mPct.textContent = ''; mBar.style.width = '0%';
+  } else {
+    mNum.textContent = score; mPct.textContent = '%';
+    mBar.style.width = score + '%';
+  }
+
+  // Legend
+  var counts = {ev:0,claim:0,prog:0,miss:0};
+  activeQuestions().forEach(function(q, gi) {
+    if (!entitlementAllows(q.ps)) return;
+    var ans = STATE.answers[gi];
+    if (!ans) { counts.miss++; return; }
+    if (ans.val === 'yesE') counts.ev++;
+    else if (ans.val === 'yes') counts.claim++;
+    else if (ans.val === 'prog') counts.prog++;
+    else if (ans.val === 'no') counts.miss++;
+  });
+  var lbl = t('legend');
+  var colors = {ev:getComputedStyle(document.documentElement).getPropertyValue('--teal-bright'),
+                claim:'rgba(244,236,216,.4)',prog:'#E0A84B',miss:'#D9645A'};
+  document.getElementById('legend').innerHTML = Object.keys(counts).map(function(k) {
+    return '<div class="row"><span class="l"><span class="pip" style="background:' + colors[k] + '"></span>' +
+      lbl[k] + '</span><span>' + counts[k] + '</span></div>';
+  }).join('');
+
+  // Scope list
+  document.getElementById('scopeLabel').textContent = t('scope');
+  var app = STEP >= 3 ? applicablePS() : PS_ORDER;
+  var html = PS_ORDER.map(function(ps) {
+    var inScope = app.includes(ps);
+    var locked = isTrial() && !TRIAL_PS.includes(ps);
+    var tagCls = locked ? 'tag locked' : inScope ? 'tag in' : 'tag out';
+    var tagTxt = locked ? t('locked') : inScope ? t('in') : t('out');
+    return '<div class="ps-row"><span style="font-size:12px">' + h(PS[ps][LANG].split('·')[0].trim()) +
+      '</span><span class="' + tagCls + '">' + tagTxt + '</span></div>';
+  }).join('');
+  document.getElementById('scopeList').innerHTML = html;
+
+  document.getElementById('disclaimer').innerHTML = T[LANG].disclaimer;
+}
+
+/* ── Step 0: Transparency ────────────────────────────────── */
+function renderTransparency() {
+  var oc = OPEN_COPY[LANG] || OPEN_COPY.pt;
+  var stage = document.getElementById('stage');
+  stage.innerHTML =
+    '<div class="eyebrow" style="margin-bottom:10px">' + h(oc.eyebrow) + '</div>' +
+    '<h1 class="q">' + h(oc.title) + '</h1>' +
+    '<div class="why-block">' +
+    ['why','conf','legal'].map(function(k) {
+      return '<div class="why-item"><div class="why-label">' + h(oc[k].label) + '</div>' +
+        '<p>' + h(oc[k].text) + '</p></div>';
+    }).join('') +
+    '</div>' +
+    '<div class="navrow">' +
+    '<span></span>' +
+    '<button class="btn primary" onclick="goNext()">' + h(t('agree')) + '</button>' +
+    '</div>';
+}
+
+/* ── Step 1: Project intro ───────────────────────────────── */
+function renderIntro() {
+  var stage = document.getElementById('stage');
+  var p = STATE.project;
+  var sectors = T[LANG].sectors || T.pt.sectors;
+  var phases  = T[LANG].phases  || T.pt.phases;
+  var goalSel = p.goal || 'financing';
+  stage.innerHTML =
+    '<div class="eyebrow" style="margin-bottom:10px">01 · ' + h(t('steps')[1]) + '</div>' +
+    '<h1 class="q">' + h(t('introTitle')) + '</h1>' +
+    '<p class="lead">' + h(t('introLead')) + '</p>' +
+    '<div style="margin-top:22px">' +
+    '<div class="eyebrow" style="margin-bottom:10px">' + h(t('goalLabel')) + '</div>' +
+    '<div class="goal-grid">' +
+    '<button class="goal-btn" aria-pressed="' + (goalSel==='financing') + '" onclick="setGoal(\'financing\')">' +
+    '<b>' + h(t('g1t')) + '</b><span>' + h(t('g1s')) + '</span></button>' +
+    '<button class="goal-btn" aria-pressed="' + (goalSel==='audit') + '" onclick="setGoal(\'audit\')">' +
+    '<b>' + h(t('g2t')) + '</b><span>' + h(t('g2s')) + '</span></button>' +
+    '</div>' +
+    '<div class="grid2" style="margin-top:18px">' +
+    '<div class="field"><label>' + h(t('pName')) + '</label>' +
+    '<input id="f-name" value="' + h(p.name) + '" oninput="STATE.project.name=this.value"></div>' +
+    '<div class="field"><label>' + h(t('pCountry')) + '</label>' +
+    '<input id="f-country" value="' + h(p.country) + '" oninput="STATE.project.country=this.value"></div>' +
+    '<div class="field"><label>' + h(t('pSector')) + '</label>' +
+    '<select id="f-sector" onchange="STATE.project.sector=this.value">' +
+    [''].concat(sectors).map(function(s,i) {
+      return '<option value="' + h(s) + '"' + (p.sector===s?' selected':'') + '>' + (i===0?'—':h(s)) + '</option>';
+    }).join('') + '</select></div>' +
+    '<div class="field"><label>' + h(t('pPhase')) + '</label>' +
+    '<select id="f-phase" onchange="STATE.project.phase=this.value">' +
+    [''].concat(phases).map(function(s,i) {
+      return '<option value="' + h(s) + '"' + (p.phase===s?' selected':'') + '>' + (i===0?'—':h(s)) + '</option>';
+    }).join('') + '</select></div>' +
+    '</div></div>' +
+    '<div class="navrow">' +
+    '<button class="btn ghost" onclick="goBack()">← ' + h(t('back')) + '</button>' +
+    '<button class="btn primary" onclick="goNext()">' + h(t('begin')) + '</button>' +
+    '</div>';
+}
+
+function setGoal(g) {
+  STATE.project.goal = g;
+  document.querySelectorAll('.goal-btn').forEach(function(b) {
+    b.setAttribute('aria-pressed', b.getAttribute('onclick').includes(g));
+  });
+}
+
+/* ── Step 2: Screening ───────────────────────────────────── */
+function renderScreen() {
+  var stage = document.getElementById('stage');
+  stage.innerHTML =
+    '<div class="eyebrow" style="margin-bottom:10px">02 · ' + h(t('steps')[2]) + '</div>' +
+    '<h1 class="q">' + h(t('screenTitle')) + '</h1>' +
+    '<p class="lead">' + h(t('screenLead')) + '</p>' +
+    '<div style="margin-top:24px;display:flex;flex-direction:column;gap:16px">' +
+    SCREEN.map(function(sc) {
+      var val = STATE.screen[sc.id];
+      return '<div>' +
+        '<p style="font-size:14.5px;margin:0 0 10px;line-height:1.5">' + h(sc[LANG] || sc.pt) + '</p>' +
+        '<div style="display:flex;gap:10px">' +
+        ['yes','no'].map(function(v) {
+          var active = (v==='yes' && val===true) || (v==='no' && val===false);
+          return '<button class="btn' + (active?' primary':'') + '" style="min-width:90px" onclick="setScreen(\'' + sc.id + '\',' + (v==='yes') + ')">' +
+            h(v==='yes' ? t('sYes') : t('sNo')) + '</button>';
+        }).join('') +
+        '</div></div>';
+    }).join('') +
+    '</div>' +
+    '<div class="navrow">' +
+    '<button class="btn ghost" onclick="goBack()">← ' + h(t('back')) + '</button>' +
+    '<button class="btn primary" onclick="goNext()">' + h(t('next')) + '</button>' +
+    '</div>';
+}
+
+function setScreen(id, val) {
+  STATE.screen[id] = val;
+  renderScreen();
+  renderRail();
+}
+
+/* ── Steps 3–10: PS question sets ────────────────────────── */
+function renderPS(psCode) {
+  var stage = document.getElementById('stage');
+  var psIdx = PS_ORDER.indexOf(psCode) + 1;
+
+  // Trial gate: show teaser for PS4–PS8 if on trial
+  if (isTrial() && !TRIAL_PS.includes(psCode)) {
+    stage.innerHTML = renderTeaser(psCode);
+    renderNavRow(stage, true);
+    return;
+  }
+
+  var qs = activeQuestionsForPS(psCode);
+  if (!qs.length && !applicablePS().includes(psCode)) {
+    // Screened out — skip to next
+    goNext(); return;
+  }
+
+  var html =
+    '<div class="eyebrow" style="margin-bottom:6px">0' + (psIdx+2) + ' · ' + h(t('steps')[3]) + '</div>' +
+    '<h1 class="q" style="font-size:22px;margin-bottom:14px">' + h(psName(psCode)) + '</h1>' +
+    '<div class="ps-rationale"><div class="ps-label">Porque perguntamos isto</div>' + h(psRationale(psCode)) + '</div>';
+
+  if (!qs.length) {
+    html += '<p style="color:var(--ink-dim);font-size:14px">Esta norma não se aplica ao seu projeto com base nas respostas de triagem.</p>';
+  } else {
+    html += qs.map(function(q, li) {
+      var gi = globalQIndex(psCode, li);
+      var ans = STATE.answers[gi] || {};
+      var vals = ['yesE','yes','prog','no','na'];
+      var classes = {yesE:'ans k-yesE',yes:'ans',prog:'ans k-prog',no:'ans k-no',na:'ans k-na'};
+      var glyphs = {yesE:'✓',yes:'○',prog:'◑',no:'✗',na:'—'};
+      return '<div style="margin-bottom:20px">' +
+        '<p style="font-size:15px;line-height:1.5;margin:0 0 4px">' + h(q[LANG] || q.pt) + (q.crit ? ' <span style="color:var(--red);font-size:11px">★</span>' : '') + '</p>' +
+        '<div class="help"><span class="ref">' + h(q.ref) + '</span></div>' +
+        '<div class="answers">' +
+        vals.map(function(v) {
+          var ak = T[LANG].a[v] || T.pt.a[v];
+          return '<button class="' + classes[v] + '" aria-pressed="' + (ans.val===v) + '" onclick="setAnswer(' + gi + ',\'' + v + '\')">' +
+            '<span class="glyph">' + glyphs[v] + '</span>' +
+            '<span class="txt"><b>' + h(ak.t) + '</b>' + (ak.s ? '<span>' + h(ak.s) + '</span>' : '') + '</span>' +
+            '</button>';
+        }).join('') +
+        '</div>' +
+        (ans.val === 'na' ?
+          '<div class="note"><label>' + h(t('naReason')) + '</label>' +
+          '<textarea rows="2" placeholder="…" oninput="setNote(' + gi + ',\'naReason\',this.value)">' + h(ans.naReason||'') + '</textarea></div>'
+        : '') +
+        '<div class="note"><label>' + h(t('notePh')) + '</label>' +
+        '<textarea rows="2" placeholder="…" oninput="setNote(' + gi + ',\'note\',this.value)">' + h(ans.note||'') + '</textarea></div>' +
+        '</div>';
+    }).join('');
+  }
+
+  stage.innerHTML = html;
+  renderNavRow(stage, false);
+}
+
+function renderTeaser(psCode) {
+  return '<div class="eyebrow" style="margin-bottom:6px">' + h(psName(psCode)) + '</div>' +
+    '<div class="teaser">' +
+    '<div class="lock">🔒</div>' +
+    '<h3>' + h(t('teaserTitle')) + '</h3>' +
+    '<p>' + h(t('teaserBody')) + '</p>' +
+    '<a class="cta" href="' + MAILTO_CTA + '">' + h(t('teaserCta')) + '</a>' +
+    '</div>';
+}
+
+function renderNavRow(stage, isTeaser) {
+  var nav = document.createElement('div');
+  nav.className = 'navrow';
+  nav.innerHTML =
+    '<button class="btn ghost" onclick="goBack()">← ' + h(t('back')) + '</button>' +
+    (STEP === 10 ?
+      '<button class="btn primary" onclick="goNext()">' + h(t('seeReport')) + '</button>' :
+      '<button class="btn primary" onclick="goNext()">' + h(t('next')) + '</button>');
+  stage.appendChild(nav);
+}
+
+function setAnswer(gi, val) {
+  if (!STATE.answers[gi]) STATE.answers[gi] = {val:'', note:'', naReason:''};
+  STATE.answers[gi].val = val;
+  // Re-render current PS step to update selection styles + na fields
+  var psCode = PS_ORDER[STEP - 3];
+  if (psCode) renderPS(psCode);
+  renderRail();
+  scheduleSave();
+}
+
+function setNote(gi, field, val) {
+  if (!STATE.answers[gi]) STATE.answers[gi] = {val:'', note:'', naReason:''};
+  STATE.answers[gi][field] = val;
+  scheduleSave();
+}
+
+/* ── Step 11: Report ─────────────────────────────────────── */
+function renderReport() {
+  STATE.completed = true;
+  scheduleSave(200);
+
+  var score = globalScore();
+  var app = applicablePS();
+  var locked = isTrial() ? app.filter(function(ps) { return !TRIAL_PS.includes(ps); }) : [];
+  var crits = criticalGaps();
+  var verdictKey = score === null ? 'vBlock' : score >= 70 ? 'vReady' : score >= 40 ? 'vNear' : 'vBlock';
+  var vCls = verdictKey === 'vReady' ? 'v-ready' : verdictKey === 'vNear' ? 'v-near' : 'v-block';
+
+  var html =
+    '<div class="eyebrow" style="margin-bottom:6px">— ' + h(t('reportIntro')) + '</div>';
+
+  // Partial banner
+  if (isTrial() && locked.length) {
+    var banner = t('partialBanner').replace('{N}', locked.length);
+    html += '<div class="partial-banner">⚠ ' + h(banner) + ' <a href="' + MAILTO_CTA + '" style="color:inherit;font-weight:700">→ ' + h(t('teaserCta')) + '</a></div>';
+  }
+
+  // Hero score
+  html +=
+    '<div class="report-hero">' +
+    '<div class="big-score">' + (score !== null ? score : '—') + '<small>%</small></div>' +
+    '<div class="verdict">' +
+    '<span class="label ' + vCls + '">' + h(t(verdictKey)) + '</span>' +
+    '<p style="font-size:13.5px;color:var(--ink-dim);margin:8px 0 0">' + h(t('overall')) + ' · ' +
+    (isTrial() ? 'PS1–PS3' : app.length + ' ' + h(t('applicable'))) + '</p>' +
+    '</div></div>';
+
+  // Critical blockers
+  html += '<div class="card psblock" style="margin-top:14px">' +
+    '<h3>' + h(t('critTitle')) + '</h3>';
+  if (!crits.length) {
+    html += '<p style="font-size:13px;color:var(--teal)">' + h(t('critNone')) + '</p>';
+  } else {
+    html += '<p style="font-size:12.5px;color:var(--ink-faint);margin:4px 0 10px">' + h(t('critSub')) + '</p>';
+    html += '<div class="crit-list">' + crits.map(function(c) {
+      return '<div class="crit-item"><span class="crit-ps">' + h(c.ps) + '</span>' +
+        '<span>' + h(c.text) + '</span></div>';
+    }).join('') + '</div>';
+  }
+  html += '</div>';
+
+  // Detail by PS
+  html += '<div style="margin-top:14px">' +
+    '<div class="eyebrow" style="margin-bottom:10px">' + h(t('byStd')) + '</div>' +
+    app.map(function(ps) {
+      if (!entitlementAllows(ps)) return ''; // skip locked in trial
+      var sc = scorePS(ps);
+      var qs = activeQuestionsForPS(ps);
+      var color = sc === null ? 'var(--ink-faint)' : sc >= 70 ? 'var(--teal)' : sc >= 40 ? 'var(--amber)' : 'var(--red)';
+      var gapItems = qs.map(function(q, li) {
+        var gi = globalQIndex(ps, li);
+        var ans = STATE.answers[gi];
+        if (!ans || ans.val === 'yesE') return '';
+        var gcolor = ans.val === 'no' ? 'var(--red)' : ans.val === 'prog' ? 'var(--amber)' : 'var(--ink-faint)';
+        return '<div class="gap"><span class="gst" style="background:' + gcolor + '"></span>' +
+          '<span class="gtxt">' + h(q[LANG] || q.pt) +
+          (ans.note ? '<span class="gnote">' + h(ans.note) + '</span>' : '') + '</span>' +
+          '<span class="gstate">' + h((T[LANG].a[ans.val]||T.pt.a[ans.val]).t) + '</span></div>';
+      }).filter(Boolean).join('');
+      return '<div class="card psblock" style="margin-bottom:10px">' +
+        '<h3>' + h(psName(ps)) + '<span class="pct" style="color:' + color + '">' + (sc!==null?sc+'%':'—') + '</span></h3>' +
+        (gapItems || '<p style="font-size:12.5px;color:var(--teal);margin:4px 0">✓</p>') +
+        '</div>';
+    }).join('') + '</div>';
+
+  // Legal disclaimer (always visible in report)
+  html += '<div style="margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:4px;font-size:12px;color:var(--ink-faint);line-height:1.6">' +
+    '⚠ ' + (T[LANG].disclaimer || T.pt.disclaimer) + '</div>';
+
+  // JSON export
+  var json = JSON.stringify(profileJSON(), null, 2);
+  html +=
+    '<div class="card export-card" style="margin-top:18px">' +
+    '<div class="eyebrow" style="margin-bottom:6px">' + h(t('exportTitle')) + '</div>' +
+    '<p style="font-size:12.5px;color:var(--ink-faint);margin:0 0 10px">' + h(t('exportSub')) + '</p>' +
+    '<textarea id="json-out" readonly>' + h(json) + '</textarea>' +
+    '<div class="navrow" style="margin-top:12px">' +
+    '<button class="btn ghost" onclick="goBack()">← ' + h(t('back')) + '</button>' +
+    '<div style="display:flex;gap:8px">' +
+    '<button class="btn" onclick="copyJSON()">' + h(t('copy')) + '</button>' +
+    '<button class="btn primary" onclick="downloadJSON()">' + h(t('download')) + '</button>' +
+    '<button class="btn" onclick="restartWizard()">' + h(t('restart')) + '</button>' +
+    '</div></div></div>';
+
+  document.getElementById('stage').innerHTML = html;
+}
+
+function copyJSON() {
+  var ta = document.getElementById('json-out');
+  if (!ta) return;
+  navigator.clipboard.writeText(ta.value).then(function() { showToast(t('copied')); });
+}
+
+function downloadJSON() {
+  var json = JSON.stringify(profileJSON(), null, 2);
+  var blob = new Blob([json], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'sgas-readiness-' + (STATE.project.name || 'profile') + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);}, 2000);
+}
+
+function restartWizard() {
+  STATE = {project:{name:'',sector:'',country:'',phase:'',goal:'financing'},screen:{},answers:{},completed:false};
+  STEP = 0;
+  render();
+}
+
+/* ── Navigation ──────────────────────────────────────────── */
+function goNext() {
+  if (STEP === 0) { STEP = 1; }
+  else if (STEP === 1) { STEP = 2; }
+  else if (STEP === 2) { STEP = 3; }
+  else if (STEP >= 3 && STEP <= 10) {
+    // Skip PS steps where PS is not in scope AND not a trial teaser
+    var nextStep = STEP + 1;
+    while (nextStep <= 10) {
+      var nextPS = PS_ORDER[nextStep - 3];
+      var inScope = applicablePS().includes(nextPS);
+      var isGated = isTrial() && !TRIAL_PS.includes(nextPS);
+      if (inScope || isGated) break;
+      nextStep++;
+    }
+    STEP = nextStep;
+  } else if (STEP === 11) { return; }
+
+  if (STEP > 10) STEP = 11;
+  render();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function goBack() {
+  if (STEP === 0) return;
+  if (STEP === 1) { STEP = 0; }
+  else if (STEP === 2) { STEP = 1; }
+  else if (STEP === 3) { STEP = 2; }
+  else if (STEP >= 4 && STEP <= 10) { STEP--; }
+  else if (STEP === 11) { STEP = 10; }
+  render();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+/* ── Main render dispatcher ─────────────────────────────── */
+function render() {
+  renderProgress();
+  renderRail();
+  if (STEP === 0) renderTransparency();
+  else if (STEP === 1) renderIntro();
+  else if (STEP === 2) renderScreen();
+  else if (STEP >= 3 && STEP <= 10) renderPS(PS_ORDER[STEP - 3]);
+  else if (STEP === 11) renderReport();
+}
+
+/* ── Toast ───────────────────────────────────────────────── */
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+/* ── Language switcher ───────────────────────────────────── */
+document.querySelectorAll('.langs button').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    LANG = btn.dataset.lang;
+    document.querySelectorAll('.langs button').forEach(function(b) {
+      b.setAttribute('aria-pressed', b.dataset.lang === LANG);
+    });
+    document.documentElement.lang = LANG;
+    render();
+  });
+});
+
+/* ── Boot ────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  detectPlan().then(function() { render(); });
+});
+</script>
+</body>
+</html>
