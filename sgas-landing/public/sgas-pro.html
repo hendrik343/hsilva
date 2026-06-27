@@ -771,6 +771,9 @@ canvas { max-width: 100%; }
         <div class="project-pill-loan" id="proj-pill-loan">—</div>
         <button onclick="openCreateProjectModal()" style="margin-top:6px;width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;text-align:center;">+ Criar projecto</button>
       </div>
+      <div id="demo-mode-banner" style="display:none;margin-top:8px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.35);border-radius:6px;padding:6px 10px;font-size:10px;color:#FBB724;line-height:1.4;text-align:center;">
+        ⚠ Dados de demonstração<br><span style="opacity:0.7">Demo data · não são dados reais</span>
+      </div>
     </div>
 
     <!-- Group: Principal -->
@@ -2345,6 +2348,7 @@ canvas { max-width: 100%; }
   </div>
 </div>
 
+<script src="demo/tenant-kibala.js"></script>
 <script>
 // ===================== SUPABASE — Phase 1 =====================
 // Client created by auth.js (loaded in <head>); reuse it here.
@@ -4073,6 +4077,17 @@ function toggleReq(psId,idx){
   renderPS(); updateReadiness();
 }
 
+// ─── Reusable empty-state ───────────────────────────────────────────────────
+function emptyState(icon, title, subtitle, actionLabel, actionFn) {
+  return `<div style="text-align:center;padding:48px 24px;color:var(--text-3)">
+    <div style="font-size:36px;margin-bottom:12px">${icon}</div>
+    <div style="font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:6px">${title}</div>
+    <div style="font-size:12px;line-height:1.6;max-width:320px;margin:0 auto">${subtitle}</div>
+    ${actionLabel ? `<button class="btn primary" style="margin-top:18px" onclick="${actionFn}">${actionLabel}</button>` : ''}
+  </div>`;
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 // ===================== RENDER ESAP =====================
 function renderEsap(){
   const filterPS=document.getElementById('esap-filter-ps').value;
@@ -4101,7 +4116,11 @@ function renderEsap(){
       <button class="icon-btn del" onclick="delEsap(${esapData.indexOf(e)})">✕</button>
     </td>
   </tr>`).join('');
-  document.getElementById('esap-tbody').innerHTML=h||'<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--text-3)">Sem medidas com estes filtros</td></tr>';
+  if (!h && esapData.length === 0) {
+    document.getElementById('esap-tbody').innerHTML = '<tr><td colspan="12">' + emptyState('✅', 'Sem medidas ESAP', 'Completa o diagnóstico PS1–PS8 para gerar o plano de acção, ou adiciona medidas manualmente.', '+ Nova medida', "openModal('modal-esap')") + '</td></tr>';
+  } else {
+    document.getElementById('esap-tbody').innerHTML = h || '<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--text-3)">Sem medidas com estes filtros</td></tr>';
+  }
 }
 function cycleEsap(i){
   const states=['Não iniciada','Em curso','Concluída','Em atraso'];
@@ -4164,7 +4183,7 @@ function renderRisks(){
     <td>${statusBadge(r.status)}</td>
     <td class="actions"><button class="icon-btn del" onclick="delRisk('${r.id}')">✕</button></td>
   </tr>`).join('');
-  document.getElementById('risk-tbody').innerHTML=h;
+  document.getElementById('risk-tbody').innerHTML = h || '<tr><td colspan="11">' + emptyState('⚠️', 'Sem riscos registados', 'Adiciona riscos identificados na avaliação de impactos ou importa do diagnóstico PS1–PS8.', '+ Novo risco', "openModal('modal-risk')") + '</td></tr>';
 }
 function delRisk(id){ if(confirm('Remover risco?')){ riskData=riskData.filter(r=>r.id!==id); renderRisks(); } }
 function addRisk(){
@@ -4308,7 +4327,9 @@ function renderStakeholders(){
       <div class="sh-last">Último contacto: ${s.last}</div>
     </div>
   </div>`).join('');
-  document.getElementById('sh-list').innerHTML=h||'<div class="empty"><div class="empty-icon">👥</div><p>Sem partes interessadas nesta categoria</p></div>';
+  document.getElementById('sh-list').innerHTML = h || (stakeholders.length === 0
+    ? emptyState('👥', 'Sem partes interessadas', 'Mapeia os actores-chave do projecto — comunidades, governo, trabalhadores e ONGs — para construir o Plano de Engajamento (SEP).', '+ Adicionar', "openModal('modal-sh')")
+    : '<div style="text-align:center;padding:24px;color:var(--text-3)">Sem partes interessadas nesta categoria</div>');
 }
 function addStakeholder(){
   const name=document.getElementById('sh-name').value.trim();
@@ -4348,7 +4369,7 @@ function renderComplaints(){
       <button class="icon-btn del" onclick="delComplaint(${i})">✕</button>
     </td>
   </tr>`).join('');
-  document.getElementById('complaint-tbody').innerHTML=h;
+  document.getElementById('complaint-tbody').innerHTML = h || '<tr><td colspan="11">' + emptyState('💬', 'Sem reclamações registadas', 'O mecanismo de reclamações (GRM) está activo. Regista as reclamações recebidas para rastrear prazos e evidências de encerramento.', '+ Nova reclamação', "openModal('modal-complaint')") + '</td></tr>';
 }
 function toggleComplaint(i){ complaints[i].status=complaints[i].status==='Em análise'?'Resolvida':'Em análise'; renderComplaints(); updateReadiness(); renderReport(); renderAuditRoom(); }
 function delComplaint(i){ if(confirm('Remover reclamação?')){ complaints.splice(i,1); renderComplaints(); updateReadiness(); renderReport(); renderAuditRoom(); } }
@@ -6236,7 +6257,7 @@ restoreFromCache();
     }
   };
 
-  const DEMO_CONFIGS = { 'demo-bank': DEMO_BANK, 'demo-ngo': DEMO_NGO };
+  const DEMO_CONFIGS = { 'demo-bank': DEMO_BANK, 'demo-ngo': DEMO_NGO, 'demo-kibala': (window.DEMO_TENANT_KIBALA || null) };
 
   /* ── Load: URL param only — wizard feeds data via Supabase ── */
   function _load() {
@@ -6285,7 +6306,21 @@ restoreFromCache();
     // Metadata → global vars
     projectCategory = m.projectCategory || 'B';
     if (Array.isArray(m.sgasScores)) sgasScores = m.sgasScores;
+    if (Array.isArray(m.psScores)) {
+      PS_DATA.forEach((ps, i) => { if (m.psScores[i] != null) ps.score = m.psScores[i]; });
+    }
     assessmentMeta = { ...assessmentMeta, company: m.name, projectId: m.loanId };
+
+    // Doc statuses override (array-of-arrays matching DOC_SECTIONS structure)
+    if (cfg && cfg.metadata && Array.isArray(cfg.metadata.docStatuses)) {
+      cfg.metadata.docStatuses.forEach((section, si) => {
+        if (DOC_SECTIONS[si] && Array.isArray(section)) {
+          section.forEach((st, di) => {
+            if (DOC_SECTIONS[si].docs[di] && st != null) DOC_SECTIONS[si].docs[di].status = st;
+          });
+        }
+      });
+    }
 
     // DOM updates
     const $s = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.textContent = v; };
@@ -6300,6 +6335,10 @@ restoreFromCache();
     $s('proj-closure', m.closureDate || '—');
     $s('proj-specialist', m.esSpecialist || '—');
     $s('legal-title', 'Registo Legal ' + (m.country && m.country !== '—' ? m.country : 'do projecto') + ' + IFC/ESS');
+
+    // Demo banner
+    const demoBanner = document.getElementById('demo-mode-banner');
+    if (demoBanner) demoBanner.style.display = (cfg && cfg._source && cfg._source.startsWith('url:')) ? 'block' : 'none';
 
     window.projectConfig = { metadata: m, _source: cfg ? (cfg._source || 'custom') : 'default' };
     console.log('[SGAS] projectConfig:', m.name, '|', window.projectConfig._source);
