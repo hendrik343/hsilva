@@ -647,12 +647,12 @@ canvas { max-width: 100%; }
         <div style="width:36px;height:36px;background:linear-gradient(135deg,#22B585 0%,#1D9E75 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(29,158,117,0.3);">S</div>
         <span style="font-size:17px;font-weight:700;color:#111827;letter-spacing:-0.02em;">SGAS.pro</span>
       </div>
-      <p style="color:#6B7280;font-size:13px;margin:0;line-height:1.5;">Plataforma de Conformidade IFC / Banco Mundial</p>
+      <p style="color:#6B7280;font-size:13px;margin:0;line-height:1.5;" data-i18n="auth.subtitle">Plataforma de Conformidade IFC / Banco Mundial</p>
     </div>
     <!-- Tab bar -->
     <div style="display:flex;border-bottom:1px solid #E5E7EB;margin-bottom:20px;">
-      <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #1D9E75;font-weight:600;color:#111827;font-size:14px;cursor:pointer;font-family:inherit;">Entrar</button>
-      <button id="tab-register" onclick="switchAuthTab('register')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;font-weight:400;color:#6B7280;font-size:14px;cursor:pointer;font-family:inherit;">Criar conta</button>
+      <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #1D9E75;font-weight:600;color:#111827;font-size:14px;cursor:pointer;font-family:inherit;" data-i18n="auth.tab.login">Entrar</button>
+      <button id="tab-register" onclick="switchAuthTab('register')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;font-weight:400;color:#6B7280;font-size:14px;cursor:pointer;font-family:inherit;" data-i18n="auth.tab.register">Criar conta</button>
     </div>
     <!-- Login form -->
     <form id="form-login" onsubmit="return false;">
@@ -664,10 +664,10 @@ canvas { max-width: 100%; }
       <button type="submit" id="btn-login" class="auth-btn-primary" data-label="Entrar">Entrar</button>
       <div class="auth-divider">ou</div>
       <button type="button" id="btn-google" class="auth-btn-social">
-        <img src="https://www.google.com/favicon.ico" width="16" alt=""> Entrar com Google
+        <img src="https://www.google.com/favicon.ico" width="16" alt=""> <span data-i18n="auth.btn.google">Entrar com Google</span>
       </button>
       <button type="button" id="btn-microsoft" class="auth-btn-social">
-        <img src="https://www.microsoft.com/favicon.ico" width="16" alt=""> Entrar com Microsoft
+        <img src="https://www.microsoft.com/favicon.ico" width="16" alt=""> <span data-i18n="auth.btn.microsoft">Entrar com Microsoft</span>
       </button>
       <div id="login-error" class="auth-error" style="display:none;"></div>
     </form>
@@ -766,10 +766,10 @@ canvas { max-width: 100%; }
         </div>
       </div>
       <div class="project-pill">
-        <div class="project-pill-label">Projecto activo</div>
+        <div class="project-pill-label" data-i18n="sidebar.pill.label">Projecto activo</div>
         <div class="project-pill-name" id="proj-pill-name">—</div>
         <div class="project-pill-loan" id="proj-pill-loan">—</div>
-        <button onclick="openCreateProjectModal()" style="margin-top:6px;width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;text-align:center;">+ Criar projecto</button>
+        <button onclick="openCreateProjectModal()" style="margin-top:6px;width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;text-align:center;" data-i18n="sidebar.btn.create">+ Criar projecto</button>
       </div>
       <div id="demo-mode-banner" style="display:none;margin-top:8px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.35);border-radius:6px;padding:6px 10px;font-size:10px;color:#FBB724;line-height:1.4;text-align:center;">
         ⚠ Dados de demonstração<br><span style="opacity:0.7">Demo data · não são dados reais</span>
@@ -778,122 +778,122 @@ canvas { max-width: 100%; }
 
     <!-- Group: Principal -->
     <div class="sidebar-group" id="grp-principal">
-      <div class="sidebar-section">Principal</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.principal">Principal</div>
       <div class="nav-item active" onclick="nav('dashboard',this)">
-        <span class="nav-icon">📊</span>Dashboard
+        <span class="nav-icon">📊</span><span data-i18n="nav.dashboard">Dashboard</span>
       </div>
     </div>
 
     <!-- Group: Conformidade SGAS -->
     <div class="sidebar-group" id="grp-conformidade" style="display:none">
-      <div class="sidebar-section">Conformidade SGAS</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.conformidade">Conformidade SGAS</div>
       <div class="nav-item" onclick="nav('diagnostico',this)">
-        <span class="nav-icon">🔍</span>Diagnóstico IFC
+        <span class="nav-icon">🔍</span><span data-i18n="nav.diagnostico">Diagnóstico IFC</span>
       </div>
       <div class="nav-item" data-open-readiness-wizard="true">
-        <span class="nav-icon">🧭</span>Prontidão PS1–PS8
+        <span class="nav-icon">🧭</span><span data-i18n="nav.prontidao">Prontidão PS1–PS8</span>
       </div>
       <div class="nav-item" onclick="nav('avaliacao',this)">
-        <span class="nav-icon">📋</span>Autoavaliação SGAS
+        <span class="nav-icon">📋</span><span data-i18n="nav.avaliacao">Autoavaliação SGAS</span>
       </div>
       <div class="nav-item" onclick="nav('ps',this)">
-        <span class="nav-icon">🏛</span>Padrões IFC PS1–PS8
+        <span class="nav-icon">🏛</span><span data-i18n="nav.ps">Padrões IFC PS1–PS8</span>
       </div>
       <div class="nav-item" onclick="nav('esap',this)">
-        <span class="nav-icon">✅</span>Plano ESAP
+        <span class="nav-icon">✅</span><span data-i18n="nav.esap">Plano ESAP</span>
         <span class="nav-badge warn" id="badge-esap">3</span>
       </div>
       <div class="nav-item" onclick="nav('riscos',this)">
-        <span class="nav-icon">⚠️</span>Registo de Riscos
+        <span class="nav-icon">⚠️</span><span data-i18n="nav.riscos">Registo de Riscos</span>
       </div>
       <div class="nav-item" onclick="nav('mapas-risco',this)">
-        <span class="nav-icon">🧭</span>Mapas de Risco
+        <span class="nav-icon">🧭</span><span data-i18n="nav.mapas-risco">Mapas de Risco</span>
       </div>
       <div class="nav-item" onclick="nav('terceiros',this)">
-        <span class="nav-icon">🏗</span>Terceiros / Subempreiteiros
+        <span class="nav-icon">🏗</span><span data-i18n="nav.terceiros">Terceiros / Subempreiteiros</span>
       </div>
     </div>
 
     <!-- Group: Partes Interessadas -->
     <div class="sidebar-group" id="grp-partes" style="display:none">
-      <div class="sidebar-section">Partes Interessadas</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.partes">Partes Interessadas</div>
       <div class="nav-item" onclick="nav('stakeholders',this)">
-        <span class="nav-icon">👥</span>Partes Interessadas
+        <span class="nav-icon">👥</span><span data-i18n="nav.stakeholders">Partes Interessadas</span>
       </div>
       <div class="nav-item" onclick="nav('comunidades',this)">
-        <span class="nav-icon">📢</span>Comunicações Comunitárias
+        <span class="nav-icon">📢</span><span data-i18n="nav.comunidades">Comunicações Comunitárias</span>
       </div>
       <div class="nav-item" onclick="nav('reclamacoes',this)">
-        <span class="nav-icon">💬</span>Reclamações
+        <span class="nav-icon">💬</span><span data-i18n="nav.reclamacoes">Reclamações</span>
         <span class="nav-badge" id="badge-rec">2</span>
       </div>
     </div>
 
     <!-- Group: Evidências -->
     <div class="sidebar-group" id="grp-evidencias" style="display:none">
-      <div class="sidebar-section">Evidências</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.evidencias">Evidências</div>
       <div class="nav-item" onclick="nav('implementacao',this)">
-        <span class="nav-icon">📸</span>Evidência de Implementação
+        <span class="nav-icon">📸</span><span data-i18n="nav.implementacao">Evidência de Implementação</span>
       </div>
       <div class="nav-item" onclick="nav('documentos',this)">
-        <span class="nav-icon">📁</span>Cofre de Documentos
+        <span class="nav-icon">📁</span><span data-i18n="nav.documentos">Cofre de Documentos</span>
       </div>
       <div class="nav-item" onclick="nav('monitoring',this)">
-        <span class="nav-icon">📈</span>Monitoramento
+        <span class="nav-icon">📈</span><span data-i18n="nav.monitoring">Monitoramento</span>
       </div>
       <div class="nav-item" onclick="nav('calendario',this)">
-        <span class="nav-icon">🗓</span>Calendário IFC
+        <span class="nav-icon">🗓</span><span data-i18n="nav.calendario">Calendário IFC</span>
       </div>
       <div class="nav-item" onclick="nav('relatorio',this)">
-        <span class="nav-icon">📄</span>Relatórios
+        <span class="nav-icon">📄</span><span data-i18n="nav.relatorio">Relatórios</span>
       </div>
       <div class="nav-item" onclick="nav('audit-room',this)">
-        <span class="nav-icon">🏛</span>Sala de Auditoria BM
+        <span class="nav-icon">🏛</span><span data-i18n="nav.audit-room">Sala de Auditoria BM</span>
       </div>
     </div>
 
     <!-- Group: Gestão SGAS -->
     <div class="sidebar-group" id="grp-gestao" style="display:none">
-      <div class="sidebar-section">Gestão SGAS</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.gestao">Gestão SGAS</div>
       <div class="nav-item" onclick="nav('revisao',this)">
-        <span class="nav-icon">🔄</span>Revisão de Gestão
+        <span class="nav-icon">🔄</span><span data-i18n="nav.revisao">Revisão de Gestão</span>
       </div>
       <div class="nav-item" onclick="nav('treinamento',this)">
-        <span class="nav-icon">🎓</span>Plano de Formação
+        <span class="nav-icon">🎓</span><span data-i18n="nav.treinamento">Plano de Formação</span>
       </div>
       <div class="nav-item" onclick="nav('legal',this)">
-        <span class="nav-icon">⚖</span>Registo Legal
+        <span class="nav-icon">⚖</span><span data-i18n="nav.legal">Registo Legal</span>
       </div>
     </div>
 
     <!-- Group: Kit de Ferramentas IFC -->
     <div class="sidebar-group" id="grp-kit" style="display:none">
-      <div class="sidebar-section">Kit de Ferramentas IFC</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.kit">Kit de Ferramentas IFC</div>
       <div class="nav-item" onclick="nav('politicas',this)">
-        <span class="nav-icon">📝</span>Políticas SGAS
+        <span class="nav-icon">📝</span><span data-i18n="nav.politicas">Políticas SGAS</span>
       </div>
       <div class="nav-item" onclick="nav('riscos-id',this)">
-        <span class="nav-icon">🔍</span>Identif. de Riscos
+        <span class="nav-icon">🔍</span><span data-i18n="nav.riscos-id">Identif. de Riscos</span>
       </div>
       <div class="nav-item" onclick="nav('causa-raiz',this)">
-        <span class="nav-icon">🧩</span>Causa Raiz (5 Porquês)
+        <span class="nav-icon">🧩</span><span data-i18n="nav.causa-raiz">Causa Raiz (5 Porquês)</span>
       </div>
       <div class="nav-item" onclick="nav('emergencias',this)">
-        <span class="nav-icon">🚨</span>Emergências
+        <span class="nav-icon">🚨</span><span data-i18n="nav.emergencias">Emergências</span>
       </div>
       <div class="nav-item" onclick="nav('mapeamento-pi',this)">
-        <span class="nav-icon">🗺</span>Mapeamento de PI
+        <span class="nav-icon">🗺</span><span data-i18n="nav.mapeamento-pi">Mapeamento de PI</span>
       </div>
       <div class="nav-item" onclick="nav('auditoria',this)">
-        <span class="nav-icon">🔎</span>Auditoria Interna
+        <span class="nav-icon">🔎</span><span data-i18n="nav.auditoria">Auditoria Interna</span>
       </div>
     </div>
 
     <!-- Group: Assistente IA -->
     <div class="sidebar-group" id="grp-ia" style="display:none">
-      <div class="sidebar-section">Assistente IA</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.ia">Assistente IA</div>
       <div class="nav-item" onclick="nav('ia',this)">
-        <span class="nav-icon">🤖</span>Assistente SGAS.pro
+        <span class="nav-icon">🤖</span><span data-i18n="nav.ia">Assistente SGAS.pro</span>
       </div>
     </div>
 
@@ -904,7 +904,7 @@ canvas { max-width: 100%; }
         <div class="audit-countdown-sub">dias · Missão de supervisão</div>
       </div>
       <div style="margin-top:10px;padding:8px 4px;font-size:10px;color:rgba(255,255,255,0.35);line-height:1.4;text-align:center;">
-        SGAS Pro não substitui certificação oficial IFC/World Bank nem aconselhamento jurídico.
+        <span data-i18n="legal.disclaimer">SGAS Pro não substitui certificação oficial IFC/World Bank nem aconselhamento jurídico.</span>
       </div>
     </div>
   </div>
@@ -920,6 +920,10 @@ canvas { max-width: 100%; }
       <p id="topbar-sub">Visão geral · Junho 2026</p>
     </div>
     <div class="topbar-right">
+      <div role="group" aria-label="Language / Idioma" id="lang-toggle" style="display:flex;border:1px solid #E5E7EB;border-radius:6px;overflow:hidden;">
+        <button id="lang-pt" data-lang-btn="pt" aria-pressed="true"  onclick="setLang('pt')" style="padding:5px 11px;font-size:11px;font-weight:700;border:none;background:#1D9E75;color:#fff;cursor:pointer;font-family:inherit;letter-spacing:0.05em;transition:background 0.15s;">PT</button>
+        <button id="lang-en" data-lang-btn="en" aria-pressed="false" onclick="setLang('en')" style="padding:5px 11px;font-size:11px;font-weight:700;border:none;background:transparent;color:#6B7280;cursor:pointer;font-family:inherit;letter-spacing:0.05em;transition:background 0.15s;">EN</button>
+      </div>
       <div class="audit-score-pill warn" id="readiness-pill">
         <div class="audit-score-dot warn" id="readiness-dot"></div>
         <span class="audit-score-text" id="readiness-text">Prontidão auditoria: 68%</span>
@@ -931,31 +935,31 @@ canvas { max-width: 100%; }
   <!-- DASHBOARD -->
   <div class="page-content active" id="page-dashboard">
     <div class="alert-banner warn">
-      ⚠️ <strong>47 dias</strong> para a próxima missão de supervisão do Banco Mundial. 5 documentos obrigatórios em falta no cofre.
+      <span id="alert-mission" data-i18n="alert.mission">⚠️ <strong>47 dias</strong> para a próxima missão de supervisão do Banco Mundial. 5 documentos obrigatórios em falta no cofre.</span>
     </div>
     <div class="alert-banner info">
-      🧭 <strong>Preparação para due diligence IFC:</strong> aplicável desde o primeiro contacto com o banco, antes da aprovação do loan.
+      <span id="alert-diligence" data-i18n="alert.diligence">🧭 <strong>Preparação para due diligence IFC:</strong> aplicável desde o primeiro contacto com o banco, antes da aprovação do loan.</span>
     </div>
     <div class="grid-4" style="margin-bottom:20px">
       <div class="metric-card">
-        <div class="metric-label">🎯 Prontidão auditoria</div>
+        <div class="metric-label" data-i18n="kpi.readiness.label">🎯 Prontidão auditoria</div>
         <div class="metric-value amber" id="dash-readiness">68%</div>
-        <div class="metric-sub">Meta: ≥ 85% antes da missão</div>
+        <div class="metric-sub" data-i18n="kpi.readiness.sub">Meta: ≥ 85% antes da missão</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">📊 Maturidade SGAS</div>
+        <div class="metric-label" data-i18n="kpi.maturity.label">📊 Maturidade SGAS</div>
         <div class="metric-value green" id="dash-maturity">2.7 / 5</div>
-        <div class="metric-trend up">↑ +0.4 este mês</div>
+        <div class="metric-trend up" data-i18n="kpi.maturity.trend">↑ +0.4 este mês</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">🔴 Acções ESAP em atraso</div>
+        <div class="metric-label" data-i18n="kpi.overdue.label">🔴 Acções ESAP em atraso</div>
         <div class="metric-value red" id="dash-overdue">3</div>
-        <div class="metric-sub">de 18 acções totais</div>
+        <div class="metric-sub" id="dash-overdue-sub" data-i18n="kpi.overdue.sub">de 18 acções totais</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">💬 Reclamações abertas</div>
+        <div class="metric-label" data-i18n="kpi.complaints.label">💬 Reclamações abertas</div>
         <div class="metric-value amber" id="dash-complaints">2</div>
-        <div class="metric-sub">Prazo médio: 8 dias</div>
+        <div class="metric-sub" data-i18n="kpi.complaints.sub">Prazo médio: 8 dias</div>
       </div>
     </div>
 
@@ -1042,7 +1046,7 @@ canvas { max-width: 100%; }
   <!-- ESAP -->
   <div class="page-content" id="page-esap">
     <div class="section-header">
-      <div><div class="section-title">Plano de Acção Ambiental e Social (ESAP)</div><div class="section-sub">Rastreamento de medidas contratuais exigidas pelo Banco Mundial</div></div>
+      <div><div class="section-title">Plano de Acção Ambiental e Social (ESAP)</div><div class="section-sub">Rastreamento de medidas contratuais exigidas pelo Banco Mundial</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-esap')">+ Nova medida</button>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
@@ -1075,7 +1079,7 @@ canvas { max-width: 100%; }
   <!-- RISCOS -->
   <div class="page-content" id="page-riscos">
     <div class="section-header">
-      <div><div class="section-title">Registo de Riscos E&S</div><div class="section-sub">Riscos ambientais, sociais e de HSE · Metodologia IFC PS1</div></div>
+      <div><div class="section-title">Registo de Riscos E&S</div><div class="section-sub">Riscos ambientais, sociais e de HSE · Metodologia IFC PS1</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-risk')">+ Novo risco</button>
     </div>
     <div class="grid-2" style="margin-bottom:20px">
@@ -1101,7 +1105,7 @@ canvas { max-width: 100%; }
   <!-- MAPAS DE RISCO -->
   <div class="page-content" id="page-mapas-risco">
     <div class="section-header">
-      <div><div class="section-title">Mapas de Risco — Físico e Processo</div><div class="section-sub">Toolkit IFC · mapeamento físico, processo, hotspots e comunidades afectadas</div></div>
+      <div><div class="section-title">Mapas de Risco — Físico e Processo</div><div class="section-sub">Toolkit IFC · mapeamento físico, processo, hotspots e comunidades afectadas</div></div> <!-- TODO i18n -->
       <div style="display:flex;gap:8px"><button class="btn" onclick="openModal('modal-process-risk')">+ Processo</button><button class="btn primary" onclick="openModal('modal-physical-risk')">+ Hotspot</button></div>
     </div>
     <div class="alert-banner info" style="margin-bottom:16px">
@@ -1133,7 +1137,7 @@ canvas { max-width: 100%; }
   <!-- STAKEHOLDERS -->
   <div class="page-content" id="page-stakeholders">
     <div class="section-header">
-      <div><div class="section-title">Partes Interessadas</div><div class="section-sub">Plano de engajamento · PS1 + PS4 · Banco Mundial ESRS</div></div>
+      <div><div class="section-title">Partes Interessadas</div><div class="section-sub">Plano de engajamento · PS1 + PS4 · Banco Mundial ESRS</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-sh')">+ Adicionar parte interessada</button>
     </div>
     <div class="compact-metric-grid">
@@ -1176,7 +1180,7 @@ canvas { max-width: 100%; }
   <!-- COMUNICAÇÕES ÀS COMUNIDADES AFECTADAS -->
   <div class="page-content" id="page-comunidades">
     <div class="section-header">
-      <div><div class="section-title">Comunicações às Comunidades Afetadas</div><div class="section-sub">Elemento 8 · feedback regular, pelo menos anual, e comunicação fora do ciclo quando surgem novos riscos</div></div>
+      <div><div class="section-title">Comunicações às Comunidades Afetadas</div><div class="section-sub">Elemento 8 · feedback regular, pelo menos anual, e comunicação fora do ciclo quando surgem novos riscos</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-community-report')">+ Nova comunicação</button>
     </div>
     <div class="alert-banner info" style="margin-bottom:16px">
@@ -1196,7 +1200,7 @@ canvas { max-width: 100%; }
   <!-- RECLAMAÇÕES -->
   <div class="page-content" id="page-reclamacoes">
     <div class="section-header">
-      <div><div class="section-title">Mecanismo de Reclamações</div><div class="section-sub">Canal formal PS1 · Trabalhadores e comunidade · Prazo de resposta: 15 dias</div></div>
+      <div><div class="section-title">Mecanismo de Reclamações</div><div class="section-sub">Canal formal PS1 · Trabalhadores e comunidade · Prazo de resposta: 15 dias</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-complaint')">+ Registar reclamação</button>
     </div>
     <div class="grid-4" style="margin-bottom:20px">
@@ -1256,7 +1260,7 @@ canvas { max-width: 100%; }
   <!-- TERCEIROS / SUBEMPREITEIROS -->
   <div class="page-content" id="page-terceiros">
     <div class="section-header">
-      <div><div class="section-title">Terceiros / Subempreiteiros</div><div class="section-sub">Conformidade PS por contratante · cláusulas IFC · evidências de indução e controlo</div></div>
+      <div><div class="section-title">Terceiros / Subempreiteiros</div><div class="section-sub">Conformidade PS por contratante · cláusulas IFC · evidências de indução e controlo</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-contractor')">+ Adicionar contratante</button>
     </div>
     <div class="grid-4" style="margin-bottom:20px">
@@ -1279,7 +1283,7 @@ canvas { max-width: 100%; }
   <!-- EVIDÊNCIA DE IMPLEMENTAÇÃO REAL -->
   <div class="page-content" id="page-implementacao">
     <div class="section-header">
-      <div><div class="section-title">Evidência de Implementação Real</div><div class="section-sub">Fotos, entrevistas, testes, observações no terreno e validação por gestor · IFC ESMS Handbook p.15, p.28 e p.60</div></div>
+      <div><div class="section-title">Evidência de Implementação Real</div><div class="section-sub">Fotos, entrevistas, testes, observações no terreno e validação por gestor · IFC ESMS Handbook p.15, p.28 e p.60</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-implementation')">+ Registar evidência</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
@@ -1312,7 +1316,7 @@ canvas { max-width: 100%; }
   <!-- DOCUMENTOS -->
   <div class="page-content" id="page-documentos">
     <div class="section-header">
-      <div><div class="section-title">Cofre de Documentos</div><div class="section-sub">Lista de documentos obrigatórios para auditoria Banco Mundial · <span id="docs-ready">0</span> de <span id="docs-total">0</span> prontos</div></div>
+      <div><div class="section-title">Cofre de Documentos</div><div class="section-sub">Lista de documentos obrigatórios para auditoria Banco Mundial · <span id="docs-ready">0</span> de <span id="docs-total">0</span> prontos</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-doc')">+ Adicionar documento</button>
     </div>
     <div class="alert-banner danger" id="docs-alert" style="display:none">
@@ -1369,7 +1373,7 @@ canvas { max-width: 100%; }
   <!-- MONITORAMENTO -->
   <div class="page-content" id="page-monitoring">
     <div class="section-header">
-      <div><div class="section-title">Monitoramento e KPIs</div><div class="section-sub">Indicadores ambientais, sociais e HSE · PS1 Elemento 8</div></div>
+      <div><div class="section-title">Monitoramento e KPIs</div><div class="section-sub">Indicadores ambientais, sociais e HSE · PS1 Elemento 8</div></div> <!-- TODO i18n -->
       <button class="btn">↓ Exportar dados</button>
     </div>
     <div class="grid-2">
@@ -1435,7 +1439,7 @@ canvas { max-width: 100%; }
   <!-- CALENDÁRIO DE RELATÓRIOS IFC -->
   <div class="page-content" id="page-calendario">
     <div class="section-header">
-      <div><div class="section-title">Calendário de Relatórios IFC</div><div class="section-sub">Datas, estado e histórico de submissões ao IFC / Banco Mundial</div></div>
+      <div><div class="section-title">Calendário de Relatórios IFC</div><div class="section-sub">Datas, estado e histórico de submissões ao IFC / Banco Mundial</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-ifc-report')">+ Nova submissão</button>
     </div>
     <div class="grid-4" style="margin-bottom:20px">
@@ -1462,7 +1466,7 @@ canvas { max-width: 100%; }
   <!-- REVISÃO DE GESTÃO -->
   <div class="page-content" id="page-revisao">
     <div class="section-header">
-      <div><div class="section-title">Revisão de Gestão</div><div class="section-sub">PS1 Elemento 9 · Agenda IFC ESMS Handbook v2.1 · Mínimo anual</div></div>
+      <div><div class="section-title">Revisão de Gestão</div><div class="section-sub">PS1 Elemento 9 · Agenda IFC ESMS Handbook v2.1 · Mínimo anual</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openRevisaoModal()">+ Nova revisão</button>
     </div>
     <div class="alert-banner info" style="margin-bottom:16px">
@@ -1488,7 +1492,7 @@ canvas { max-width: 100%; }
   <!-- PLANO DE FORMAÇÃO -->
   <div class="page-content" id="page-treinamento">
     <div class="section-header">
-      <div><div class="section-title">Plano de Formação</div><div class="section-sub">PS1 Elemento 4 · Competência e capacidade · IFC ESMS Handbook v2.1</div></div>
+      <div><div class="section-title">Plano de Formação</div><div class="section-sub">PS1 Elemento 4 · Competência e capacidade · IFC ESMS Handbook v2.1</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-treinamento')">+ Adicionar formação</button>
     </div>
     <div class="alert-banner info" style="margin-bottom:16px">
@@ -1515,7 +1519,7 @@ canvas { max-width: 100%; }
   <!-- REGISTO LEGAL -->
   <div class="page-content" id="page-legal">
     <div class="section-header">
-      <div><div class="section-title" id="legal-title">Registo Legal Angola + IFC/ESS</div><div class="section-sub">Licenças, requisitos legais, autoridade competente, renovações e evidência para revisão de gestão</div></div>
+      <div><div class="section-title" id="legal-title">Registo Legal Angola + IFC/ESS</div><div class="section-sub">Licenças, requisitos legais, autoridade competente, renovações e evidência para revisão de gestão</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-legal')">+ Novo requisito</button>
     </div>
     <div class="alert-banner info" style="margin-bottom:16px">
@@ -1535,7 +1539,7 @@ canvas { max-width: 100%; }
   <!-- RELATÓRIOS -->
   <div class="page-content" id="page-relatorio">
     <div class="section-header">
-      <div><div class="section-title">Relatórios</div><div class="section-sub">Relatórios automáticos para submissão ao Banco Mundial</div></div>
+      <div><div class="section-title">Relatórios</div><div class="section-sub">Relatórios automáticos para submissão ao Banco Mundial</div></div> <!-- TODO i18n -->
     </div>
     <div class="grid-2">
       <div class="card">
@@ -1564,7 +1568,7 @@ canvas { max-width: 100%; }
   <!-- SALA DE AUDITORIA BANCO MUNDIAL -->
   <div class="page-content" id="page-audit-room">
     <div class="section-header">
-      <div><div class="section-title">Sala de Auditoria Banco Mundial</div><div class="section-sub">Pacote lender-ready · evidências, fontes oficiais, ESAP/ESCP, GRM e monitoramento</div></div>
+      <div><div class="section-title">Sala de Auditoria Banco Mundial</div><div class="section-sub">Pacote lender-ready · evidências, fontes oficiais, ESAP/ESCP, GRM e monitoramento</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="prepareLenderPackage()">Preparar pacote lender</button>
     </div>
     <div class="alert-banner warn" style="margin-bottom:16px">
@@ -1594,7 +1598,7 @@ canvas { max-width: 100%; }
   <!-- ========== POLÍTICAS SGAS (Elemento 1) ========== -->
   <div class="page-content" id="page-politicas">
     <div class="section-header">
-      <div><div class="section-title">Políticas SGAS</div><div class="section-sub">Ficha 1 — Declaração de Política SGAS · IFC Elemento 1 · Kit de Ferramentas</div></div>
+      <div><div class="section-title">Políticas SGAS</div><div class="section-sub">Ficha 1 — Declaração de Política SGAS · IFC Elemento 1 · Kit de Ferramentas</div></div> <!-- TODO i18n -->
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="openModal('modal-ceo-letter')">✉ Carta do CEO</button>
         <button class="btn primary" onclick="savePolicyState()">💾 Guardar progresso</button>
@@ -1614,7 +1618,7 @@ canvas { max-width: 100%; }
   <!-- ========== IDENTIFICAÇÃO DE RISCOS (Elemento 2) ========== -->
   <div class="page-content" id="page-riscos-id">
     <div class="section-header">
-      <div><div class="section-title">Identificação de Riscos e Impactos</div><div class="section-sub">Ficha 2A — Folha de trabalho IFC · Avaliação de Probabilidade × Gravidade</div></div>
+      <div><div class="section-title">Identificação de Riscos e Impactos</div><div class="section-sub">Ficha 2A — Folha de trabalho IFC · Avaliação de Probabilidade × Gravidade</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="exportRiscosId()">↓ Exportar avaliação</button>
     </div>
     <div class="alert-banner info">
@@ -1676,7 +1680,7 @@ canvas { max-width: 100%; }
   <!-- ========== CAUSA RAIZ – 5 PORQUÊS (Elemento 3) ========== -->
   <div class="page-content" id="page-causa-raiz">
     <div class="section-header">
-      <div><div class="section-title">Análise de Causa Raiz — 5 Porquês</div><div class="section-sub">Ficha 3A · Kit de Ferramentas IFC · Identificação da causa raiz de não-conformidades e incidentes</div></div>
+      <div><div class="section-title">Análise de Causa Raiz — 5 Porquês</div><div class="section-sub">Ficha 3A · Kit de Ferramentas IFC · Identificação da causa raiz de não-conformidades e incidentes</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-why-new')">+ Nova análise</button>
     </div>
     <div class="alert-banner info">
@@ -1689,7 +1693,7 @@ canvas { max-width: 100%; }
   <!-- ========== EMERGÊNCIAS (Elemento 5) ========== -->
   <div class="page-content" id="page-emergencias">
     <div class="section-header">
-      <div><div class="section-title">Preparação e Resposta a Emergências</div><div class="section-sub">Elemento 5 · Procedimentos EM001 / EM002 · Mapeamento de prioridade de emergências IFC</div></div>
+      <div><div class="section-title">Preparação e Resposta a Emergências</div><div class="section-sub">Elemento 5 · Procedimentos EM001 / EM002 · Mapeamento de prioridade de emergências IFC</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="printEmergencies()">🖨 Imprimir procedimentos</button>
     </div>
     <div class="alert-banner danger">
@@ -1749,7 +1753,7 @@ canvas { max-width: 100%; }
   <!-- ========== MAPEAMENTO DE PARTES INTERESSADAS (Elemento 6) ========== -->
   <div class="page-content" id="page-mapeamento-pi">
     <div class="section-header">
-      <div><div class="section-title">Mapeamento de Partes Interessadas</div><div class="section-sub">Ficha 6A · Influência × Impacto · IFC Elemento 6 · Estratégias de engajamento diferenciadas</div></div>
+      <div><div class="section-title">Mapeamento de Partes Interessadas</div><div class="section-sub">Ficha 6A · Influência × Impacto · IFC Elemento 6 · Estratégias de engajamento diferenciadas</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-pin-sh')">+ Posicionar parte interessada</button>
     </div>
     <div class="alert-banner info">
@@ -1811,7 +1815,7 @@ canvas { max-width: 100%; }
   <!-- ========== AUDITORIA INTERNA (Elemento 9) ========== -->
   <div class="page-content" id="page-auditoria">
     <div class="section-header">
-      <div><div class="section-title">Guia de Auditoria Interna SGAS</div><div class="section-sub">Ficha 9B · 7 Secções A–G · IFC Elemento 9 · Prontidão para missão de supervisão</div></div>
+      <div><div class="section-title">Guia de Auditoria Interna SGAS</div><div class="section-sub">Ficha 9B · 7 Secções A–G · IFC Elemento 9 · Prontidão para missão de supervisão</div></div> <!-- TODO i18n -->
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="resetAudit()">↺ Reiniciar</button>
         <button class="btn primary" onclick="exportAudit()">📄 Exportar relatório</button>
@@ -1833,7 +1837,7 @@ canvas { max-width: 100%; }
   <div class="page-content" id="page-ia">
     <div class="section-header">
       <div>
-        <div class="section-title">🤖 Assistente SGAS.pro</div>
+        <div class="section-title">🤖 Assistente SGAS.pro</div> <!-- TODO i18n -->
         <div class="section-sub">Especialista em IFC PS1–PS8 e World Bank ESS1–ESS10 · Responde em Português europeu</div>
       </div>
       <button class="btn" onclick="ai_clearHistory()">🗑 Limpar conversa</button>
@@ -6363,9 +6367,9 @@ if(_urlPage){ const _navEl=document.querySelector(`[onclick*="'${_urlPage}'"]`);
 
 <div id="trial-expired-screen" style="display:none;position:fixed;inset:0;background:#F9FAFB;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;">
   <div style="font-size:48px;">⏰</div>
-  <div style="font-size:22px;font-weight:700;color:#111827;">O seu período de trial terminou</div>
-  <div style="font-size:14px;color:#6B7280;max-width:400px;">O acesso ao SGAS Pro estava activo durante o período de avaliação de 3 dias. Para continuar, contacte-nos para activar a sua conta.</div>
-  <a href="mailto:geral@hsilva.org?subject=SGAS Pro — Activar conta" style="margin-top:8px;background:#1D9E75;color:#fff;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">Falar connosco →</a>
+  <div style="font-size:22px;font-weight:700;color:#111827;" data-i18n="trial.title">O seu período de trial terminou</div>
+  <div style="font-size:14px;color:#6B7280;max-width:400px;" data-i18n="trial.body">O acesso ao SGAS Pro estava activo durante o período de avaliação de 3 dias. Para continuar, contacte-nos para activar a sua conta.</div>
+  <a href="mailto:geral@hsilva.org?subject=SGAS Pro — Activar conta" style="margin-top:8px;background:#1D9E75;color:#fff;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;" data-i18n="trial.cta">Falar connosco →</a>
   <div style="font-size:11px;color:#9CA3AF;margin-top:4px;">geral@hsilva.org</div>
 </div>
 
@@ -6940,7 +6944,8 @@ function ai_buildLocalContext() {
       nonCompliant: _legal.filter(r => r.status !== 'Conforme').length
     },
     stakeholders: { total: _stkh.length },
-    _source: 'local'
+    _source: 'local',
+    lang: (typeof SGAS_LANG !== 'undefined' ? SGAS_LANG : 'pt')
   };
 }
 
@@ -7036,7 +7041,8 @@ async function ai_sendMessage(userText) {
       },
       body: JSON.stringify({
         messages: window.AI_CONVERSATION.slice(-20),
-        projectContext
+        projectContext,
+        lang: (typeof SGAS_LANG !== 'undefined' ? SGAS_LANG : 'pt')
       })
     });
 
@@ -7245,6 +7251,248 @@ async function ai_generateDailyDigest() {
     </div>
   </div>
 </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// PT | EN LANGUAGE TOGGLE
+// Usage: setLang('en') / setLang('pt')
+// Persisted: localStorage('sgas_lang'), default 'pt'
+// ═══════════════════════════════════════════════════════════════
+const I18N = {
+  pt: {
+    // Topbar
+    'topbar.action': '+ Nova acção',
+    'topbar.sub': 'Visão geral · Junho 2026',
+    // Readiness pill (template — {score} replaced at runtime)
+    'readiness.pill': 'Prontidão auditoria: {score}',
+    // Dashboard KPIs
+    'kpi.readiness.label':   '🎯 Prontidão auditoria',
+    'kpi.readiness.sub':     'Meta: ≥ 85% antes da missão',
+    'kpi.maturity.label':    '📊 Maturidade SGAS',
+    'kpi.maturity.trend':    '↑ +0.4 este mês',
+    'kpi.overdue.label':     '🔴 Acções ESAP em atraso',
+    'kpi.overdue.sub':       'de {n} acções totais',
+    'kpi.complaints.label':  '💬 Reclamações abertas',
+    'kpi.complaints.sub':    'Prazo médio: 8 dias',
+    // Alert banners
+    'alert.mission':    '⚠️ <strong>47 dias</strong> para a próxima missão de supervisão do Banco Mundial. 5 documentos obrigatórios em falta no cofre.',
+    'alert.diligence':  '🧭 <strong>Preparação para due diligence IFC:</strong> aplicável desde o primeiro contacto com o banco, antes da aprovação do loan.',
+    // Sidebar structural
+    'sidebar.pill.label':            'Projecto activo',
+    'sidebar.btn.create':            '+ Criar projecto',
+    'sidebar.section.principal':     'Principal',
+    'sidebar.section.conformidade':  'Conformidade SGAS',
+    'sidebar.section.partes':        'Partes Interessadas',
+    'sidebar.section.evidencias':    'Evidências',
+    'sidebar.section.gestao':        'Gestão SGAS',
+    'sidebar.section.kit':           'Kit de Ferramentas IFC',
+    'sidebar.section.ia':            'Assistente IA',
+    // Nav items
+    'nav.dashboard':       'Dashboard',
+    'nav.diagnostico':     'Diagnóstico IFC',
+    'nav.prontidao':       'Prontidão PS1–PS8',
+    'nav.avaliacao':       'Autoavaliação SGAS',
+    'nav.ps':              'Padrões IFC PS1–PS8',
+    'nav.esap':            'Plano ESAP',
+    'nav.riscos':          'Registo de Riscos',
+    'nav.mapas-risco':     'Mapas de Risco',
+    'nav.terceiros':       'Terceiros / Subempreiteiros',
+    'nav.stakeholders':    'Partes Interessadas',
+    'nav.comunidades':     'Comunicações Comunitárias',
+    'nav.reclamacoes':     'Reclamações',
+    'nav.implementacao':   'Evidência de Implementação',
+    'nav.documentos':      'Cofre de Documentos',
+    'nav.monitoring':      'Monitoramento',
+    'nav.calendario':      'Calendário IFC',
+    'nav.relatorio':       'Relatórios',
+    'nav.audit-room':      'Sala de Auditoria BM',
+    'nav.revisao':         'Revisão de Gestão',
+    'nav.treinamento':     'Plano de Formação',
+    'nav.legal':           'Registo Legal',
+    'nav.politicas':       'Políticas SGAS',
+    'nav.riscos-id':       'Identif. de Riscos',
+    'nav.causa-raiz':      'Causa Raiz (5 Porquês)',
+    'nav.emergencias':     'Emergências',
+    'nav.mapeamento-pi':   'Mapeamento de PI',
+    'nav.auditoria':       'Auditoria Interna',
+    'nav.ia':              'Assistente SGAS.pro',
+    // Auth
+    'auth.subtitle':       'Plataforma de Conformidade IFC / Banco Mundial',
+    'auth.tab.login':      'Entrar',
+    'auth.tab.register':   'Criar conta',
+    'auth.btn.google':     'Entrar com Google',
+    'auth.btn.microsoft':  'Entrar com Microsoft',
+    // Trial
+    'trial.title': 'O seu período de trial terminou',
+    'trial.body':  'O acesso ao SGAS Pro estava activo durante o período de avaliação de 3 dias. Para continuar, contacte-nos para activar a sua conta.',
+    'trial.cta':   'Falar connosco →',
+    // Legal
+    'legal.disclaimer': 'SGAS Pro não substitui certificação oficial IFC/World Bank nem aconselhamento jurídico.',
+    // AI
+    'ai.greeting': 'Olá! Sou o assistente de IA do SGAS.pro. Posso ajudar com análise de conformidade PS1–PS8, plano ESAP, gestão de riscos e preparação para missões do Banco Mundial. O que precisas?',
+  },
+  en: {
+    // Topbar
+    'topbar.action': '+ New action',
+    'topbar.sub': 'Overview · June 2026',
+    // Readiness pill
+    'readiness.pill': 'Audit readiness: {score}',
+    // Dashboard KPIs
+    'kpi.readiness.label':   '🎯 Audit readiness',
+    'kpi.readiness.sub':     'Target: ≥ 85% before mission',
+    'kpi.maturity.label':    '📊 ESMS Maturity',
+    'kpi.maturity.trend':    '↑ +0.4 this month',
+    'kpi.overdue.label':     '🔴 Overdue ESAP actions',
+    'kpi.overdue.sub':       'of {n} total actions',
+    'kpi.complaints.label':  '💬 Open grievances',
+    'kpi.complaints.sub':    'Avg. response: 8 days',
+    // Alert banners
+    'alert.mission':    '⚠️ <strong>47 days</strong> until the next World Bank supervision mission. 5 required documents missing from the vault.',
+    'alert.diligence':  '🧭 <strong>IFC due diligence readiness:</strong> applies from first contact with the bank, before loan approval.',
+    // Sidebar structural
+    'sidebar.pill.label':            'Active project',
+    'sidebar.btn.create':            '+ Create project',
+    'sidebar.section.principal':     'Main',
+    'sidebar.section.conformidade':  'ESMS Compliance',
+    'sidebar.section.partes':        'Stakeholders',
+    'sidebar.section.evidencias':    'Evidence',
+    'sidebar.section.gestao':        'ESMS Management',
+    'sidebar.section.kit':           'IFC Toolkit',
+    'sidebar.section.ia':            'AI Assistant',
+    // Nav items
+    'nav.dashboard':       'Dashboard',
+    'nav.diagnostico':     'IFC Diagnostic',
+    'nav.prontidao':       'Readiness PS1–PS8',
+    'nav.avaliacao':       'ESMS Self-Assessment',
+    'nav.ps':              'IFC PS1–PS8 Standards',
+    'nav.esap':            'ESAP Action Plan',
+    'nav.riscos':          'Risk Register',
+    'nav.mapas-risco':     'Risk Maps',
+    'nav.terceiros':       'Contractors / Third Parties',
+    'nav.stakeholders':    'Stakeholders',
+    'nav.comunidades':     'Community Communications',
+    'nav.reclamacoes':     'Grievances',
+    'nav.implementacao':   'Implementation Evidence',
+    'nav.documentos':      'Document Vault',
+    'nav.monitoring':      'Monitoring',
+    'nav.calendario':      'IFC Calendar',
+    'nav.relatorio':       'Reports',
+    'nav.audit-room':      'World Bank Audit Room',
+    'nav.revisao':         'Management Review',
+    'nav.treinamento':     'Training Plan',
+    'nav.legal':           'Legal Register',
+    'nav.politicas':       'ESMS Policies',
+    'nav.riscos-id':       'Risk Identification',
+    'nav.causa-raiz':      'Root Cause (5 Whys)',
+    'nav.emergencias':     'Emergency Preparedness',
+    'nav.mapeamento-pi':   'Stakeholder Mapping',
+    'nav.auditoria':       'Internal Audit',
+    'nav.ia':              'SGAS.pro Assistant',
+    // Auth
+    'auth.subtitle':       'IFC / World Bank Compliance Platform',
+    'auth.tab.login':      'Sign in',
+    'auth.tab.register':   'Create account',
+    'auth.btn.google':     'Sign in with Google',
+    'auth.btn.microsoft':  'Sign in with Microsoft',
+    // Trial
+    'trial.title': 'Your trial period has ended',
+    'trial.body':  'SGAS Pro access was active for the 3-day evaluation period. To continue, contact us to activate your account.',
+    'trial.cta':   'Contact us →',
+    // Legal
+    'legal.disclaimer': 'SGAS Pro does not replace official IFC/World Bank certification or legal advice.',
+    // AI
+    'ai.greeting': 'Hello! I\'m the SGAS.pro AI assistant. I can help with PS1–PS8 compliance analysis, ESAP planning, risk management, and World Bank supervision mission preparation. How can I help?',
+  }
+};
+
+let SGAS_LANG = localStorage.getItem('sgas_lang') || 'pt';
+
+function t(key, vars) {
+  var dict = I18N[SGAS_LANG] || I18N.pt;
+  var str = (dict[key] !== undefined ? dict[key] : (I18N.pt[key] || key));
+  if (vars) Object.keys(vars).forEach(function(k) { str = str.replace('{' + k + '}', vars[k]); });
+  return str;
+}
+
+function setLang(l) {
+  if (l !== 'pt' && l !== 'en') return;
+  SGAS_LANG = l;
+  localStorage.setItem('sgas_lang', l);
+  var dict = I18N[l] || I18N.pt;
+
+  // 1. Walk all data-i18n elements (text content)
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) {
+      if (el.children.length === 0) {
+        el.textContent = dict[key];
+      } else {
+        el.innerHTML = dict[key];
+      }
+    }
+  });
+
+  // 2. Topbar elements (have IDs, no data-i18n needed)
+  var topbarAction = document.getElementById('topbar-action');
+  if (topbarAction) topbarAction.textContent = dict['topbar.action'] || topbarAction.textContent;
+
+  var topbarSub = document.getElementById('topbar-sub');
+  if (topbarSub) topbarSub.textContent = dict['topbar.sub'] || topbarSub.textContent;
+
+  // 3. Auth overlay — elements with existing IDs
+  var authIds = {
+    'tab-login':      'auth.tab.login',
+    'tab-register':   'auth.tab.register',
+    'btn-login':      'auth.tab.login',
+    'btn-register':   'auth.tab.register',
+    'btn-magic':      l === 'en' ? null : null,  // handled by data-i18n on span if needed
+    'link-magic':     l === 'en' ? 'Forgot password?' : 'Esqueceu a senha?',
+    'link-back-login':l === 'en' ? '← Back to sign in' : '← Voltar ao login',
+  };
+  ['tab-login','tab-register','btn-login','btn-register'].forEach(function(id) {
+    var el = document.getElementById(id);
+    var key = authIds[id];
+    if (el && key && dict[key]) el.textContent = dict[key];
+  });
+  var linkMagic = document.getElementById('link-magic');
+  if (linkMagic) linkMagic.textContent = (l === 'en' ? 'Forgot password?' : 'Esqueceu a senha?');
+  var linkBack = document.getElementById('link-back-login');
+  if (linkBack) linkBack.textContent = (l === 'en' ? '← Back to sign in' : '← Voltar ao login');
+
+  // 4. Update lang toggle button states
+  document.querySelectorAll('[data-lang-btn]').forEach(function(btn) {
+    var isActive = btn.getAttribute('data-lang-btn') === l;
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    btn.style.background = isActive ? '#1D9E75' : 'transparent';
+    btn.style.color = isActive ? '#fff' : '#6B7280';
+  });
+
+  // 5. Keyboard support: update toggle focus outline
+  var toggle = document.getElementById('lang-toggle');
+  if (toggle) toggle.querySelectorAll('button').forEach(function(b) {
+    b.setAttribute('tabindex', '0');
+  });
+}
+
+// Keyboard support for lang toggle
+document.addEventListener('keydown', function(e) {
+  var active = document.activeElement;
+  if (!active || !active.getAttribute('data-lang-btn')) return;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    var next = active.getAttribute('data-lang-btn') === 'pt' ? 'lang-en' : 'lang-pt';
+    var el = document.getElementById(next);
+    if (el) { el.focus(); el.click(); }
+  }
+});
+
+// Boot: apply saved language after DOM is ready
+(function() {
+  var lang = localStorage.getItem('sgas_lang') || 'pt';
+  if (lang !== 'pt') setLang(lang);
+  else setLang('pt');  // ensure toggle state is correct even on default
+})();
+</script>
 
 <script>
 /* INTERNAL_MODE — gates the commercial-intelligence module.
