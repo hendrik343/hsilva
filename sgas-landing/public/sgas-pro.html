@@ -6531,6 +6531,15 @@ restoreFromCache();
   const _activeCfg = _load();
   _apply(_activeCfg);
   window.SGAS_DEMO_ACTIVE = !!(_activeCfg && _activeCfg._source && _activeCfg._source.startsWith('url:'));
+  // Synthesise a completed assessment so the prontidão card shows scores, not empty state
+  if (window.SGAS_DEMO_ACTIVE && _activeCfg.metadata && Array.isArray(_activeCfg.metadata.psScores)) {
+    const _psKeys = ['PS1','PS2','PS3','PS4','PS5','PS6','PS7','PS8'];
+    const _scoresMap = {};
+    _activeCfg.metadata.psScores.forEach(function(v, i){ if (_psKeys[i]) _scoresMap[_psKeys[i]] = v; });
+    const _avg = Math.round(_activeCfg.metadata.psScores.reduce(function(a,b){return a+b;},0) / _activeCfg.metadata.psScores.length);
+    SGAS_READINESS_ASSESSMENT = { score: _avg, profile: { scores_by_ps: _scoresMap, score: _avg }, updated_at: new Date('2026-06-15T10:00:00Z').toISOString() };
+    SGAS_READINESS_LOAD_DONE = true;
+  }
   window._pc = { configs: DEMO_CONFIGS };
 })();
 // ─────────────────────────────────────────────────────────────
