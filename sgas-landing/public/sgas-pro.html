@@ -920,7 +920,7 @@ canvas { max-width: 100%; }
       <p id="topbar-sub">Visão geral · Junho 2026</p>
     </div>
     <div class="topbar-right">
-      <div role="group" aria-label="Language / Idioma" id="lang-toggle" style="display:flex;border:1px solid #E5E7EB;border-radius:6px;overflow:hidden;">
+      <div role="group" aria-label="Language / Idioma" id="lang-toggle" style="display:flex;border:1px solid #E5E7EB;border-radius:6px;overflow:hidden;flex-shrink:0;">
         <button id="lang-pt" data-lang-btn="pt" aria-pressed="true"  onclick="setLang('pt')" style="padding:5px 11px;font-size:11px;font-weight:700;border:none;background:#1D9E75;color:#fff;cursor:pointer;font-family:inherit;letter-spacing:0.05em;transition:background 0.15s;">PT</button>
         <button id="lang-en" data-lang-btn="en" aria-pressed="false" onclick="setLang('en')" style="padding:5px 11px;font-size:11px;font-weight:700;border:none;background:transparent;color:#6B7280;cursor:pointer;font-family:inherit;letter-spacing:0.05em;transition:background 0.15s;">EN</button>
       </div>
@@ -3588,6 +3588,7 @@ function renderDashboard(){
       const updated = SGAS_READINESS_ASSESSMENT.updated_at ? new Date(SGAS_READINESS_ASSESSMENT.updated_at).toLocaleString('pt-PT') : 'agora';
       h += `<div class="readiness-source-note">Dados reais do último diagnóstico · ${updated}</div>`;
     }
+    h += `<button type="button" data-open-readiness-wizard="true" style="margin-top:10px;padding:6px 14px;border:1px solid #1D9E75;border-radius:6px;background:transparent;color:#1D9E75;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;width:100%;">🧭 Actualizar diagnóstico PS1–PS8</button>`;
   }
   const psBars = document.getElementById('ps-bars');
   if (psBars) psBars.innerHTML=h;
