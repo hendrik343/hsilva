@@ -235,7 +235,7 @@
 
   async function refreshTrialState() {
     try {
-      if (window.SGAS_DEMO_ACTIVE) { clearTrialUI(); return; }
+      if (window.SGAS_DEMO_ACTIVE || new URLSearchParams(window.location.search).get('projectId')) { clearTrialUI(); return; }
       var client = getClient();
       if (!client) {
         clearTrialUI();
