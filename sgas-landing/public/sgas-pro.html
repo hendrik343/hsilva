@@ -2653,7 +2653,6 @@ async function syncFromSupabase() {
     }
     await loadReadinessAssessmentFromSupabase();
     saveCache({ esapData, complaints, riskData, stakeholders, contractors, implementationEvidence, communityReports, legalRegister, ifcReports, lenderPackage, kpiProtocols, sourceWatchers, physicalRiskHotspots, processRiskMap });
-    console.log('[SGAS] ✓ Dados sincronizados com Supabase');
     return true;
   } catch(e) {
     console.warn('[SGAS] Sync falhou, a usar dados locais:', e.message);
@@ -6523,7 +6522,6 @@ restoreFromCache();
     if (demoBanner) demoBanner.style.display = (cfg && cfg._source && cfg._source.startsWith('url:')) ? 'block' : 'none';
 
     window.projectConfig = { metadata: m, _source: cfg ? (cfg._source || 'custom') : 'default' };
-    console.log('[SGAS] projectConfig:', m.name, '|', window.projectConfig._source);
   }
 
   const _activeCfg = _load();
