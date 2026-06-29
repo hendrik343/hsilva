@@ -6568,6 +6568,7 @@ if(_urlPage){ const _navEl=document.querySelector(`[onclick*="'${_urlPage}'"]`);
   var _origOnAuth = window.onAuthSuccess;
   window.onAuthSuccess = async function(session) {
     await _origOnAuth(session);
+    if (window.SGAS_DEMO_ACTIVE) return;
     var s = window.SGAS_SESSION;
     if (s && s.trialEndsAt) {
       var expired = new Date() > new Date(s.trialEndsAt);
