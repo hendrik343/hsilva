@@ -4,7 +4,7 @@
   var EMPTY_TEXT = 'Ainda não há registos. Cria o primeiro.';
   var MAILTO_CONTINUAR = 'mailto:geral@hsilva.org?subject=SGAS%20Pro%20%E2%80%94%20continuar%20ap%C3%B3s%20trial';
   var DAY_MS = 24 * 60 * 60 * 1000;
-  var TRIAL_DAYS = 3;
+  var TRIAL_DAYS = 7;
   var emptyStateScheduled = false;
   var trialRefreshTimer = null;
 
@@ -72,9 +72,12 @@
         '<section class="sgas-trial-expired-card">',
         '<div class="sgas-trial-kicker">Demonstração SGAS Pro</div>',
         '<h2 id="sgas-trial-expired-title">O teu período de demonstração terminou</h2>',
-        '<p>Para continuar a usar o SGAS Pro com a tua equipa, fala connosco e activamos o plano certo para a tua organização.</p>',
+        '<p>Para continuar a usar o SGAS Pro com a tua equipa, escolhe um plano ou fala connosco para o enterprise.</p>',
         '<div class="sgas-trial-actions">',
-        '<a class="sgas-trial-cta" href="' + MAILTO_CONTINUAR + '">Falar connosco</a>',
+        '<button type="button" class="sgas-trial-cta" onclick="window.SGAS_BILLING && window.SGAS_BILLING.startCheckout(\'pilot\',\'monthly\')">Pilot — €500/mês</button>',
+        '<button type="button" class="sgas-trial-cta" onclick="window.SGAS_BILLING && window.SGAS_BILLING.startCheckout(\'professional\',\'monthly\')">Professional — €1.000/mês</button>',
+        '<button type="button" class="sgas-trial-cta" onclick="window.SGAS_BILLING && window.SGAS_BILLING.startCheckout(\'business\',\'monthly\')">Business — €1.500/mês</button>',
+        '<a class="sgas-trial-cta" href="' + MAILTO_CONTINUAR + '" style="background:transparent;color:#0D2E1E;border-color:#0D2E1E">Enterprise — falar connosco</a>',
         '</div>',
         '</section>'
       ].join('');
@@ -263,7 +266,14 @@
 
       hideNetworkError();
       if (Date.now() > endDate.getTime()) {
-        setTrialExpired();
+        if (window.SGAS_BILLING && typeof window.SGAS_BILLING.refresh === 'function') {
+          await window.SGAS_BILLING.refresh();
+        }
+        if (window.SGAS_BILLING && window.SGAS_BILLING.isSubscriptionActive && window.SGAS_BILLING.isSubscriptionActive()) {
+          clearTrialUI();
+        } else {
+          setTrialExpired();
+        }
       } else {
         setTrialBanner(endDate);
       }

@@ -202,6 +202,10 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 .req-check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; margin-top: 1px; }
 .req-check.done { background: var(--accent); border-color: var(--accent); color: #fff; }
 .req-check.partial { background: var(--warning-bg); border-color: var(--warning); color: var(--warning); }
+.ps-objectives { margin-top: 10px; padding: 10px 12px; background: rgba(0,0,0,0.03); border-radius: var(--radius); }
+.ps-objectives-label { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.03em; }
+.ps-objectives ul { margin: 6px 0 0; padding-left: 18px; font-size: 12px; color: var(--text); line-height: 1.6; }
+.ps-ask-consultant { margin-top: 12px; text-align: right; }
 
 /* SCORING */
 .score-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
@@ -787,7 +791,7 @@ canvas { max-width: 100%; }
     <!-- Group: Conformidade SGAS -->
     <div class="sidebar-group" id="grp-conformidade" style="display:none">
       <div class="sidebar-section" data-i18n="sidebar.section.conformidade">Conformidade SGAS</div>
-      <div class="nav-item" onclick="nav('diagnostico',this)">
+      <div class="nav-item" data-open-readiness-wizard="true">
         <span class="nav-icon">🔍</span><span data-i18n="nav.diagnostico">Diagnóstico IFC</span>
       </div>
       <div class="nav-item" data-open-readiness-wizard="true">
@@ -1038,6 +1042,69 @@ canvas { max-width: 100%; }
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- AUTOAVALIACAO SGAS -->
+  <div class="page-content" id="page-avaliacao">
+    <div class="alert-banner info">
+      <span>🧑‍💼 <strong>Autoavaliação guiada pelo consultor:</strong> reproduz o questionário oficial de 42 perguntas e a matriz de maturidade 0–5 do <em id="esms-assessment-source-label"></em> — 9 elementos do SGAS. Responda com evidência real (documento, foto, entrevista); é isso que um auditor do Banco Mundial vai pedir em due diligence.</span>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><span class="card-title">📋 Dados da avaliação</span><span class="badge" id="esms-overall-label">—</span></div>
+      <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+        <input class="form-input" id="ass-company" placeholder="Empresa / Projecto" onchange="setAssessmentMeta('company',this.value)">
+        <input class="form-input" id="ass-project-id" placeholder="Referência (ex: IDA-P171880)" onchange="setAssessmentMeta('projectId',this.value)">
+        <input class="form-input" id="ass-assessor" placeholder="Avaliador" onchange="setAssessmentMeta('assessor',this.value)">
+        <input class="form-input" id="ass-role" placeholder="Função" onchange="setAssessmentMeta('role',this.value)">
+        <input class="form-input" id="ass-email" placeholder="Email" onchange="setAssessmentMeta('email',this.value)">
+        <input class="form-input" type="date" id="ass-date" onchange="setAssessmentMeta('date',this.value)">
+        <input class="form-input" id="ass-use" placeholder="Finalidade (ex: due diligence IFC)" onchange="setAssessmentMeta('useCase',this.value)">
+      </div>
+    </div>
+    <div class="grid-4" style="margin-bottom:20px" id="esms-summary-metrics"></div>
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-header"><span class="card-title">📶 Maturidade por elemento</span></div>
+        <div class="card-body" id="esms-bars"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">📊 Radar — Actual vs Meta (nível 4)</span></div>
+        <div class="card-body" style="display:flex;justify-content:center">
+          <canvas id="qa-radar" width="280" height="280"></canvas>
+        </div>
+      </div>
+    </div>
+    <div id="esms-elements-container"></div>
+  </div>
+
+  <!-- PS1-PS8 -->
+  <div class="page-content" id="page-ps">
+    <div class="alert-banner info">
+      <span>🧑‍💼 <strong>O seu consultor E&amp;S digital:</strong> cada Padrão de Desempenho abaixo mostra os objectivos oficiais da IFC, os requisitos que verificamos no seu projecto (com referência ao parágrafo exacto) e o que falta para ficar conforme. Fonte: <em id="ps-source-label"></em>.</span>
+    </div>
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="metric-card">
+        <div class="metric-label">✅ Conforme (≥80%)</div>
+        <div class="metric-value green" id="ps-conforme">0</div>
+        <div class="metric-sub">Padrões prontos para auditoria</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">🟡 Em curso (40–79%)</div>
+        <div class="metric-value amber" id="ps-parcial">0</div>
+        <div class="metric-sub">Precisam de acção do ESAP</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">🔴 Não conforme (&lt;40%)</div>
+        <div class="metric-value red" id="ps-nc">0</div>
+        <div class="metric-sub">Atenção prioritária do consultor</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">🏛 Padrões avaliados</div>
+        <div class="metric-value" style="color:var(--text)">8 / 8</div>
+        <div class="metric-sub">PS1–PS8 · IFC 2006/2012</div>
+      </div>
+    </div>
+    <div id="ps-container"></div>
   </div>
 
   <!-- ESAP -->
@@ -1602,7 +1669,8 @@ canvas { max-width: 100%; }
       </div>
     </div>
     <div class="alert-banner info" style="margin-bottom:16px">
-      📋 <strong>Instrução IFC:</strong> A política deve ser aprovada pela gestão de topo, comunicada a todos os trabalhadores e actualizada quando as actividades mudarem significativamente.
+      📋 <strong>Instrução IFC:</strong> A política deve ser aprovada pela gestão de topo, comunicada a todos os trabalhadores e actualizada quando as actividades mudarem significativamente.<br>
+      <span style="font-size:11px">🧰 Esta ficha replica a <em>"Lista de verificação para a criação de uma declaração de política"</em> e o <em>"Modelo de carta do Diretor Executivo"</em> — as ferramentas de execução do <span id="toolkit-source-politicas"></span>.</span>
     </div>
     <div class="grid-2" style="margin-bottom:20px">
       <div class="metric-card"><div class="metric-label">Elementos declarados</div><div class="metric-value green" id="pol-done-count">0</div><div class="metric-sub">de <span id="pol-total-count">0</span> critérios</div></div>
@@ -1619,7 +1687,8 @@ canvas { max-width: 100%; }
       <button class="btn primary" onclick="exportRiscosId()">↓ Exportar avaliação</button>
     </div>
     <div class="alert-banner info">
-      🔍 <strong>Metodologia IFC (§8 Política 2006):</strong> Classifica a relevância de cada risco (Sim/Não), descreve o impacto potencial e aplica a hierarquia de 4 passos: <strong>Evitar → Reduzir → Mitigar → Compensar</strong> impactos residuais.
+      🔍 <strong>Metodologia IFC (§8 Política 2006):</strong> Classifica a relevância de cada risco (Sim/Não), descreve o impacto potencial e aplica a hierarquia de 4 passos: <strong>Evitar → Reduzir → Mitigar → Compensar</strong> impactos residuais.<br>
+      <span style="font-size:11px">🧰 Reproduz a <em>"Planilha de identificação de riscos"</em> e a <em>"Ferramenta de Avaliação de Riscos"</em> do <span id="toolkit-source-riscos"></span>.</span>
     </div>
 
     <!-- Risk assessment matrix 4x4 -->
@@ -1681,7 +1750,8 @@ canvas { max-width: 100%; }
       <button class="btn primary" onclick="openModal('modal-why-new')">+ Nova análise</button>
     </div>
     <div class="alert-banner info">
-      🧩 <strong>Metodologia:</strong> Para cada não-conformidade ou incidente, pergunta "Porquê?" até 5 vezes para chegar à causa raiz real. A solução deve atacar a causa raiz, não o sintoma.
+      🧩 <strong>Metodologia:</strong> Para cada não-conformidade ou incidente, pergunta "Porquê?" até 5 vezes para chegar à causa raiz real. A solução deve atacar a causa raiz, não o sintoma.<br>
+      <span style="font-size:11px">🧰 Baseado na <em>"Análise da Causa Principal"</em> (árvore de causas / técnica dos "5 Porquês") do <span id="toolkit-source-causaraiz"></span>.</span>
     </div>
     <div id="why-list-render"></div>
     <div id="why-detail-render" style="margin-top:16px"></div>
@@ -1694,7 +1764,8 @@ canvas { max-width: 100%; }
       <button class="btn primary" onclick="printEmergencies()">🖨 Imprimir procedimentos</button>
     </div>
     <div class="alert-banner danger">
-      🚨 <strong>Crítico IFC:</strong> O plano de resposta a emergências deve ser testado pelo menos uma vez por ano. Preenche os contactos da equipa em cada ficha de procedimento.
+      🚨 <strong>Crítico IFC:</strong> O plano de resposta a emergências deve ser testado pelo menos uma vez por ano. Preenche os contactos da equipa em cada ficha de procedimento.<br>
+      <span style="font-size:11px">🧰 Adaptado do <em>"Mapeamento de Situações de Emergência"</em> e dos exemplos de procedimento de resposta (incêndio, químicos, inundação) do <span id="toolkit-source-emergencias"></span>.</span>
     </div>
 
     <!-- Emergency mapping matrix -->
@@ -1754,7 +1825,8 @@ canvas { max-width: 100%; }
       <button class="btn primary" onclick="openModal('modal-pin-sh')">+ Posicionar parte interessada</button>
     </div>
     <div class="alert-banner info">
-      🗺 <strong>Lógica de mapeamento:</strong> Quadrante superior-esquerdo = gerir de perto (alta influência, alto impacto). Use para priorizar o nível de engajamento e frequência de consulta.
+      🗺 <strong>Lógica de mapeamento:</strong> Quadrante superior-esquerdo = gerir de perto (alta influência, alto impacto). Use para priorizar o nível de engajamento e frequência de consulta.<br>
+      <span style="font-size:11px">🧰 Reproduz a <em>"Ferramenta de Mapeamento das partes interessadas — identificação e análise"</em> do <span id="toolkit-source-mapeamento"></span>.</span>
     </div>
     <div class="grid-2" style="margin-bottom:16px">
       <div class="card">
@@ -1803,8 +1875,9 @@ canvas { max-width: 100%; }
     <!-- Mechanism checklist (Element 7 bonus) -->
     <div class="card">
       <div class="card-header"><span class="card-title">📋 Critérios do Mecanismo de Reclamações IFC (Ficha 7A)</span><span class="badge" id="mec-score-badge">0/6</span></div>
-      <div class="card-body" style="padding:0;overflow:hidden">
+      <div class="card-body" style="padding:0 0 10px">
         <div class="mec-criteria" id="mec-criteria-render"></div>
+        <div style="font-size:11px;color:var(--text-3);padding:0 16px">🧰 Baseado na <em>"Lista de verificação de um Mecanismo de Reclamação eficaz"</em> do <span id="toolkit-source-mec"></span>.</div>
       </div>
     </div>
   </div>
@@ -1819,7 +1892,8 @@ canvas { max-width: 100%; }
       </div>
     </div>
     <div class="alert-banner warn">
-      🔎 <strong>Instrução:</strong> Marca cada item como ✓ Conforme ou ✕ Não Conforme. Usa as notas para registar evidências ou observações. O score final alimenta o indicador de prontidão para auditoria.
+      🔎 <strong>Instrução:</strong> Marca cada item como ✓ Conforme ou ✕ Não Conforme. Usa as notas para registar evidências ou observações. O score final alimenta o indicador de prontidão para auditoria.<br>
+      <span style="font-size:11px">🧰 Adaptado da <em>"Orientação para a Auditoria"</em> (secções A–G) do <span id="toolkit-source-auditoria"></span>.</span>
     </div>
     <div class="grid-4" style="margin-bottom:20px">
       <div class="metric-card"><div class="metric-label">Score de auditoria</div><div class="metric-value" id="audit-score-val">—</div></div>
@@ -2681,6 +2755,15 @@ function restoreFromCache() {
 }
 
 // ===================== DATA =====================
+// Fonte do questionário e da matriz de maturidade 0-5: IFC — Sistema de Gestão Ambiental e Social,
+// Guia de Autoavaliação e Melhoria, Versão 2.3, Outubro de 2015 (42 perguntas oficiais em 9 elementos).
+const ESMS_ASSESSMENT_SOURCE = 'IFC — Sistema de Gestão Ambiental e Social: Guia de Autoavaliação e Melhoria, Versão 2.3, Outubro de 2015';
+
+// Fonte das fichas de trabalho preenchíveis (política, riscos, 5 porquês, emergências,
+// mapeamento de interessados, mecanismo de reclamações, auditoria): IFC — Sistema de Gestão
+// Ambiental e Social, Kit Geral de Ferramentas, Versão 1.2, Novembro de 2015. É o kit prático
+// que o cliente usa para executar, ficha a ficha, os requisitos identificados no PS1–PS8.
+const TOOLKIT_SOURCE = 'IFC — Sistema de Gestão Ambiental e Social: Kit Geral de Ferramentas, Versão 1.2, Novembro de 2015';
 let sgasScores = [0,0,0,0,0,0,0,0,0];
 const ELEMS = [
   'Políticas',
@@ -3104,23 +3187,33 @@ const PROJECT_OBLIGATIONS = {
 };
 
 
+// Fonte: IFC — Política e Padrões de Desempenho de Sustentabilidade Social e Ambiental, 30 de Abril de 2006
+const IFC_PS_SOURCE = 'IFC — Política e Padrões de Desempenho de Sustentabilidade Social e Ambiental, 30/04/2006';
 const PS_DATA = [
   { id:'PS1', name:'Avaliação e Gestão de Riscos E&S', color:'#1D9E75', score:0,
-    reqs:['ESMS documentado e implementado','Avaliação de impacto ambiental e social (ESIA)','Plano de Acção Ambiental e Social (ESAP)','Relatórios periódicos ao Banco Mundial','Mecanismo de reclamações activo','Plano de engajamento de stakeholders (SEP)'] },
+    objectives:['Identificar e avaliar os impactos socioambientais, positivos e negativos, na área de influência do projecto','Evitar ou, quando não for possível, minimizar ou compensar os impactos negativos sobre trabalhadores, comunidades afectadas e o ambiente','Garantir que as comunidades afectadas sejam incluídas de forma apropriada nos assuntos que as possam afectar','Promover o melhor desempenho socioambiental através da utilização eficaz de sistemas de gestão'],
+    reqs:['ESMS documentado e implementado (§3 — 7 elementos: avaliação, programa de gestão, capacidade organizacional, formação, participação da comunidade, monitoramento e relatórios)','Avaliação de impacto ambiental e social / ESIA (§4–12)','Plano de Acção Ambiental e Social / ESAP (§16 — medidas, prioridades, cronograma, divulgação)','Relatórios periódicos às comunidades afectadas e ao financiador (§25–26 — mínimo anual)','Mecanismo de reclamações activo (§23)','Plano de engajamento de stakeholders / SEP — divulgação, consulta e participação informada (§19–22)'] },
   { id:'PS2', name:'Trabalho e Condições Laborais', color:'#2563EB', score:0,
-    reqs:['Política de trabalho e condições laborais','Contratos de trabalho conformes','Procedimento de gestão de mão-de-obra','Saúde e segurança ocupacional documentada','Proibição de trabalho infantil e forçado','Mecanismo de reclamações para trabalhadores'] },
+    objectives:['Estabelecer, manter e melhorar a relação entre trabalhador e gestão','Promover tratamento justo, não-discriminação e igualdade de oportunidades, e cumprimento da legislação laboral nacional','Proteger a mão-de-obra evitando o trabalho infantil e o trabalho forçado','Promover condições de trabalho seguras e saudáveis'],
+    reqs:['Política de recursos humanos e condições laborais (§6)','Contratos e termos de contratação conformes (§7–8)','Procedimento de gestão de trabalhadores não-empregados / subcontratados (§17)','Segurança e saúde ocupacional documentada (§16)','Proibição de trabalho infantil e trabalho forçado (§14–15)','Mecanismo de reclamações para trabalhadores (§13)'] },
   { id:'PS3', name:'Eficiência de Recursos e Prevenção de Poluição', color:'#7C3AED', score:0,
-    reqs:['Plano de gestão de resíduos sólidos','Controlo de emissões e efluentes','Registo de consumo de água e energia','Gestão de substâncias perigosas','Plano de prevenção de derrames','Monitoramento de qualidade do ar e água'] },
+    objectives:['Evitar ou minimizar os impactos negativos sobre a saúde humana e o ambiente evitando ou reduzindo a poluição das actividades do projecto','Promover a redução das emissões que contribuem para a mudança climática'],
+    reqs:['Prevenção e controlo da poluição — técnicas adequadas ao ciclo de vida do projecto (§4)','Plano de gestão de resíduos sólidos e perigosos (§5)','Gestão de substâncias e materiais perigosos (§6)','Plano de resposta e preparação para emergências (§7)','Diretrizes de Saúde, Segurança e Ambiente (EHS) da IFC como referência técnica (§8)','Monitoramento de emissões, qualidade do ar e água, e gases com efeito estufa (§10–11)'] },
   { id:'PS4', name:'Saúde e Segurança Comunitária', color:'#D97706', score:0,
-    reqs:['Avaliação de riscos para a comunidade','Plano de saúde e segurança comunitária','Gestão de segurança em obra (acesso)','Protocolos COVID-19 e doenças infecciosas','Plano de gestão de tráfego','Informação pública sobre riscos da obra'] },
+    objectives:['Evitar ou minimizar os riscos e impactos à saúde e segurança da comunidade local durante o ciclo de vida do projecto','Garantir que a protecção de funcionários e propriedade seja feita de forma legítima, evitando ou minimizando riscos à segurança da comunidade'],
+    reqs:['Avaliação de riscos e impactos à comunidade (§4)','Segurança de equipamentos e infra-estrutura (§6)','Gestão de exposição a materiais perigosos (§7)','Plano de resposta e preparação para emergências (§12)','Gestão de tráfego e equipamentos móveis em vias públicas (§6)','Exigências para equipas de segurança — uso de força proporcional (§13–15)'] },
   { id:'PS5', name:'Aquisição de Terras e Reassentamento', color:'#DC2626', score:0,
-    reqs:['Triagem de aplicabilidade PS5/ESS5 documentada','Declaração de não-aplicabilidade ou Plano de Reassentamento aprovado','Consulta e compensação justa aos afectados (se aplicável)','Registo de afectados e monitoramento pós-reassentamento (se aplicável)'] },
+    objectives:['Evitar ou, pelo menos, minimizar o reassentamento involuntário explorando concepções de projecto alternativas','Mitigar impactos económicos e sociais através de compensação ao custo total de substituição e participação informada das pessoas afectadas','Melhorar ou, pelo menos, restaurar os meios de subsistência e os padrões de vida das pessoas reassentadas','Melhorar as condições de vida com garantia de posse nos locais de reassentamento'],
+    reqs:['Triagem de aplicabilidade — transacção Tipo I (desapropriação) vs Tipo II (negociada) (§5–6)','Declaração de não-aplicabilidade ou Plano/Estrutura de Reassentamento (§12)','Censo, qualificação e data-limite das pessoas afectadas (§11)','Compensação ao custo total de substituição e consulta às pessoas afectadas (§8–9)','Monitoramento pós-reassentamento até restauração dos meios de subsistência (§12)'] },
   { id:'PS6', name:'Conservação da Biodiversidade', color:'#059669', score:0,
-    reqs:['Avaliação de impacto em biodiversidade','Plano de gestão de biodiversidade','Medidas de compensação de habitat','Monitoramento de espécies sensíveis'] },
+    objectives:['Proteger e preservar a biodiversidade','Promover a gestão e utilização sustentáveis dos recursos naturais, integrando necessidades de conservação e prioridades de desenvolvimento'],
+    reqs:['Avaliação de impacto em biodiversidade — habitat natural, modificado ou crítico (§4)','Condições para conversão/degradação de habitat natural (§7)','Medidas de mitigação sem perda líquida — restauração e compensação (§8)','Exigências reforçadas para habitat crítico e áreas protegidas por lei (§9–11)','Prevenção de introdução de espécies estrangeiras invasoras (§12–13)','Manejo sustentável de florestas e recursos aquáticos, com certificação quando possível (§14–17)'] },
   { id:'PS7', name:'Povos Indígenas / Comunidades Tradicionais', color:'#0891B2', score:0,
-    reqs:['Triagem de aplicabilidade PS7/ESS7 com justificação documentada','Consulta Livre, Prévia e Informada (CLPI/FPIC) quando aplicável','Plano de envolvimento culturalmente apropriado (se aplicável)','Evidência de Broad Community Support ou FPIC documentado','Mecanismo de reclamações acessível a comunidades tradicionais'] },
+    objectives:['Garantir respeito total pela dignidade, direitos humanos, aspirações, culturas e meios de subsistência dos povos indígenas','Evitar impactos negativos ou, quando inevitáveis, minimizar, atenuar ou compensar de forma culturalmente apropriada','Promover negociação de boa fé e participação informada quando o projecto afecta terras tradicionais ou de uso habitual'],
+    reqs:['Triagem de aplicabilidade com justificação documentada (§5–6)','Consulta prévia, livre e informada e participação informada (§9)','Plano de desenvolvimento para povos indígenas, com cronograma (§8)','Negociação de boa fé quando há impacto em terras tradicionais / desalojamento (§13–14)','Mecanismo de reclamações culturalmente apropriado e acessível (§9)'] },
   { id:'PS8', name:'Património Cultural', color:'#A16207', score:0,
-    reqs:['Triagem de património cultural tangível e intangível','Procedimento de achados fortuitos (chance find)','Consulta a autoridades competentes','Registo de achados e medidas de protecção'] },
+    objectives:['Proteger o património cultural insubstituível contra impactos negativos das actividades do projecto e sustentar a sua conservação','Promover a partilha equitativa dos benefícios do uso do património cultural em actividades comerciais'],
+    reqs:['Triagem de património cultural tangível e intangível (§3)','Procedimento de descoberta aleatória / achados fortuitos (§5)','Processo de consulta a comunidades e autoridades competentes (§6)','Remoção de património apenas como último recurso, com melhor técnica disponível (§7)','Exigências reforçadas para património cultural crítico e áreas protegidas por lei (§8–10)'] },
 ];
 
 let psReqStatus = {};
@@ -3491,6 +3584,22 @@ async function submitCreateProject() {
     return;
   }
 
+  if (window.SGAS_BILLING && !window.SGAS_DEMO_ACTIVE) {
+    try {
+      await window.SGAS_BILLING.refresh();
+      var limits = window.SGAS_BILLING.planLimits;
+      var countRes = await client.from('projects').select('id', { count: 'exact', head: true }).eq('organization_id', s.orgId);
+      var currentCount = countRes.count || 0;
+      if (limits && currentCount >= limits.maxProjects) {
+        errEl.textContent = 'Atingiste o limite de projectos do teu plano actual (' + limits.maxProjects + '). Faz upgrade para criar mais.';
+        btn.disabled = false; btn.textContent = 'Criar projecto';
+        return;
+      }
+    } catch (limitErr) {
+      console.warn('[SGAS] Verificação de limite de plano falhou; a permitir criação.', limitErr);
+    }
+  }
+
   var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 62);
   if (slug.length < 3) slug = slug + '-proj';
   var payload = {
@@ -3833,6 +3942,9 @@ function renderAvaliacao(){
   const total = totalQuestionCount();
   syncAssessmentMetaInputs();
 
+  const esmsSourceLabel = document.getElementById('esms-assessment-source-label');
+  if (esmsSourceLabel) esmsSourceLabel.textContent = ESMS_ASSESSMENT_SOURCE;
+
   // ── Summary metrics ──
   const critical = scores.filter(v=>v<=1).length;
   const good = scores.filter(v=>v>=4).length;
@@ -4040,6 +4152,8 @@ function exportAvaliacao(){
 
 // ===================== RENDER PS =====================
 function renderPS(){
+  const psSourceLabel = document.getElementById('ps-source-label');
+  if (psSourceLabel) psSourceLabel.textContent = IFC_PS_SOURCE;
   let conforme=0,parcial=0,nc=0;
   let h='';
   PS_DATA.forEach(ps=>{
@@ -4059,7 +4173,12 @@ function renderPS(){
           ${statusBadge(pct>=80?'Concluída':pct>=40?'Em curso':'Não iniciada')}
         </div>
       </div>
+      ${Array.isArray(ps.objectives) && ps.objectives.length ? `<div class="ps-objectives">
+        <div class="ps-objectives-label">🎯 Objectivos da IFC para ${ps.id}</div>
+        <ul>${ps.objectives.map(o=>`<li>${o}</li>`).join('')}</ul>
+      </div>` : ''}
       <div class="ps-requirements">
+        <div class="ps-objectives-label" style="margin-bottom:6px">📋 O que o consultor verifica (com referência ao parágrafo do Padrão de Desempenho)</div>
         ${ps.reqs.map((r,i)=>{
           const st=reqs[i]||'none';
           const icon=st==='done'?'✓':st==='partial'?'◑':'○';
@@ -4067,12 +4186,31 @@ function renderPS(){
           return `<div class="req-item"><div class="req-check ${cl}" onclick="toggleReq('${ps.id}',${i})">${st==='done'?'✓':''}</div><span style="flex:1;color:var(--text)">${r}</span>${statusBadge(st==='done'?'Concluída':st==='partial'?'Em curso':'Não iniciada')}</div>`;
         }).join('')}
       </div>
+      <div class="ps-ask-consultant">
+        <button type="button" class="btn" onclick="askConsultantAbout('${ps.id}')">💬 Perguntar ao consultor IA sobre ${ps.id}</button>
+      </div>
     </div>`;
   });
-  document.getElementById('ps-container').innerHTML=h;
-  document.getElementById('ps-conforme').textContent=conforme;
-  document.getElementById('ps-parcial').textContent=parcial;
-  document.getElementById('ps-nc').textContent=nc;
+  const psContainer = document.getElementById('ps-container');
+  if (psContainer) psContainer.innerHTML = h;
+  const psConforme = document.getElementById('ps-conforme');
+  if (psConforme) psConforme.textContent = conforme;
+  const psParcial = document.getElementById('ps-parcial');
+  if (psParcial) psParcial.textContent = parcial;
+  const psNc = document.getElementById('ps-nc');
+  if (psNc) psNc.textContent = nc;
+}
+
+// Deep-link from a PS card straight into the AI assistant with a pre-filled, PS-specific question
+function askConsultantAbout(psId){
+  const ps = PS_DATA.find(p => p.id === psId);
+  const label = ps ? `${ps.id} — ${ps.name}` : psId;
+  nav('ia', navItemFor('ia'));
+  setTimeout(() => {
+    const input = document.getElementById('ai-input');
+    if (input) { input.value = `Como consultor E&S, avalia o estado actual do meu projecto face ao ${label}? O que falta para eu ficar conforme, com base nos requisitos da IFC?`; input.focus(); }
+    if (typeof ai_sendMessage === 'function') ai_sendMessage(input ? input.value : '');
+  }, 50);
 }
 function toggleReq(psId,idx){
   const cur=psReqStatus[psId][idx];
@@ -5166,6 +5304,8 @@ function togglePolicy(areaId, itemId){
 function savePolicyState(){ alert('Progresso guardado (localStorage).'); }
 
 function renderPoliticas(){
+  const tkPol = document.getElementById('toolkit-source-politicas');
+  if (tkPol) tkPol.textContent = TOOLKIT_SOURCE;
   const allItems = policyAreas.flatMap(a=>a.items);
   const done = allItems.filter(i=>i.checked).length;
   const total = allItems.length;
@@ -5278,6 +5418,8 @@ function toggleRiskId(tab,id,val){
 function exportRiscosId(){ alert('Exportar para PDF — funcionalidade premium disponível na versão cloud.'); }
 
 function renderRiscosId(){
+  const tkRisk = document.getElementById('toolkit-source-riscos');
+  if (tkRisk) tkRisk.textContent = TOOLKIT_SOURCE;
   const data = riskIdData[_riskIdTab]||riskIdData.labor;
   const simCount = data.filter(r=>r.sim===true).length;
   const naoCount = data.filter(r=>r.sim===false).length;
@@ -5355,6 +5497,8 @@ function saveWhyData(i){
 }
 
 function renderCausaRaiz(){
+  const tkRoot = document.getElementById('toolkit-source-causaraiz');
+  if (tkRoot) tkRoot.textContent = TOOLKIT_SOURCE;
   const listEl = document.getElementById('why-list-render');
   const detailEl = document.getElementById('why-detail-render');
   if(!listEl||!detailEl) return;
@@ -5501,6 +5645,8 @@ function emrgTab(tab, el){
 function printEmergencies(){ window.print(); }
 
 function renderEmergencias(){
+  const tkEm = document.getElementById('toolkit-source-emergencias');
+  if (tkEm) tkEm.textContent = TOOLKIT_SOURCE;
   const proc = emrgProcs[_emrgTab];
   if(!proc){document.getElementById('emrg-proc-content').innerHTML='';return;}
   const stepsHtml = proc.steps.map((s,i)=>`
@@ -5597,6 +5743,10 @@ function getQuadrant(inf,imp){
 }
 
 function renderMapeamentoPi(){
+  const tkMap = document.getElementById('toolkit-source-mapeamento');
+  if (tkMap) tkMap.textContent = TOOLKIT_SOURCE;
+  const tkMec = document.getElementById('toolkit-source-mec');
+  if (tkMec) tkMec.textContent = TOOLKIT_SOURCE;
   const mapEl = document.getElementById('sh-pins-render');
   const tbodyEl = document.getElementById('engagement-tbody');
   const countEl = document.getElementById('engagement-count');
@@ -6030,6 +6180,8 @@ async function exportAudit() {
 }
 
 function renderAuditoria(){
+  const tkAud = document.getElementById('toolkit-source-auditoria');
+  if (tkAud) tkAud.textContent = TOOLKIT_SOURCE;
   const allItems = auditSections.flatMap(s=>s.items);
   const okCount = allItems.filter(i=>i.ok===true).length;
   const ncCount = allItems.filter(i=>i.ok===false).length;
@@ -6084,34 +6236,18 @@ function renderAuditoria(){
 
 // ===================== MASTER RENDER =====================
 function renderAll(){
-  renderDashboard();
-  renderRadar();
-  renderAvaliacao();
-  renderPS();
-  renderEsap();
-  renderRisks();
-  renderRiskMaps();
-  renderContractors();
-  renderStakeholders();
-  renderComplaints();
-  renderCommunityReports();
-  renderImplementationEvidence();
-  renderDocuments();
-  renderMonitoring();
-  renderLegalRegister();
-  renderIfcCalendar();
-  renderReport();
-  renderAuditRoom();
-  renderRevisao();
-  renderTreinamento();
-  renderBCS();
-  // IFC Toolkit modules
-  renderPoliticas();
-  renderRiscosId();
-  renderCausaRaiz();
-  renderEmergencias();
-  renderMapeamentoPi();
-  renderAuditoria();
+  [
+    renderDashboard, renderRadar, renderAvaliacao, renderPS, renderEsap,
+    renderRisks, renderRiskMaps, renderContractors, renderStakeholders,
+    renderComplaints, renderCommunityReports, renderImplementationEvidence,
+    renderDocuments, renderMonitoring, renderLegalRegister, renderIfcCalendar,
+    renderReport, renderAuditRoom, renderRevisao, renderTreinamento, renderBCS,
+    // IFC Toolkit modules
+    renderPoliticas, renderRiscosId, renderCausaRaiz, renderEmergencias,
+    renderMapeamentoPi, renderAuditoria,
+  ].forEach(fn => {
+    try { fn(); } catch (err) { console.warn('[SGAS render]', fn.name, err); }
+  });
 }
 
 // Init
@@ -7192,6 +7328,24 @@ function ai_setLoading(loading) {
   btn.textContent = loading ? '…' : (btn.dataset.label || 'Enviar');
 }
 
+function ai_friendlyError(err) {
+  const code = err && err.code;
+  const status = err && err.status;
+  if (code === 'AI_NOT_CONFIGURED' || status === 503) {
+    return 'O assistente IA ainda não está activo nesta instalação. A plataforma SGAS continua operacional; falta apenas configurar a chave Anthropic no Supabase.';
+  }
+  if (code === 'AI_AUTH_REQUIRED' || code === 'AI_AUTH_INVALID' || status === 401) {
+    return 'A tua sessão expirou. Faz login novamente para usar o assistente IA.';
+  }
+  if (code === 'AI_UPSTREAM_ERROR' || status === 502) {
+    return 'O provedor de IA está temporariamente indisponível. Tenta novamente dentro de instantes.';
+  }
+  if (code === 'AI_NETWORK_ERROR') {
+    return 'Não foi possível ligar ao assistente IA. Verifica a ligação e tenta novamente.';
+  }
+  return 'Não foi possível contactar o assistente IA neste momento. Tenta novamente dentro de instantes.';
+}
+
 function ai_renderMessages() {
   const container = document.getElementById('ai-messages');
   if (!container) return;
@@ -7216,8 +7370,21 @@ async function ai_sendMessage(userText) {
   ai_appendMessage('assistant', '…', bubbleId);
 
   try {
-    const { data: { session } } = await getSupaClient().auth.getSession();
+    const supa = typeof getSupaClient === 'function' ? getSupaClient() : null;
+    if (!supa || !supa.auth) {
+      const e = new Error('Cliente Supabase indisponível.');
+      e.code = 'AI_NETWORK_ERROR';
+      throw e;
+    }
+
+    const { data: { session } } = await supa.auth.getSession();
     const token = session?.access_token || '';
+    if (!token) {
+      const e = new Error('Sessão em falta.');
+      e.code = 'AI_AUTH_REQUIRED';
+      e.status = 401;
+      throw e;
+    }
 
     const projectContext = await ai_buildProjectContext();
 
@@ -7236,7 +7403,16 @@ async function ai_sendMessage(userText) {
 
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || 'Erro ' + res.status);
+      const e = new Error(errData.error || 'Erro ' + res.status);
+      e.code = errData.code || '';
+      e.status = res.status;
+      throw e;
+    }
+
+    if (!res.body || typeof res.body.getReader !== 'function') {
+      const e = new Error('Resposta sem streaming.');
+      e.code = 'AI_NETWORK_ERROR';
+      throw e;
     }
 
     const reader  = res.body.getReader();
@@ -7271,8 +7447,7 @@ async function ai_sendMessage(userText) {
 
   } catch(err) {
     console.error('[SGAS AI] Send error:', err);
-    ai_updateBubble(bubbleId,
-      'Erro ao contactar o assistente: ' + err.message + '. Verifique a ligação e tente novamente.');
+    ai_updateBubble(bubbleId, ai_friendlyError(err));
   } finally {
     ai_setLoading(false);
   }
@@ -7401,6 +7576,7 @@ async function ai_generateDailyDigest() {
 
 <script src="/diagnostico.js"></script>
 
+<script src="/billing.js"></script>
 <script src="/trial.js"></script>
 
 <!-- ── Create Project Modal ─────────────────────────────────────────────── -->
