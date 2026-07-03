@@ -155,6 +155,7 @@
         '<div style="font-size:13px;font-weight:600;color:#111827;">' + (s.fullName || '') + '</div>' +
         '<div style="font-size:11px;color:#6B7280;">' + (s.orgName || s.email || '') + '</div>' +
       '</div>' +
+      '<div style="padding:8px 10px;cursor:pointer;border-radius:6px;font-size:13px;color:#374151;" onclick="window.openMfaEnroll()">🔐 Segurança (2FA)</div>' +
       '<hr style="border:none;border-top:1px solid #F3F4F6;margin:4px 0;">' +
       '<div style="padding:8px 10px;cursor:pointer;border-radius:6px;font-size:13px;color:#DC2626;" onclick="signOut()">Terminar sessão</div>';
     btn.appendChild(dd);
@@ -167,9 +168,86 @@
     document.addEventListener('click', function () { dd.style.display = 'none'; });
   }
 
+  // ── MFA (TOTP) — C2 security hardening ────────────────────────────────
+  function mfaOverlay(innerHtml) {
+    var old = document.getElementById('mfa-overlay');
+    if (old) old.remove();
+    var ov = document.createElement('div');
+    ov.id = 'mfa-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    ov.innerHTML = '<div style="background:#fff;border-radius:12px;padding:24px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:inherit;">' + innerHtml + '</div>';
+    document.body.appendChild(ov);
+    return ov;
+  }
+  window.closeMfaOverlay = function () { var ov = document.getElementById('mfa-overlay'); if (ov) ov.remove(); };
+
+  window.openMfaEnroll = async function () {
+    var res = await sb.auth.mfa.enroll({ factorType: 'totp' });
+    if (res.error) { alert(res.error.message); return; }
+    window._mfaFactorId = res.data.id;
+    mfaOverlay(
+      '<h3 style="margin:0 0 12px;font-size:15px;font-weight:700;color:#111827;">Activar verificação em duas etapas</h3>' +
+      '<p style="font-size:12px;color:#6B7280;margin:0 0 12px;">Digitaliza este código com Google Authenticator, Authy ou similar.</p>' +
+      '<div id="mfa-qr" style="text-align:center;margin-bottom:14px;">' + res.data.totp.qr_code + '</div>' +
+      '<input id="mfa-code-input" placeholder="Código de 6 dígitos" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;margin-bottom:10px;" maxlength="6">' +
+      '<p id="mfa-err" style="color:#EF4444;font-size:12px;min-height:14px;margin:0 0 10px;"></p>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+        '<button onclick="closeMfaOverlay()" style="padding:9px 16px;border:1px solid #D1D5DB;background:#fff;border-radius:7px;font-size:13px;cursor:pointer;">Cancelar</button>' +
+        '<button onclick="window.confirmMfaEnroll()" style="padding:9px 16px;background:#1D9E75;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;">Activar</button>' +
+      '</div>'
+    );
+  };
+
+  window.confirmMfaEnroll = async function () {
+    var code = (document.getElementById('mfa-code-input').value || '').trim();
+    var errEl = document.getElementById('mfa-err');
+    if (!code) { errEl.textContent = 'Introduz o código.'; return; }
+    try {
+      var chRes = await sb.auth.mfa.challenge({ factorId: window._mfaFactorId });
+      if (chRes.error) { errEl.textContent = chRes.error.message; return; }
+      var vRes = await sb.auth.mfa.verify({ factorId: window._mfaFactorId, challengeId: chRes.data.id, code: code });
+      if (vRes.error) { errEl.textContent = 'Código inválido. Tenta novamente.'; return; }
+      closeMfaOverlay();
+      alert('Verificação em duas etapas activa ✓');
+    } catch (e) { errEl.textContent = 'Erro ao verificar. Tenta novamente.'; }
+  };
+
+  window.openMfaChallenge = function (factorId, onVerified) {
+    mfaOverlay(
+      '<h3 style="margin:0 0 12px;font-size:15px;font-weight:700;color:#111827;">Verificação em duas etapas</h3>' +
+      '<p style="font-size:12px;color:#6B7280;margin:0 0 12px;">Introduz o código da tua app de autenticação.</p>' +
+      '<input id="mfa-challenge-input" placeholder="Código de 6 dígitos" style="width:100%;padding:9px 12px;border:1px solid #D1D5DB;border-radius:7px;font-size:14px;box-sizing:border-box;margin-bottom:10px;" maxlength="6">' +
+      '<p id="mfa-challenge-err" style="color:#EF4444;font-size:12px;min-height:14px;margin:0 0 10px;"></p>' +
+      '<div style="display:flex;justify-content:flex-end;">' +
+        '<button onclick="window._mfaChallengeSubmit()" style="padding:9px 16px;background:#1D9E75;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;">Confirmar</button>' +
+      '</div>'
+    );
+    window._mfaChallengeSubmit = async function () {
+      var code = (document.getElementById('mfa-challenge-input').value || '').trim();
+      var errEl = document.getElementById('mfa-challenge-err');
+      try {
+        var chRes = await sb.auth.mfa.challenge({ factorId: factorId });
+        if (chRes.error) { errEl.textContent = chRes.error.message; return; }
+        var vRes = await sb.auth.mfa.verify({ factorId: factorId, challengeId: chRes.data.id, code: code });
+        if (vRes.error) { errEl.textContent = 'Código inválido.'; return; }
+        closeMfaOverlay();
+        if (onVerified) onVerified();
+      } catch (e) { errEl.textContent = 'Erro ao verificar.'; }
+    };
+  };
+
   // ── onAuthSuccess — called on SIGNED_IN; extended by Evidence + AI hooks ──
   window.onAuthSuccess = async function (session) {
     try {
+      // MFA gate — se o utilizador tem TOTP activo mas a sessão ainda é aal1, exige o código antes de continuar
+      var aal = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (!aal.error && aal.data.nextLevel === 'aal2' && aal.data.nextLevel !== aal.data.currentLevel) {
+        var factorsRes = await sb.auth.mfa.listFactors();
+        var totpFactor = factorsRes.data && factorsRes.data.totp && factorsRes.data.totp[0];
+        if (totpFactor) {
+          await new Promise(function (resolve) { window.openMfaChallenge(totpFactor.id, resolve); });
+        }
+      }
       // 1. Profile (auto-created by DB trigger on auth.users insert)
       var profileRes = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
       var profile = profileRes.data;

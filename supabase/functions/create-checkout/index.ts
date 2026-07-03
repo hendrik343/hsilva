@@ -52,6 +52,15 @@ serve(async (req) => {
       return json({ error: 'Sessão inválida. Faça login novamente.', code: 'BILLING_AUTH_INVALID' }, 401)
     }
 
+    // C4: rate limiting — 20 pedidos/minuto por utilizador
+    const RATE_LIMIT = 20
+    const { data: rateCount, error: rateErr } = await supabase.rpc('bump_rate', { p_user_id: user.id, p_bucket: 'checkout' })
+    if (rateErr) {
+      console.warn('bump_rate error (a permitir pedido):', rateErr.message)
+    } else if ((rateCount ?? 0) > RATE_LIMIT) {
+      return json({ error: 'Demasiados pedidos de checkout. Aguarda um minuto e tenta novamente.', code: 'BILLING_RATE_LIMITED' }, 429)
+    }
+
     let body: { organizationId?: string; plan?: string; interval?: string } = {}
     try {
       body = await req.json()

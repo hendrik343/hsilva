@@ -143,6 +143,15 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 .metric-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; letter-spacing: -0.03em; }
 .metric-value.green { color: var(--success); }
 .metric-value.red { color: var(--danger); }
+.info-tip{position:relative;cursor:help;font-size:11px;opacity:.7;margin-left:4px;display:inline-block;}
+.info-tip-panel{display:none;position:absolute;z-index:99;top:18px;left:50%;transform:translateX(-50%);width:280px;background:#0D2E1E;color:#F4ECD8;font-size:11px;line-height:1.5;padding:10px 12px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-weight:400;text-align:left;text-transform:none;letter-spacing:normal;}
+.info-tip:hover .info-tip-panel,.info-tip:focus .info-tip-panel{display:block;}
+.dash-empty-card{display:flex;flex-direction:column;gap:4px;text-align:left;padding:16px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface-2,#F9FAFB);cursor:pointer;font-family:inherit;transition:box-shadow .15s,transform .15s;}
+.dash-empty-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);border-color:#1D9E75;}
+.dash-empty-icon{font-size:20px;}
+.dash-empty-title{font-size:13px;font-weight:700;color:var(--text);}
+.dash-empty-sub{font-size:11px;color:var(--text-2);}
+abbr.gloss{text-decoration:underline dotted rgba(13,46,30,.4);cursor:help;text-underline-offset:2px;}
 .metric-value.amber { color: var(--warning); }
 .metric-sub { font-size: 11px; color: var(--text-3); margin-top: 6px; }
 .metric-trend { font-size: 11px; margin-top: 5px; font-weight: 500; }
@@ -782,7 +791,7 @@ canvas { max-width: 100%; }
 
     <!-- Group: Principal -->
     <div class="sidebar-group" id="grp-principal">
-      <div class="sidebar-section" data-i18n="sidebar.section.principal">Principal</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.principal">1 · Principal</div>
       <div class="nav-item active" onclick="nav('dashboard',this)">
         <span class="nav-icon">📊</span><span data-i18n="nav.dashboard">Dashboard</span>
       </div>
@@ -790,7 +799,7 @@ canvas { max-width: 100%; }
 
     <!-- Group: Conformidade SGAS -->
     <div class="sidebar-group" id="grp-conformidade" style="display:none">
-      <div class="sidebar-section" data-i18n="sidebar.section.conformidade">Conformidade SGAS</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.conformidade">2 · Conformidade SGAS</div>
       <div class="nav-item" data-open-readiness-wizard="true">
         <span class="nav-icon">🔍</span><span data-i18n="nav.diagnostico">Diagnóstico IFC</span>
       </div>
@@ -820,7 +829,7 @@ canvas { max-width: 100%; }
 
     <!-- Group: Partes Interessadas -->
     <div class="sidebar-group" id="grp-partes" style="display:none">
-      <div class="sidebar-section" data-i18n="sidebar.section.partes">Partes Interessadas</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.partes">3 · Partes Interessadas</div>
       <div class="nav-item" onclick="nav('stakeholders',this)">
         <span class="nav-icon">👥</span><span data-i18n="nav.stakeholders">Partes Interessadas</span>
       </div>
@@ -835,7 +844,7 @@ canvas { max-width: 100%; }
 
     <!-- Group: Evidências -->
     <div class="sidebar-group" id="grp-evidencias" style="display:none">
-      <div class="sidebar-section" data-i18n="sidebar.section.evidencias">Evidências</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.evidencias">4 · Evidências</div>
       <div class="nav-item" onclick="nav('implementacao',this)">
         <span class="nav-icon">📸</span><span data-i18n="nav.implementacao">Evidência de Implementação</span>
       </div>
@@ -858,7 +867,7 @@ canvas { max-width: 100%; }
 
     <!-- Group: Gestão SGAS -->
     <div class="sidebar-group" id="grp-gestao" style="display:none">
-      <div class="sidebar-section" data-i18n="sidebar.section.gestao">Gestão SGAS</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.gestao">5 · Gestão SGAS</div>
       <div class="nav-item" onclick="nav('revisao',this)">
         <span class="nav-icon">🔄</span><span data-i18n="nav.revisao">Revisão de Gestão</span>
       </div>
@@ -872,7 +881,7 @@ canvas { max-width: 100%; }
 
     <!-- Group: Kit de Ferramentas IFC -->
     <div class="sidebar-group" id="grp-kit" style="display:none">
-      <div class="sidebar-section" data-i18n="sidebar.section.kit">Kit de Ferramentas IFC</div>
+      <div class="sidebar-section" data-i18n="sidebar.section.kit">6 · Kit de Ferramentas IFC</div>
       <div class="nav-item" onclick="nav('politicas',this)">
         <span class="nav-icon">📝</span><span data-i18n="nav.politicas">Políticas SGAS</span>
       </div>
@@ -930,7 +939,14 @@ canvas { max-width: 100%; }
       </div>
       <div class="audit-score-pill warn" id="readiness-pill">
         <div class="audit-score-dot warn" id="readiness-dot"></div>
-        <span class="audit-score-text" id="readiness-text">Prontidão auditoria: 68%</span>
+        <span class="audit-score-text" id="readiness-text">Prontidão para missão BM: 68%</span>
+        <span class="info-tip" tabindex="0">ⓘ
+          <span class="info-tip-panel">
+            <strong>Como se calcula</strong><br>
+            Documentos 18% · Conformidade PS 15% · Maturidade SGAS 14% · ESAP 11% · Evidências 10% · Registo legal 8% · Mapas de risco 8% · GRM 6% · Contratantes 4% · KPIs 3% · Sala de auditoria 3%<br>
+            <em>≥80% verde · 60–79% âmbar · &lt;60% vermelho · meta pré-missão ≥85%</em>
+          </span>
+        </span>
       </div>
       <button class="btn primary" id="topbar-action" onclick="topbarAction()">+ Nova acção</button>
     </div>
@@ -944,9 +960,36 @@ canvas { max-width: 100%; }
     <div class="alert-banner info">
       <span id="alert-diligence" data-i18n="alert.diligence">🧭 <strong>Preparação para due diligence IFC:</strong> aplicável desde o primeiro contacto com o banco, antes da aprovação do loan.</span>
     </div>
-    <div class="grid-4" style="margin-bottom:20px">
+    <div id="dash-empty-state" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;margin-bottom:20px;">
+      <h3 style="margin:0 0 4px;font-size:15px;font-weight:700;color:var(--text)" data-i18n="empty.title">Comece aqui</h3>
+      <p style="margin:0 0 16px;font-size:12px;color:var(--text-2)" data-i18n="empty.sub">Este projecto ainda não tem dados. Três passos para arrancar:</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+        <button type="button" onclick="openReadinessWizard()" class="dash-empty-card">
+          <span class="dash-empty-icon">🔍</span>
+          <span class="dash-empty-title" data-i18n="empty.card1.title">① Diagnóstico IFC</span>
+          <span class="dash-empty-sub" data-i18n="empty.card1.sub">Caracterize o projecto (10 min)</span>
+        </button>
+        <button type="button" onclick="nav('avaliacao')" class="dash-empty-card">
+          <span class="dash-empty-icon">📋</span>
+          <span class="dash-empty-title" data-i18n="empty.card2.title">② Autoavaliação SGAS</span>
+          <span class="dash-empty-sub" data-i18n="empty.card2.sub">Meça a maturidade real (42 perguntas)</span>
+        </button>
+        <button type="button" onclick="nav('riscos')" class="dash-empty-card">
+          <span class="dash-empty-icon">⚠️</span>
+          <span class="dash-empty-title" data-i18n="empty.card3.title">③ Primeiro risco</span>
+          <span class="dash-empty-sub" data-i18n="empty.card3.sub">Registe o primeiro risco E&S</span>
+        </button>
+      </div>
+    </div>
+    <div class="grid-4" style="margin-bottom:20px" id="dash-kpi-grid">
       <div class="metric-card">
-        <div class="metric-label" data-i18n="kpi.readiness.label">🎯 Prontidão auditoria</div>
+        <div class="metric-label" data-i18n="kpi.readiness.label" style="display:inline-flex">🎯 Prontidão para missão BM</div><span class="info-tip" tabindex="0">ⓘ
+          <span class="info-tip-panel">
+            <strong>Como se calcula</strong><br>
+            Documentos 18% · Conformidade PS 15% · Maturidade SGAS 14% · ESAP 11% · Evidências 10% · Registo legal 8% · Mapas de risco 8% · GRM 6% · Contratantes 4% · KPIs 3% · Sala de auditoria 3%<br>
+            <em>≥80% verde · 60–79% âmbar · &lt;60% vermelho · meta pré-missão ≥85%</em>
+          </span>
+        </span>
         <div class="metric-value amber" id="dash-readiness">68%</div>
         <div class="metric-sub" data-i18n="kpi.readiness.sub">Meta: ≥ 85% antes da missão</div>
       </div>
@@ -1110,7 +1153,7 @@ canvas { max-width: 100%; }
   <!-- ESAP -->
   <div class="page-content" id="page-esap">
     <div class="section-header">
-      <div><div class="section-title">Plano de Acção Ambiental e Social (ESAP)</div><div class="section-sub">Rastreamento de medidas contratuais exigidas pelo Banco Mundial</div></div> <!-- TODO i18n -->
+      <div><div class="section-title">Plano de Acção Ambiental e Social (<abbr class="gloss" title="ESAP — Plano de Acção Ambiental e Social: medidas contratuais acordadas com o financiador">ESAP</abbr>)</div><div class="section-sub">Rastreamento de medidas contratuais exigidas pelo Banco Mundial</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-esap')">+ Nova medida</button>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
@@ -1205,7 +1248,7 @@ canvas { max-width: 100%; }
       <button class="btn primary" onclick="openModal('modal-sh')">+ Adicionar parte interessada</button>
     </div>
     <div class="compact-metric-grid">
-      <div class="metric-card"><div class="metric-label">FPIC requerido</div><div class="metric-value amber" id="sh-fpic-count">0</div><div class="metric-sub">partes interessadas</div></div>
+      <div class="metric-card"><div class="metric-label"><abbr class="gloss" title="FPIC — Consentimento Livre, Prévio e Informado (PS7 IFC)">FPIC</abbr> requerido</div><div class="metric-value amber" id="sh-fpic-count">0</div><div class="metric-sub">partes interessadas</div></div>
       <div class="metric-card"><div class="metric-label">Suporte amplo confirmado</div><div class="metric-value green" id="sh-support-yes">0</div><div class="metric-sub">Sim</div></div>
       <div class="metric-card"><div class="metric-label">Suporte pendente</div><div class="metric-value amber" id="sh-support-pending">0</div><div class="metric-sub">Pendente / Não</div></div>
     </div>
@@ -1234,7 +1277,7 @@ canvas { max-width: 100%; }
           <div class="metric-card" style="flex:1;min-width:120px"><div class="metric-label">Oposições formais</div><div class="metric-value red" id="bcs-opposition-count">0</div></div>
           <div class="metric-card" style="flex:1;min-width:120px"><div class="metric-label">Gate status</div><div class="metric-value amber" id="bcs-gate-status">Pendente</div></div>
         </div>
-        <div style="margin-bottom:12px;font-size:13px;font-weight:600;color:var(--text-1)">Registo de consultas e evidências de BCS</div>
+        <div style="margin-bottom:12px;font-size:13px;font-weight:600;color:var(--text-1)">Registo de consultas e evidências de <abbr class="gloss" title="BCS — Amplo Apoio Comunitário: documentado antes da submissão ao Conselho de Administração do IFC (§20)">BCS</abbr></div>
         <div id="bcs-entries" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
         <button class="btn primary" onclick="openBCSModal()" style="font-size:12px">+ Registar consulta / evidência BCS</button>
       </div>
@@ -1495,7 +1538,7 @@ canvas { max-width: 100%; }
     </div>
     <!-- PDCA Cycle -->
     <div style="margin-top:16px" class="card">
-      <div class="card-header"><span class="card-title">🔁 Ciclo PFVA (PDCA) — Posição actual do SGAS</span></div>
+      <div class="card-header"><span class="card-title">🔁 Ciclo PFVA (<abbr class="gloss" title="PDCA — Planear-Fazer-Verificar-Agir (Plan-Do-Check-Act)">PDCA</abbr>) — Posição actual do SGAS</span></div>
       <div class="card-body" id="pdca-visual"></div>
     </div>
   </div>
@@ -1618,7 +1661,7 @@ canvas { max-width: 100%; }
           <div style="border:1.5px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;color:var(--text-3)">
             <div style="font-size:28px;margin-bottom:8px">📋</div>
             <div style="font-size:13px;margin-bottom:12px">Relatório ESAP + Monitoramento + Reclamações<br>formato Banco Mundial (Inglês / Português)</div>
-            <button class="btn primary">↓ Gerar PDF</button>
+            <button class="btn primary">↓ Relatório mensal (formato BM)</button>
           </div>
         </div>
       </div>
@@ -1632,7 +1675,7 @@ canvas { max-width: 100%; }
   <!-- SALA DE AUDITORIA BANCO MUNDIAL -->
   <div class="page-content" id="page-audit-room">
     <div class="section-header">
-      <div><div class="section-title">Sala de Auditoria Banco Mundial</div><div class="section-sub">Pacote lender-ready · evidências, fontes oficiais, ESAP/ESCP, GRM e monitoramento</div></div> <!-- TODO i18n -->
+      <div><div class="section-title">Sala de Auditoria Banco Mundial</div><div class="section-sub">Pacote lender-ready · evidências, fontes oficiais, ESAP/ESCP, <abbr class="gloss" title="GRM — Mecanismo de reclamações: canal formal para trabalhadores e comunidade, com resposta em 15 dias">GRM</abbr> e monitoramento</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="prepareLenderPackage()">Preparar pacote lender</button>
     </div>
     <div class="alert-banner warn" style="margin-bottom:16px">
@@ -1684,7 +1727,7 @@ canvas { max-width: 100%; }
   <div class="page-content" id="page-riscos-id">
     <div class="section-header">
       <div><div class="section-title">Identificação de Riscos e Impactos</div><div class="section-sub">Ficha 2A — Folha de trabalho IFC · Avaliação de Probabilidade × Gravidade</div></div> <!-- TODO i18n -->
-      <button class="btn primary" onclick="exportRiscosId()">↓ Exportar avaliação</button>
+      <button class="btn primary" onclick="exportRiscosId()">↓ Exportar Ficha 2A (PDF)</button>
     </div>
     <div class="alert-banner info">
       🔍 <strong>Metodologia IFC (§8 Política 2006):</strong> Classifica a relevância de cada risco (Sim/Não), descreve o impacto potencial e aplica a hierarquia de 4 passos: <strong>Evitar → Reduzir → Mitigar → Compensar</strong> impactos residuais.<br>
@@ -1888,7 +1931,7 @@ canvas { max-width: 100%; }
       <div><div class="section-title">Guia de Auditoria Interna SGAS</div><div class="section-sub">Ficha 9B · 7 Secções A–G · IFC Elemento 9 · Prontidão para missão de supervisão</div></div> <!-- TODO i18n -->
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="resetAudit()">↺ Reiniciar</button>
-        <button class="btn primary" onclick="exportAudit()">📄 Exportar relatório</button>
+        <button class="btn primary" onclick="exportAudit()">📄 Exportar Relatório 9B</button>
       </div>
     </div>
     <div class="alert-banner warn">
@@ -1909,7 +1952,7 @@ canvas { max-width: 100%; }
     <div class="section-header">
       <div>
         <div class="section-title">🤖 Assistente SGAS.pro</div> <!-- TODO i18n -->
-        <div class="section-sub">Especialista em IFC PS1–PS8 e World Bank ESS1–ESS10 · Responde em Português europeu</div>
+        <div class="section-sub">Especialista em IFC <abbr class="gloss" title="PS — Padrões de Desempenho IFC 2012 (Performance Standards)">PS1–PS8</abbr> e World Bank <abbr class="gloss" title="ESS — Normas Ambientais e Sociais do Banco Mundial (Environmental and Social Standards)">ESS1–ESS10</abbr> · Responde em Português europeu</div>
       </div>
       <button class="btn" onclick="ai_clearHistory()">🗑 Limpar conversa</button>
     </div>
@@ -3474,17 +3517,17 @@ const PAGE_META = {
   documentos:{title:'Cofre de Documentos',sub:'Checklist auditoria Banco Mundial',action:'+ Documento',fn:'openModal("modal-doc")'},
   monitoring:{title:'Monitoramento & KPIs',sub:'Indicadores E&S mensais',action:'Exportar dados',fn:''},
   calendario:{title:'Calendário IFC',sub:'Datas, estado e histórico de submissões',action:'+ Submissão',fn:'openModal("modal-ifc-report")'},
-  relatorio:{title:'Relatórios',sub:'Submissão Banco Mundial',action:'Gerar PDF',fn:'exportAudit()'},
+  relatorio:{title:'Relatórios',sub:'Submissão Banco Mundial',action:'Relatório mensal (formato BM)',fn:'exportAudit()'},
   'audit-room':{title:'Sala de Auditoria BM',sub:'Pacote lender-ready · fontes · evidências',action:'Preparar pacote',fn:'prepareLenderPackage()'},
   revisao:{title:'Revisão de Gestão',sub:'Agenda IFC · Elemento 9',action:'Nova revisão',fn:''},
   treinamento:{title:'Plano de Formação',sub:'Capacidade organizacional · IFC Elemento 4',action:'+ Formação',fn:'openModal("modal-treinamento")'},
   legal:{title:'Registo Legal',sub:'Angola + IFC/ESS · licenças e requisitos',action:'+ Requisito',fn:'openModal("modal-legal")'},
   politicas:{title:'Políticas SGAS',sub:'Declaração de política · IFC Elemento 1',action:'✉ Carta CEO',fn:'openModal("modal-ceo-letter")'},
-  'riscos-id':{title:'Identificação de Riscos',sub:'Ficha 2A · Probabilidade × Gravidade',action:'↓ Exportar',fn:'exportRiscosId()'},
+  'riscos-id':{title:'Identificação de Riscos',sub:'Ficha 2A · Probabilidade × Gravidade',action:'↓ Exportar Ficha 2A (PDF)',fn:'exportRiscosId()'},
   'causa-raiz':{title:'Análise de Causa Raiz — 5 Porquês',sub:'Ficha 3A · IFC Elemento 3',action:'+ Nova análise',fn:'openModal("modal-why-new")'},
   emergencias:{title:'Preparação e Resposta a Emergências',sub:'Elemento 5 · Procedimentos EM001–EM004',action:'🖨 Imprimir',fn:'printEmergencies()'},
   'mapeamento-pi':{title:'Mapeamento de Partes Interessadas',sub:'Ficha 6A · Influência × Impacto',action:'+ Posicionar PI',fn:'openModal("modal-pin-sh")'},
-  auditoria:{title:'Guia de Auditoria Interna SGAS',sub:'Ficha 9B · 7 Secções A–G',action:'📄 Exportar',fn:'exportAudit()'},
+  auditoria:{title:'Guia de Auditoria Interna SGAS',sub:'Ficha 9B · 7 Secções A–G',action:'📄 Exportar Relatório 9B',fn:'exportAudit()'},
 };
 var PAGE_GROUP = {
   dashboard:'principal',
@@ -3676,6 +3719,14 @@ function renderProjectCategory(){
 
 function renderDashboard(){
   renderProjectCategory();
+  // B3: empty-state — projecto novo sem dados reais (nunca em tenants demo)
+  var isEmptyProject = !window.SGAS_DEMO_ACTIVE && !SGAS_READINESS_ASSESSMENT && riskData.length===0 && esapData.length===0;
+  var emptyEl = document.getElementById('dash-empty-state');
+  var kpiEl = document.getElementById('dash-kpi-grid');
+  if (emptyEl && kpiEl) {
+    emptyEl.style.display = isEmptyProject ? 'block' : 'none';
+    kpiEl.style.display = isEmptyProject ? 'none' : '';
+  }
   // PS bars
   let h='';
   if (SGAS_READINESS_LOAD_DONE && !SGAS_READINESS_ASSESSMENT) {
@@ -3705,7 +3756,7 @@ function renderDashboard(){
     const over = e.status==='Em atraso';
     ch+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #F3F4F6">
       <span class="badge ${over?'red':'blue'}" style="width:36px;justify-content:center">${e.ps}</span>
-      <span style="flex:1;font-size:12px">${e.desc}</span>
+      <span style="flex:1;font-size:12px">${escapeHtml(e.desc)}</span>
       <span style="font-size:11px;color:var(--text-3)">${e.prazo}</span>
       ${over?'<span class="badge red">Atraso</span>':'<span class="badge blue">Em curso</span>'}
     </div>`;
@@ -3735,7 +3786,7 @@ function updateReadiness(){
   const assessmentScore = SGAS_READINESS_ASSESSMENT ? Number(SGAS_READINESS_ASSESSMENT.score ?? SGAS_READINESS_ASSESSMENT.profile?.score) : NaN;
   const score = Number.isFinite(assessmentScore) ? Math.round(assessmentScore) : (Number.isFinite(computedScore) ? computedScore : 0);
   const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-  setText('readiness-text', `Prontidão auditoria: ${score}%`);
+  setText('readiness-text', `Prontidão para missão BM: ${score}%`);
   setText('dash-readiness', score+'%');
   const pill=document.getElementById('readiness-pill');
   const dot=document.getElementById('readiness-dot');
@@ -4243,15 +4294,15 @@ function renderEsap(){
   let h=filtered.map((e,i)=>`<tr>
     <td><strong>${e.id}</strong></td>
     <td><span class="badge purple">${e.ps}</span></td>
-    <td style="max-width:200px">${e.desc}</td>
-    <td style="max-width:220px"><strong style="font-size:11px;color:var(--text-2)">${e.objective||'Objectivo por definir'}</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${e.outcome||'Resultado esperado pendente'}</div></td>
-    <td style="max-width:180px"><strong style="font-size:11px;color:var(--text-2)">${e.kpi||'KPI pendente'}</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${e.budget||'Recurso por estimar'}</div></td>
-    <td style="max-width:180px"><strong style="font-size:11px;color:var(--text-2)">${e.procedure||'Procedimento pendente'}</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${e.stakeholders||'PI por consultar'}</div></td>
+    <td style="max-width:200px">${escapeHtml(e.desc)}</td>
+    <td style="max-width:220px"><strong style="font-size:11px;color:var(--text-2)">${escapeHtml(e.objective)||'Objectivo por definir'}</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${escapeHtml(e.outcome)||'Resultado esperado pendente'}</div></td>
+    <td style="max-width:180px"><strong style="font-size:11px;color:var(--text-2)">${escapeHtml(e.kpi)||'KPI pendente'}</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${escapeHtml(e.budget)||'Recurso por estimar'}</div></td>
+    <td style="max-width:180px"><strong style="font-size:11px;color:var(--text-2)">${escapeHtml(e.procedure)||'Procedimento pendente'}</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${escapeHtml(e.stakeholders)||'PI por consultar'}</div></td>
     <td>${e.hierarchy?`<span class="badge ${hierMap[e.hierarchy]||'gray'}">${e.hierarchy}</span>`:'<span class="badge gray">—</span>'}</td>
-    <td>${e.resp}</td>
+    <td>${escapeHtml(e.resp)}</td>
     <td style="white-space:nowrap;font-size:12px">${e.prazo}</td>
-    <td>${statusBadge(e.status)}</td>
-    <td style="font-size:11px;color:var(--text-3)">${e.evid}</td>
+    <td>${e.status==='Concluída' && !e.evid ? '<span class="badge amber">Concluída (sem prova)</span>' : statusBadge(e.status)}</td>
+    <td style="font-size:11px;color:var(--text-3)">${escapeHtml(e.evid)}</td>
     <td class="actions">
       <button class="icon-btn" onclick="cycleEsap(${esapData.indexOf(e)})">↻</button>
       <button class="icon-btn del" onclick="delEsap(${esapData.indexOf(e)})">✕</button>
@@ -4313,14 +4364,14 @@ function renderRisks(){
   // Table
   let h=riskData.map(r=>`<tr>
     <td><strong>${r.id}</strong></td>
-    <td>${r.act}</td>
-    <td>${r.imp}</td>
+    <td>${escapeHtml(r.act)}</td>
+    <td>${escapeHtml(r.imp)}</td>
     <td><span class="badge ${r.type==='HSE'?'amber':r.type==='Ambiental'?'green':r.type==='Social'?'blue':'purple'}">${r.type}</span></td>
     <td style="text-align:center"><strong>${r.sev}</strong></td>
     <td style="text-align:center"><strong>${r.prob}</strong></td>
     <td><span class="badge ${riskLevel(r.sev,r.prob)==='Crítico'?'red':riskLevel(r.sev,r.prob)==='Alto'?'amber':riskLevel(r.sev,r.prob)==='Moderado'?'blue':'green'}">${riskLevel(r.sev,r.prob)}</span></td>
     <td>${statusBadge(r.hierarchy||'Mitigado')}</td>
-    <td style="font-size:12px;color:var(--text-2)">${r.ctrl}</td>
+    <td style="font-size:12px;color:var(--text-2)">${escapeHtml(r.ctrl)}</td>
     <td>${statusBadge(r.status)}</td>
     <td class="actions"><button class="icon-btn del" onclick="delRisk('${r.id}')">✕</button></td>
   </tr>`).join('');
@@ -4365,8 +4416,8 @@ function renderRiskMaps(){
       {t:'Linha de água',l:76,top:82,w:20,h:10},
     ];
     map.innerHTML=zones.map(z=>`<div class="risk-zone" style="left:${z.l}%;top:${z.top}%;width:${z.w}%;height:${z.h}%">${z.t}</div>`).join('')+
-      physicalRiskHotspots.map(h=>`<div class="risk-hotspot ${hotspotClass(h.level)}" style="left:${h.x}%;top:${h.y}%" title="${h.control}">
-        <strong>${h.label}</strong>${h.type} · ${h.level}<br><span style="font-size:10px">${h.risk}</span>
+      physicalRiskHotspots.map(h=>`<div class="risk-hotspot ${hotspotClass(h.level)}" style="left:${h.x}%;top:${h.y}%" title="${escapeHtml(h.control)}">
+        <strong>${escapeHtml(h.label)}</strong>${escapeHtml(h.type)} · ${h.level}<br><span style="font-size:10px">${escapeHtml(h.risk)}</span>
       </div>`).join('');
   }
 
@@ -4375,7 +4426,7 @@ function renderRiskMaps(){
     const byType={};
     physicalRiskHotspots.forEach(h=>byType[h.type]=(byType[h.type]||0)+1);
     summary.innerHTML=Object.entries(byType).map(([type,n])=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F3F4F6">
-      <div><div style="font-weight:600;font-size:13px">${type}</div><div style="font-size:11px;color:var(--text-3)">${physicalRiskHotspots.filter(h=>h.type===type).map(h=>h.risk).join(', ')}</div></div>
+      <div><div style="font-weight:600;font-size:13px">${escapeHtml(type)}</div><div style="font-size:11px;color:var(--text-3)">${escapeHtml(physicalRiskHotspots.filter(h=>h.type===type).map(h=>h.risk).join(', '))}</div></div>
       <span class="badge ${n>=2?'amber':'blue'}">${n}</span>
     </div>`).join('');
   }
@@ -4383,23 +4434,23 @@ function renderRiskMaps(){
   const cards=document.getElementById('process-risk-cards');
   if(cards){
     cards.innerHTML=processRiskMap.map(p=>`<div class="process-card">
-      <div class="process-title">${p.process}</div>
-      <div class="process-meta"><strong>Etapa:</strong> ${p.step}</div>
-      <div class="process-meta"><strong>Riscos:</strong> ${p.risks}</div>
-      <div class="process-meta"><strong>Controlo:</strong> ${p.control}</div>
-      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">${statusBadge(p.status)}<span style="font-size:11px;color:var(--text-3)">${p.owner}</span></div>
+      <div class="process-title">${escapeHtml(p.process)}</div>
+      <div class="process-meta"><strong>Etapa:</strong> ${escapeHtml(p.step)}</div>
+      <div class="process-meta"><strong>Riscos:</strong> ${escapeHtml(p.risks)}</div>
+      <div class="process-meta"><strong>Controlo:</strong> ${escapeHtml(p.control)}</div>
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">${statusBadge(p.status)}<span style="font-size:11px;color:var(--text-3)">${escapeHtml(p.owner)}</span></div>
     </div>`).join('');
   }
 
   const tbody=document.getElementById('process-risk-tbody');
   if(tbody){
     tbody.innerHTML=processRiskMap.map(p=>`<tr>
-      <td><strong>${p.process}</strong></td>
-      <td style="font-size:12px">${p.step}</td>
-      <td><span class="badge purple">${p.risks}</span></td>
-      <td style="font-size:12px;max-width:260px">${p.control}</td>
-      <td style="font-size:12px;color:var(--text-2);max-width:220px">${p.evidence}</td>
-      <td>${p.owner}</td>
+      <td><strong>${escapeHtml(p.process)}</strong></td>
+      <td style="font-size:12px">${escapeHtml(p.step)}</td>
+      <td><span class="badge purple">${escapeHtml(p.risks)}</span></td>
+      <td style="font-size:12px;max-width:260px">${escapeHtml(p.control)}</td>
+      <td style="font-size:12px;color:var(--text-2);max-width:220px">${escapeHtml(p.evidence)}</td>
+      <td>${escapeHtml(p.owner)}</td>
       <td>${statusBadge(p.status)}</td>
     </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-3)">Sem processos mapeados</td></tr>';
   }
@@ -4454,12 +4505,12 @@ function renderStakeholders(){
   document.getElementById('sh-support-yes').textContent=stakeholders.filter(s=>s.support==='Sim').length;
   document.getElementById('sh-support-pending').textContent=stakeholders.filter(s=>s.support!=='Sim').length;
   let h=list.map(s=>`<div class="sh-card">
-    <div class="sh-avatar" style="background:${catColors[s.cat]}20;color:${catColors[s.cat]}">${s.initials}</div>
-    <div><div class="sh-name">${s.name}</div><div class="sh-role">${catNames[s.cat]} · ${s.concerns}</div></div>
+    <div class="sh-avatar" style="background:${catColors[s.cat]}20;color:${catColors[s.cat]}">${escapeHtml(s.initials)}</div>
+    <div><div class="sh-name">${escapeHtml(s.name)}</div><div class="sh-role">${catNames[s.cat]} · ${escapeHtml(s.concerns)}</div></div>
     <div class="sh-meta">
       <div style="display:flex;gap:6px;justify-content:flex-end;margin-bottom:4px">
-        <span class="badge gray">${s.method}</span>
-        <span class="badge blue">${s.freq}</span>
+        <span class="badge gray">${escapeHtml(s.method)}</span>
+        <span class="badge blue">${escapeHtml(s.freq)}</span>
         <span class="badge ${(s.fpic||'Não')==='Sim'?'green':(s.fpic||'Não')==='A avaliar'?'blue':'gray'}">FPIC: ${s.fpic||'Não'}</span>
       </div>
       <div style="display:flex;gap:6px;justify-content:flex-end;margin-bottom:4px">
@@ -4484,6 +4535,18 @@ function addStakeholder(){
 }
 
 // ===================== COMPLAINTS =====================
+function grmDaysLeft(entryDateISO){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const entry=new Date(entryDateISO+'T00:00:00');
+  const elapsed=Math.floor((today-entry)/86400000);
+  return 15-elapsed;
+}
+function grmClockBadge(entryDateISO){
+  const d=grmDaysLeft(entryDateISO);
+  if(d<=0) return '<span class="badge red" style="margin-top:3px">FORA DE PRAZO</span>';
+  if(d<=3) return '<span class="badge amber" style="margin-top:3px">⏱ '+d+' dias</span>';
+  return '<span class="badge green" style="margin-top:3px">⏱ '+d+' dias</span>';
+}
 function renderComplaints(){
   document.getElementById('comp-total').textContent=complaints.length;
   document.getElementById('comp-open').textContent=complaints.filter(c=>c.status==='Em análise').length;
@@ -4493,18 +4556,18 @@ function renderComplaints(){
   let h=complaints.map((c,i)=>`<tr>
     <td><strong>${c.id}</strong></td>
     <td style="white-space:nowrap;font-size:12px">${c.data}</td>
-    <td><span class="badge ${c.origem==='Comunidade'?'green':c.origem==='Trabalhador'?'blue':c.origem==='Anónimo'?'gray':'amber'}">${c.origem}</span></td>
-    <td>${c.cat}</td>
-    <td style="max-width:200px;font-size:12px">${c.desc}</td>
+    <td><span class="badge ${c.origem==='Comunidade'?'green':c.origem==='Trabalhador'?'blue':c.origem==='Anónimo'?'gray':'amber'}">${escapeHtml(c.origem)}</span></td>
+    <td>${escapeHtml(c.cat)}</td>
+    <td style="max-width:200px;font-size:12px">${escapeHtml(c.desc)}</td>
     <td>${statusBadge(c.accepted||'Em triagem')}</td>
-    <td style="font-size:12px;max-width:150px">${c.profile||'—'}</td>
-    <td style="font-size:12px">${c.notifyMethod||'—'}</td>
-    <td style="font-size:12px;max-width:170px">${c.closureEvidence||'—'}<div style="margin-top:3px">${statusBadge(c.satisfaction||'Pendente')}</div></td>
-    <td style="font-size:12px;max-width:160px">${c.resources||'—'}</td>
-    <td style="font-size:12px;max-width:170px">${c.postMonitoring||'—'}<div style="font-size:11px;color:var(--text-3)">Resp.: ${c.resp||'—'}</div></td>
+    <td style="font-size:12px;max-width:150px">${escapeHtml(c.profile)||'—'}</td>
+    <td style="font-size:12px">${escapeHtml(c.notifyMethod)||'—'}</td>
+    <td style="font-size:12px;max-width:170px">${escapeHtml(c.closureEvidence)||'—'}<div style="margin-top:3px">${statusBadge(c.satisfaction||'Pendente')}</div></td>
+    <td style="font-size:12px;max-width:160px">${escapeHtml(c.resources)||'—'}</td>
+    <td style="font-size:12px;max-width:170px">${escapeHtml(c.postMonitoring)||'—'}<div style="font-size:11px;color:var(--text-3)">Resp.: ${escapeHtml(c.resp)||'—'}</div></td>
     <td>${statusBadge(c.status)}</td>
-    <td>${c.cao==='Sim'?`<span class="badge red">Sim</span>${c.caoLink?`<div><a class="cao-ref" href="${c.caoLink}" target="_blank">referência CAO</a></div>`:''}`:'<span class="badge gray">Não</span>'}</td>
-    <td style="white-space:nowrap;font-size:12px">${c.prazo}</td>
+    <td>${c.cao==='Sim'?`<span class="badge red">Sim</span>${c.caoLink&&/^https?:\/\//i.test(c.caoLink)?`<div><a class="cao-ref" href="${escapeHtml(c.caoLink)}" target="_blank" rel="noopener">referência CAO</a></div>`:''}`:'<span class="badge gray">Não</span>'}</td>
+    <td style="white-space:nowrap;font-size:12px">${c.prazo}${c.status!=='Resolvida'?'<div>'+grmClockBadge(c.data)+'</div>':''}</td>
     <td class="actions">
       <button class="icon-btn" onclick="toggleComplaint(${i})">↻</button>
       <button class="icon-btn del" onclick="delComplaint(${i})">✕</button>
@@ -4542,7 +4605,7 @@ function renderBCS(){
   if(!bcsEntries.length){el.innerHTML='<div style="color:var(--text-3);font-size:12px;padding:8px 0">Nenhuma evidência registada ainda. Registe consultas, cartas de apoio ou atas de assembleia comunitária.</div>';return;}
   const outcomeLabel={support:'<span class="badge green">Apoio</span>',neutral:'<span class="badge gray">Neutro</span>',opposition:'<span class="badge red">Oposição</span>'};
   el.innerHTML=bcsEntries.map((e,i)=>`<div style="display:flex;align-items:flex-start;gap:12px;padding:10px;background:var(--bg-2);border-radius:6px;border:1px solid var(--border)">
-    <div style="flex:1"><div style="font-size:12px;font-weight:600">${e.date} — ${e.type}</div><div style="font-size:12px;color:var(--text-2)">${e.group}${e.notes?` · ${e.notes}`:''}</div>${e.ref?`<div style="font-size:11px;color:var(--text-3)">Ref: ${e.ref}</div>`:''}</div>
+    <div style="flex:1"><div style="font-size:12px;font-weight:600">${e.date} — ${e.type}</div><div style="font-size:12px;color:var(--text-2)">${escapeHtml(e.group)}${e.notes?` · ${escapeHtml(e.notes)}`:''}</div>${e.ref?`<div style="font-size:11px;color:var(--text-3)">Ref: ${escapeHtml(e.ref)}</div>`:''}</div>
     <div style="display:flex;align-items:center;gap:8px">${outcomeLabel[e.outcome]||''}<button class="btn" style="font-size:10px;padding:2px 8px" onclick="bcsEntries.splice(${i},1);localStorage.setItem('bcs',JSON.stringify(bcsEntries));renderBCS()">✕</button></div>
   </div>`).join('');
 }
@@ -4579,15 +4642,15 @@ function renderContractors(){
   let h=contractors.map((c,i)=>{
     const scoreColor=c.score>=80?'#059669':c.score>=60?'#D97706':'#DC2626';
     return `<tr>
-      <td><strong>${c.name}</strong></td>
-      <td>${c.scope}</td>
-      <td><span class="badge purple">${c.ps}</span></td>
+      <td><strong>${escapeHtml(c.name)}</strong></td>
+      <td>${escapeHtml(c.scope)}</td>
+      <td><span class="badge purple">${escapeHtml(c.ps)}</span></td>
       <td>${statusBadge(c.clauses)}</td>
       <td>${statusBadge(c.induction)}</td>
       <td><div style="display:flex;align-items:center;gap:8px"><div class="prog-track" style="width:70px"><div class="prog-fill" style="width:${c.score}%;background:${scoreColor}"></div></div><strong style="color:${scoreColor}">${c.score}%</strong></div></td>
       <td>${contractorScorecardHtml(c)}</td>
       <td>${statusBadge(c.status)}</td>
-      <td style="font-size:12px;color:var(--text-2);max-width:220px">${c.action}</td>
+      <td style="font-size:12px;color:var(--text-2);max-width:220px">${escapeHtml(c.action)}</td>
       <td class="actions">
         <button class="icon-btn" onclick="cycleContractor(${i})">↻</button>
         <button class="icon-btn del" onclick="delContractor(${i})">✕</button>
@@ -4642,11 +4705,11 @@ function renderImplementationEvidence(){
   if(tbody) tbody.innerHTML=implementationEvidence.map(e=>`<tr>
     <td><strong>${e.id}</strong></td>
     <td style="white-space:nowrap;font-size:12px">${e.date}</td>
-    <td>${e.module}</td>
-    <td style="max-width:220px">${e.procedure}<div style="font-size:11px;color:var(--text-3);margin-top:2px">${e.notes||''}</div></td>
-    <td><span class="badge blue">${e.type}</span></td>
-    <td style="font-size:12px;color:var(--text-2);max-width:180px">${e.ref||'—'}</td>
-    <td>${e.validatedBy||'—'}</td>
+    <td>${escapeHtml(e.module)}</td>
+    <td style="max-width:220px">${escapeHtml(e.procedure)}<div style="font-size:11px;color:var(--text-3);margin-top:2px">${escapeHtml(e.notes)||''}</div></td>
+    <td><span class="badge blue">${escapeHtml(e.type)}</span></td>
+    <td style="font-size:12px;color:var(--text-2);max-width:180px">${escapeHtml(e.ref)||'—'}</td>
+    <td>${escapeHtml(e.validatedBy)||'—'}</td>
     <td>${statusBadge(e.status)}</td>
   </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Sem evidências registadas</td></tr>';
 }
@@ -4687,12 +4750,12 @@ function renderCommunityReports(){
   const tbody=document.getElementById('community-report-tbody');
   if(tbody) tbody.innerHTML=communityReports.map(r=>`<tr>
     <td style="white-space:nowrap;font-size:12px">${r.date}</td>
-    <td><strong>${r.community}</strong><div style="font-size:11px;color:var(--text-3)">Resp.: ${r.owner||'—'}</div></td>
-    <td style="max-width:190px">${r.topic}</td>
-    <td><span class="badge blue">${r.channel}</span></td>
-    <td style="font-size:12px;color:var(--text-2);max-width:260px">${r.feedback}</td>
+    <td><strong>${escapeHtml(r.community)}</strong><div style="font-size:11px;color:var(--text-3)">Resp.: ${escapeHtml(r.owner)||'—'}</div></td>
+    <td style="max-width:190px">${escapeHtml(r.topic)}</td>
+    <td><span class="badge blue">${escapeHtml(r.channel)}</span></td>
+    <td style="font-size:12px;color:var(--text-2);max-width:260px">${escapeHtml(r.feedback)}</td>
     <td>${statusBadge(r.newRisk)}</td>
-    <td style="font-size:12px;color:var(--text-2);max-width:190px">${r.evidence||'—'}</td>
+    <td style="font-size:12px;color:var(--text-2);max-width:190px">${escapeHtml(r.evidence)||'—'}</td>
     <td>${statusBadge(r.status)}</td>
   </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Sem comunicações registadas</td></tr>';
 }
@@ -4731,13 +4794,13 @@ function renderLegalRegister(){
     <div class="metric-card"><div class="metric-label">Críticos / a vencer</div><div class="metric-value ${urgent?'red':'green'}">${urgent}</div><div class="metric-sub">validade ≤ 30 dias ou em falta</div></div>`;
   const tbody=document.getElementById('legal-tbody');
   if(tbody) tbody.innerHTML=legalRegister.map(l=>`<tr>
-    <td><strong>${l.requirement}</strong></td>
-    <td><span class="badge blue">${l.source||'—'}</span></td>
-    <td>${l.authority||'—'}</td>
-    <td style="font-size:12px;color:var(--text-2)">${l.permit||'—'}</td>
+    <td><strong>${escapeHtml(l.requirement)}</strong></td>
+    <td><span class="badge blue">${escapeHtml(l.source)||'—'}</span></td>
+    <td>${escapeHtml(l.authority)||'—'}</td>
+    <td style="font-size:12px;color:var(--text-2)">${escapeHtml(l.permit)||'—'}</td>
     <td style="white-space:nowrap;font-size:12px">${l.expiry||'—'}${l.expiry?`<div style="font-size:10px;color:var(--text-3)">${daysUntil(l.expiry)<0?Math.abs(daysUntil(l.expiry))+' dias vencida':daysUntil(l.expiry)+' dias restantes'}</div>`:''}</td>
-    <td>${l.owner||'—'}</td>
-    <td style="font-size:12px;color:var(--text-2);max-width:220px">${l.evidence||'—'}</td>
+    <td>${escapeHtml(l.owner)||'—'}</td>
+    <td style="font-size:12px;color:var(--text-2);max-width:220px">${escapeHtml(l.evidence)||'—'}</td>
     <td>${statusBadge((l.expiry&&daysUntil(l.expiry)<=30&&l.status==='Conforme')?'A vencer':l.status)}</td>
   </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Sem requisitos legais registados</td></tr>';
 }
@@ -4784,7 +4847,7 @@ function renderIfcCalendar(){
       const badge=d<0?statusBadge('Atrasado'):statusBadge(r.status);
       return `<div class="timeline-item">
         <div class="timeline-date">${r.due}<div class="timeline-sub">${d<0?Math.abs(d)+' dias atraso':d+' dias restantes'}</div></div>
-        <div><div class="timeline-title">${r.title}</div><div class="timeline-sub">${r.ref}</div></div>
+        <div><div class="timeline-title">${escapeHtml(r.title)}</div><div class="timeline-sub">${escapeHtml(r.ref)}</div></div>
         <div>${badge}</div>
       </div>`;
     }).join('');
@@ -4794,11 +4857,11 @@ function renderIfcCalendar(){
     .slice()
     .sort((a,b)=>b.due.localeCompare(a.due))
     .map(r=>`<tr>
-      <td><strong>${r.title}</strong></td>
+      <td><strong>${escapeHtml(r.title)}</strong></td>
       <td>${r.due}</td>
       <td>${r.submitted||'—'}</td>
       <td>${r.status==='Submetido'?statusBadge(r.status):(daysUntil(r.due)<0?statusBadge('Atrasado'):statusBadge(r.status))}</td>
-      <td style="font-size:12px;color:var(--text-2)">${r.ref}</td>
+      <td style="font-size:12px;color:var(--text-2)">${escapeHtml(r.ref)}</td>
     </tr>`).join('');
   document.getElementById('ifc-history-tbody').innerHTML=history;
 }
@@ -4911,15 +4974,15 @@ function renderDocuments(){
     h+=`<div class="doc-section"><div class="doc-section-title">${s.title}</div>`;
     s.docs.forEach((d,i)=>{
       const icon=d.status==='ok'?'✓':d.status==='missing'?'✕':'⚠';
-      const version=d.version||'v1.0';
-      const owner=d.owner||'Owner por definir';
-      const approver=d.approver||'Aprovador por definir';
-      const nextReview=d.nextReview||'Próxima revisão por definir';
-      const replaces=d.replaces||'Sem obsoleto registado';
+      const version=escapeHtml(d.version)||'v1.0';
+      const owner=escapeHtml(d.owner)||'Owner por definir';
+      const approver=escapeHtml(d.approver)||'Aprovador por definir';
+      const nextReview=escapeHtml(d.nextReview)||'Próxima revisão por definir';
+      const replaces=escapeHtml(d.replaces)||'Sem obsoleto registado';
       h+=`<div class="doc-item">
         <div class="doc-status-icon ${d.status==='ok'?'ok':d.status==='missing'?'miss':'old'}">${icon}</div>
         <div style="flex:1">
-          <div class="doc-name">${d.name}</div>
+          <div class="doc-name">${escapeHtml(d.name)}</div>
           <div class="doc-req">Controlo documental · ${d.date?'Última versão: '+d.date:'Não submetido'}</div>
           <div class="doc-version-grid">
             <div><strong>Versão:</strong> ${version}</div>
@@ -4953,15 +5016,15 @@ function renderKpiProtocols(){
   const el=document.getElementById('kpi-protocols');
   if(!el) return;
   el.innerHTML=`<div class="audit-pack-grid">${kpiProtocols.map((p,i)=>`<div class="audit-pack-card">
-    <div class="audit-pack-title">${p.kpi}</div>
-    <div class="audit-pack-meta"><strong>Frequência:</strong> ${p.frequency} · <strong>Responsável:</strong> ${p.owner}</div>
-    <div class="audit-pack-meta"><strong>Método:</strong> ${p.method}</div>
-    <div class="audit-pack-meta"><strong>Equipamento:</strong> ${p.equipment}</div>
-    <div class="audit-pack-meta"><strong>Norma:</strong> ${p.standard}</div>
-    <div class="audit-pack-meta"><strong>Registo:</strong> ${p.record}</div>
+    <div class="audit-pack-title">${escapeHtml(p.kpi)}</div>
+    <div class="audit-pack-meta"><strong>Frequência:</strong> ${escapeHtml(p.frequency)} · <strong>Responsável:</strong> ${escapeHtml(p.owner)}</div>
+    <div class="audit-pack-meta"><strong>Método:</strong> ${escapeHtml(p.method)}</div>
+    <div class="audit-pack-meta"><strong>Equipamento:</strong> ${escapeHtml(p.equipment)}</div>
+    <div class="audit-pack-meta"><strong>Norma:</strong> ${escapeHtml(p.standard)}</div>
+    <div class="audit-pack-meta"><strong>Registo:</strong> ${escapeHtml(p.record)}</div>
     <div style="display:flex;gap:8px;align-items:flex-start;margin-top:8px">
       <span class="badge amber">gatilho</span>
-      <div style="font-size:11px;color:var(--text-2);line-height:1.45">${p.action}</div>
+      <div style="font-size:11px;color:var(--text-2);line-height:1.45">${escapeHtml(p.action)}</div>
     </div>
     <button class="btn" style="font-size:10px;padding:3px 8px;margin-top:10px" onclick="kpiProtocols.splice(${i},1);localStorage.setItem('kpiProtocols',JSON.stringify(kpiProtocols));renderKpiProtocols();renderReport();renderAuditRoom()">Remover</button>
   </div>`).join('')}</div>`;
@@ -4995,7 +5058,7 @@ function renderMonitoring(){
 
   const ctx=document.getElementById('trendChart').getContext('2d');
   if(trendInstance) trendInstance.destroy();
-  trendInstance=new Chart(ctx,{type:'line',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun'],datasets:[{label:'Maturidade SGAS',data:[1.8,2.0,2.1,2.3,2.6,2.7],borderColor:'#1D9E75',tension:0.4,fill:false,yAxisID:'y1'},{label:'Prontidão auditoria %',data:[40,45,50,55,62,68],borderColor:'#2563EB',tension:0.4,fill:false,yAxisID:'y2'}]},options:{responsive:true,scales:{y1:{type:'linear',position:'left',min:0,max:5,title:{display:true,text:'Maturidade'}},y2:{type:'linear',position:'right',min:0,max:100,title:{display:true,text:'Prontidão %'}}},plugins:{legend:{position:'top'}}}});
+  trendInstance=new Chart(ctx,{type:'line',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun'],datasets:[{label:'Maturidade SGAS',data:[1.8,2.0,2.1,2.3,2.6,2.7],borderColor:'#1D9E75',tension:0.4,fill:false,yAxisID:'y1'},{label:'Prontidão missão BM %',data:[40,45,50,55,62,68],borderColor:'#2563EB',tension:0.4,fill:false,yAxisID:'y2'}]},options:{responsive:true,scales:{y1:{type:'linear',position:'left',min:0,max:5,title:{display:true,text:'Maturidade'}},y2:{type:'linear',position:'right',min:0,max:100,title:{display:true,text:'Prontidão %'}}},plugins:{legend:{position:'top'}}}});
 
   // Standard IFC KPIs table
   const catColors={Ambiente:'#059669',SST_HSE:'#D97706','SST/HSE':'#D97706',Trabalho:'#2563EB',Comunidade:'#7C3AED'};
@@ -5145,7 +5208,7 @@ function renderRevisao(){
       <div>
         <div style="font-weight:600;font-size:13px;margin-bottom:3px">${a.topic}</div>
         <div style="font-size:12px;color:var(--text-3);line-height:1.5;margin-bottom:6px">${a.desc}</div>
-        <textarea class="action-textarea" style="min-height:50px" placeholder="Notas / decisões tomadas neste ponto..." onchange="mgReviewAgenda[${i}].notes=this.value">${a.notes}</textarea>
+        <textarea class="action-textarea" style="min-height:50px" placeholder="Notas / decisões tomadas neste ponto..." onchange="mgReviewAgenda[${i}].notes=this.value">${escapeHtml(a.notes)}</textarea>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:120px">
         <span class="badge ${statusColors[a.status]||'gray'}">${a.status}</span>
@@ -5159,7 +5222,7 @@ function renderRevisao(){
   const withNotes=mgReviewAgenda.filter(a=>a.notes.trim());
   let decHtml=withNotes.length===0
     ? '<div style="color:var(--text-3);font-size:13px;padding:12px">Nenhuma decisão registada ainda. Preenche as notas nos pontos da agenda acima.</div>'
-    : withNotes.map(a=>`<div style="padding:10px 0;border-bottom:1px solid #F3F4F6"><strong style="font-size:12px;color:var(--text-2)">${a.id} — ${a.topic}</strong><div style="font-size:13px;margin-top:4px;color:var(--text)">${a.notes}</div></div>`).join('');
+    : withNotes.map(a=>`<div style="padding:10px 0;border-bottom:1px solid #F3F4F6"><strong style="font-size:12px;color:var(--text-2)">${a.id} — ${a.topic}</strong><div style="font-size:13px;margin-top:4px;color:var(--text)">${escapeHtml(a.notes)}</div></div>`).join('');
   document.getElementById('mg-decisions').innerHTML=decHtml;
 }
 
@@ -5201,9 +5264,9 @@ function renderTreinamento(){
     const tEff=trainingEffectiveness(t);
     return `<tr>
       <td><strong>${t.id}</strong></td>
-      <td style="max-width:240px">${t.topic}</td>
-      <td style="font-size:12px;color:var(--text-2)">${t.target}</td>
-      <td style="font-size:12px;text-align:center"><span class="badge gray">${t.freq}</span></td>
+      <td style="max-width:240px">${escapeHtml(t.topic)}</td>
+      <td style="font-size:12px;color:var(--text-2)">${escapeHtml(t.target)}</td>
+      <td style="font-size:12px;text-align:center"><span class="badge gray">${escapeHtml(t.freq)}</span></td>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="flex:1;height:6px;background:#E5E7EB;border-radius:3px"><div style="height:100%;width:${tPct}%;background:${tPct>=80?'#059669':tPct>=50?'#D97706':'#DC2626'};border-radius:3px"></div></div>
@@ -5215,7 +5278,7 @@ function renderTreinamento(){
         <div class="training-proof">
           <span>Quiz: ${t.quiz||0}%</span><span>Prática: ${t.practical||0}%</span>
           <span>Entrevista: ${t.interview||0}%</span><span>Explica: ${t.explains||0}%</span>
-          <span>Assinatura: ${t.signature||'Pendente'}</span><span>${t.proof||'Prova pendente'}</span>
+          <span>Assinatura: ${escapeHtml(t.signature)||'Pendente'}</span><span>${escapeHtml(t.proof)||'Prova pendente'}</span>
         </div>
       </td>
       <td>${statusBadge(t.status)}</td>
@@ -5339,9 +5402,9 @@ function renderPoliticas(){
 }
 
 function generateCeoLetter(){
-  const co = document.getElementById('ceo-company').value||'[Nome da Empresa]';
-  const name = document.getElementById('ceo-name').value||'[Nome do CEO]';
-  const title = document.getElementById('ceo-title').value||'Director Geral';
+  const co = escapeHtml(document.getElementById('ceo-company').value)||'[Nome da Empresa]';
+  const name = escapeHtml(document.getElementById('ceo-name').value)||'[Nome do CEO]';
+  const title = escapeHtml(document.getElementById('ceo-title').value)||'Director Geral';
   const date = document.getElementById('ceo-date').value ? new Date(document.getElementById('ceo-date').value).toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'}) : '[Data]';
   document.getElementById('ceo-letter-preview').innerHTML = `
     <div style="text-align:right;margin-bottom:20px;font-size:11px;color:#6B7280">${date}</div>
@@ -5444,7 +5507,7 @@ function renderRiscosId(){
           <button class="risk-id-btn ${r.sim===false?'nao':''}" onclick="toggleRiskId('${_riskIdTab}','${r.id}',false)">Não</button>
         </div>
       </td>
-      <td><input style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;width:100%;min-width:160px;font-family:inherit;background:var(--surface)" value="${r.desc}" placeholder="Descreve o contexto local..." onchange="riskIdData['${_riskIdTab}'].find(x=>x.id==='${r.id}').desc=this.value"></td>
+      <td><input style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;width:100%;min-width:160px;font-family:inherit;background:var(--surface)" value="${escapeHtml(r.desc)}" placeholder="Descreve o contexto local..." onchange="riskIdData['${_riskIdTab}'].find(x=>x.id==='${r.id}').desc=this.value"></td>
     </tr>`;
   });
   html += '</tbody></table></div>';
@@ -5508,8 +5571,8 @@ function renderCausaRaiz(){
     listHtml += `<div onclick="selectWhy(${i})" style="padding:12px 16px;border:2px solid ${_whyActive===i?'var(--accent)':'var(--border)'};border-radius:var(--radius-lg);margin-bottom:8px;cursor:pointer;background:${_whyActive===i?'var(--accent-light)':'var(--surface)'};transition:all 0.15s">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <div style="font-weight:600;font-size:13px">${a.id} — ${a.title}</div>
-          <div style="font-size:11px;color:var(--text-2);margin-top:2px">${a.date} · ${a.owner}</div>
+          <div style="font-weight:600;font-size:13px">${a.id} — ${escapeHtml(a.title)}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:2px">${a.date} · ${escapeHtml(a.owner)}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <span class="badge ${allFilled>=5?'green':allFilled>0?'amber':'gray'}">${allFilled}/5 porquês</span>
@@ -5527,28 +5590,28 @@ function renderCausaRaiz(){
       <div class="why-num ${!w.trim()&&idx>0&&!a.whys[idx-1].trim()?'empty':''}">${idx+1}</div>
       <div class="why-content">
         <div class="why-label">Porquê #${idx+1} — ${['Problema','1.ª causa','2.ª causa','3.ª causa','Causa raiz'][idx]}</div>
-        <input class="why-input" id="why-input-${idx}" value="${w}" placeholder="${idx===0?'Por que ocorreu o problema observado?':idx===4?'Qual é a verdadeira causa raiz sistémica?':'Por que ocorreu a causa anterior?'}">
+        <input class="why-input" id="why-input-${idx}" value="${escapeHtml(w)}" placeholder="${idx===0?'Por que ocorreu o problema observado?':idx===4?'Qual é a verdadeira causa raiz sistémica?':'Por que ocorreu a causa anterior?'}">
       </div>
     </div>`).join('');
 
   detailEl.innerHTML = `
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🧩 ${a.id} — ${a.title}</span>
+        <span class="card-title">🧩 ${a.id} — ${escapeHtml(a.title)}</span>
         <button class="btn" style="font-size:11px;padding:5px 12px" onclick="saveWhyData(${_whyActive})">💾 Guardar</button>
       </div>
       <div class="card-body">
         <div style="margin-bottom:14px;padding:10px 14px;background:#F9FAFB;border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;font-size:13px">
-          <strong style="font-size:10px;text-transform:uppercase;color:var(--text-2)">Problema observado</strong><br>${a.problem||'—'}
+          <strong style="font-size:10px;text-transform:uppercase;color:var(--text-2)">Problema observado</strong><br>${escapeHtml(a.problem)||'—'}
         </div>
         <div class="why-chain">${chainHtml}</div>
         <div class="why-root-box">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--danger);margin-bottom:6px">Causa Raiz Identificada</div>
-          <input class="form-input" id="why-root-input" value="${a.root}" placeholder="Descreve a causa raiz sistémica...">
+          <input class="form-input" id="why-root-input" value="${escapeHtml(a.root)}" placeholder="Descreve a causa raiz sistémica...">
         </div>
         <div style="margin-top:14px">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-2);margin-bottom:6px">Acção correctiva / preventiva</div>
-          <input class="form-input" id="why-action-input" value="${a.action}" placeholder="Acção para eliminar a causa raiz...">
+          <input class="form-input" id="why-action-input" value="${escapeHtml(a.action)}" placeholder="Acção para eliminar a causa raiz...">
         </div>
       </div>
     </div>`;
@@ -5656,9 +5719,9 @@ function renderEmergencias(){
     </div>`).join('');
   const teamHtml = proc.team.map((t,i)=>`<tr>
     <td style="font-weight:600;color:var(--text-2);font-size:11px">${t.role}</td>
-    <td><input class="emrg-contact-table" value="${t.name}" placeholder="Nome..." onchange="emrgProcs['${_emrgTab}'].team[${i}].name=this.value" style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;background:var(--surface)"></td>
-    <td><input class="emrg-contact-table" value="${t.phone_res}" placeholder="+244..." onchange="emrgProcs['${_emrgTab}'].team[${i}].phone_res=this.value" style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;background:var(--surface)"></td>
-    <td><input class="emrg-contact-table" value="${t.phone_mob}" placeholder="+244..." onchange="emrgProcs['${_emrgTab}'].team[${i}].phone_mob=this.value" style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;background:var(--surface)"></td>
+    <td><input class="emrg-contact-table" value="${escapeHtml(t.name)}" placeholder="Nome..." onchange="emrgProcs['${_emrgTab}'].team[${i}].name=this.value" style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;background:var(--surface)"></td>
+    <td><input class="emrg-contact-table" value="${escapeHtml(t.phone_res)}" placeholder="+244..." onchange="emrgProcs['${_emrgTab}'].team[${i}].phone_res=this.value" style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;background:var(--surface)"></td>
+    <td><input class="emrg-contact-table" value="${escapeHtml(t.phone_mob)}" placeholder="+244..." onchange="emrgProcs['${_emrgTab}'].team[${i}].phone_mob=this.value" style="border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;background:var(--surface)"></td>
   </tr>`).join('');
 
   document.getElementById('emrg-proc-content').innerHTML = `
@@ -5760,9 +5823,9 @@ function renderMapeamentoPi(){
     const x = p.impact; // % from left
     const y = 100-p.influence; // % from top (invert)
     const abbr = p.name.split(' ').map(w=>w[0]).join('').slice(0,3).toUpperCase();
-    pinsHtml += `<div class="sh-pin" style="left:${x}%;top:${y}%" title="${p.name}: Influência ${p.influence}% | Impacto ${p.impact}%">
-      <div class="sh-pin-dot" style="background:${p.color}">${abbr}</div>
-      <div class="sh-pin-label">${p.name}</div>
+    pinsHtml += `<div class="sh-pin" style="left:${x}%;top:${y}%" title="${escapeHtml(p.name)}: Influência ${p.influence}% | Impacto ${p.impact}%">
+      <div class="sh-pin-dot" style="background:${p.color}">${escapeHtml(abbr)}</div>
+      <div class="sh-pin-label">${escapeHtml(p.name)}</div>
     </div>`;
   });
   mapEl.innerHTML = pinsHtml;
@@ -5772,10 +5835,10 @@ function renderMapeamentoPi(){
   let rows = shPins.map(p=>{
     const q = getQuadrant(p.influence,p.impact);
     return `<tr>
-      <td style="font-weight:600;font-size:13px">${p.name}</td>
-      <td style="font-size:12px;color:var(--text-2)">${p.concern}</td>
-      <td style="font-size:12px">${p.method}</td>
-      <td><span class="badge gray" style="font-size:10px">${p.freq}</span></td>
+      <td style="font-weight:600;font-size:13px">${escapeHtml(p.name)}</td>
+      <td style="font-size:12px;color:var(--text-2)">${escapeHtml(p.concern)}</td>
+      <td style="font-size:12px">${escapeHtml(p.method)}</td>
+      <td><span class="badge gray" style="font-size:10px">${escapeHtml(p.freq)}</span></td>
       <td><span style="font-size:11px;font-weight:600;color:${q.color}">${q.label}</span></td>
     </tr>`;
   }).join('');
@@ -5791,7 +5854,7 @@ function renderMapeamentoPi(){
       <div class="mec-body">
         <div class="mec-title">${m.title}</div>
         <div class="mec-desc">${m.desc}</div>
-        <input class="mec-method" placeholder="Como a empresa implementa este critério..." value="${m.method}" onchange="mecCriteria.find(x=>x.id==='${m.id}').method=this.value">
+        <input class="mec-method" placeholder="Como a empresa implementa este critério..." value="${escapeHtml(m.method)}" onchange="mecCriteria.find(x=>x.id==='${m.id}').method=this.value">
       </div>
       <button class="mec-ok-btn ${m.done?'done':''}" onclick="toggleMec('${m.id}')">${m.done?'✓':'○'}</button>
     </div>`;
@@ -6224,7 +6287,7 @@ function renderAuditoria(){
         <div class="audit-item-body">
           <div class="audit-item-text">${item.text}</div>
           <div class="audit-item-ref">${item.ref}</div>
-          <textarea class="audit-note" placeholder="Evidências, observações ou acções necessárias..." onchange="saveAuditNote('${sec.id}','${item.id}',this.value)">${item.note}</textarea>
+          <textarea class="audit-note" placeholder="Evidências, observações ou acções necessárias..." onchange="saveAuditNote('${sec.id}','${item.id}',this.value)">${escapeHtml(item.note)}</textarea>
         </div>
       </div>`;
     });
@@ -6831,18 +6894,18 @@ function evidence_renderEvidence() {
   }
   tbody.innerHTML = implementationEvidence.map(function(e, idx) {
     var fileCell = e.filePath
-      ? '<a href="#" onclick="evidence_download(\'' + e.filePath.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\');return false" style="color:var(--accent);font-size:12px;text-decoration:none" title="' + (e.fileName || 'ficheiro') + '">📎 ' + (e.fileName || 'ficheiro').substring(0, 24) + '</a>'
-      : (e.ref ? '<span style="font-size:12px;color:var(--text-2)">' + e.ref + '</span>' : '<span style="color:var(--text-3);font-size:12px">—</span>');
+      ? '<a href="#" onclick="evidence_download(\'' + e.filePath.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\');return false" style="color:var(--accent);font-size:12px;text-decoration:none" title="' + escapeHtml(e.fileName || 'ficheiro') + '">📎 ' + escapeHtml((e.fileName || 'ficheiro').substring(0, 24)) + '</a>'
+      : (e.ref ? '<span style="font-size:12px;color:var(--text-2)">' + escapeHtml(e.ref) + '</span>' : '<span style="color:var(--text-3);font-size:12px">—</span>');
     return '<tr>' +
-      '<td><strong style="font-size:11px">' + (e.id || '—') + '</strong><br>' +
-        '<span class="badge" style="font-size:10px;margin-top:2px">' + (e.psCode || 'Geral') + '</span></td>' +
+      '<td><strong style="font-size:11px">' + escapeHtml(e.id || '—') + '</strong><br>' +
+        '<span class="badge" style="font-size:10px;margin-top:2px">' + escapeHtml(e.psCode || 'Geral') + '</span></td>' +
       '<td style="white-space:nowrap;font-size:12px">' + (e.uploadDate || e.date || '—') + '</td>' +
-      '<td>' + (e.module || '—') + '</td>' +
-      '<td style="max-width:190px">' + (e.procedure || '—') +
-        (e.notes ? '<div style="font-size:11px;color:var(--text-3);margin-top:2px">' + e.notes + '</div>' : '') + '</td>' +
-      '<td><span class="badge blue">' + (e.type || '—') + '</span></td>' +
+      '<td>' + escapeHtml(e.module || '—') + '</td>' +
+      '<td style="max-width:190px">' + escapeHtml(e.procedure || '—') +
+        (e.notes ? '<div style="font-size:11px;color:var(--text-3);margin-top:2px">' + escapeHtml(e.notes) + '</div>' : '') + '</td>' +
+      '<td><span class="badge blue">' + escapeHtml(e.type || '—') + '</span></td>' +
       '<td>' + fileCell + '</td>' +
-      '<td style="font-size:12px;color:var(--text-2)">' + (e.validatedBy || '—') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-2)">' + escapeHtml(e.validatedBy || '—') + '</td>' +
       '<td>' + (typeof statusBadge === 'function' ? statusBadge(e.status) : e.status) +
         '<div style="margin-top:4px">' + evidence_expiryBadge(e.expiryDate) + '</div>' +
         '<button onclick="evidence_confirmDelete(' + idx + ')" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:11px;padding:2px 0;display:block;margin-top:4px" title="Eliminar">× eliminar</button>' +
@@ -7175,8 +7238,8 @@ async function ai_buildProjectContext() {
   if (ctxEl) {
     const proj  = ctx.project || {};
     const meta = (window.projectConfig && window.projectConfig.metadata) || {};
-    const name  = proj.name || proj.company || meta.name || 'Projecto SGAS';
-    const ref   = proj.reference || proj.id || meta.loanId || '—';
+    const name  = escapeHtml(proj.name || proj.company || meta.name || 'Projecto SGAS');
+    const ref   = escapeHtml(proj.reference || proj.id || meta.loanId || '—');
       const score = ctx.compliance?.score ?? 'N/A';
       const total = (ctx.esap?.total||0) + (ctx.risks?.total||0) +
                     (ctx.grievances?.total||0) + (ctx.evidence?.total||0);
@@ -7628,9 +7691,9 @@ const I18N = {
     'topbar.action': '+ Nova acção',
     'topbar.sub': 'Visão geral · Junho 2026',
     // Readiness pill (template — {score} replaced at runtime)
-    'readiness.pill': 'Prontidão auditoria: {score}',
+    'readiness.pill': 'Prontidão para missão BM: {score}',
     // Dashboard KPIs
-    'kpi.readiness.label':   '🎯 Prontidão auditoria',
+    'kpi.readiness.label':   '🎯 Prontidão para missão BM',
     'kpi.readiness.sub':     'Meta: ≥ 85% antes da missão',
     'kpi.maturity.label':    '📊 Maturidade SGAS',
     'kpi.maturity.trend':    '↑ +0.4 este mês',
@@ -7638,18 +7701,27 @@ const I18N = {
     'kpi.overdue.sub':       'de {n} acções totais',
     'kpi.complaints.label':  '💬 Reclamações abertas',
     'kpi.complaints.sub':    'Prazo médio: 8 dias',
+    // Empty-state (dashboard sem dados)
+    'empty.title':        'Comece aqui',
+    'empty.sub':          'Este projecto ainda não tem dados. Três passos para arrancar:',
+    'empty.card1.title':  '① Diagnóstico IFC',
+    'empty.card1.sub':    'Caracterize o projecto (10 min)',
+    'empty.card2.title':  '② Autoavaliação SGAS',
+    'empty.card2.sub':    'Meça a maturidade real (42 perguntas)',
+    'empty.card3.title':  '③ Primeiro risco',
+    'empty.card3.sub':    'Registe o primeiro risco E&S',
     // Alert banners
     'alert.mission':    '⚠️ <strong>47 dias</strong> para a próxima missão de supervisão do Banco Mundial. 5 documentos obrigatórios em falta no cofre.',
     'alert.diligence':  '🧭 <strong>Preparação para due diligence IFC:</strong> aplicável desde o primeiro contacto com o banco, antes da aprovação do loan.',
     // Sidebar structural
     'sidebar.pill.label':            'Projecto activo',
     'sidebar.btn.create':            '+ Criar projecto',
-    'sidebar.section.principal':     'Principal',
-    'sidebar.section.conformidade':  'Conformidade SGAS',
-    'sidebar.section.partes':        'Partes Interessadas',
-    'sidebar.section.evidencias':    'Evidências',
-    'sidebar.section.gestao':        'Gestão SGAS',
-    'sidebar.section.kit':           'Kit de Ferramentas IFC',
+    'sidebar.section.principal':     '1 · Principal',
+    'sidebar.section.conformidade':  '2 · Conformidade SGAS',
+    'sidebar.section.partes':        '3 · Partes Interessadas',
+    'sidebar.section.evidencias':    '4 · Evidências',
+    'sidebar.section.gestao':        '5 · Gestão SGAS',
+    'sidebar.section.kit':           '6 · Kit de Ferramentas IFC',
     'sidebar.section.ia':            'Assistente IA',
     // Nav items
     'nav.dashboard':       'Dashboard',
@@ -7700,9 +7772,9 @@ const I18N = {
     'topbar.action': '+ New action',
     'topbar.sub': 'Overview · June 2026',
     // Readiness pill
-    'readiness.pill': 'Audit readiness: {score}',
+    'readiness.pill': 'WB mission readiness: {score}',
     // Dashboard KPIs
-    'kpi.readiness.label':   '🎯 Audit readiness',
+    'kpi.readiness.label':   '🎯 WB mission readiness',
     'kpi.readiness.sub':     'Target: ≥ 85% before mission',
     'kpi.maturity.label':    '📊 ESMS Maturity',
     'kpi.maturity.trend':    '↑ +0.4 this month',
@@ -7710,18 +7782,27 @@ const I18N = {
     'kpi.overdue.sub':       'of {n} total actions',
     'kpi.complaints.label':  '💬 Open grievances',
     'kpi.complaints.sub':    'Avg. response: 8 days',
+    // Empty-state (dashboard with no data yet)
+    'empty.title':        'Start here',
+    'empty.sub':          'This project has no data yet. Three steps to get going:',
+    'empty.card1.title':  '① IFC Diagnostic',
+    'empty.card1.sub':    'Characterise the project (10 min)',
+    'empty.card2.title':  '② ESMS Self-Assessment',
+    'empty.card2.sub':    'Measure real maturity (42 questions)',
+    'empty.card3.title':  '③ First risk',
+    'empty.card3.sub':    'Log your first E&S risk',
     // Alert banners
     'alert.mission':    '⚠️ <strong>47 days</strong> until the next World Bank supervision mission. 5 required documents missing from the vault.',
     'alert.diligence':  '🧭 <strong>IFC due diligence readiness:</strong> applies from first contact with the bank, before loan approval.',
     // Sidebar structural
     'sidebar.pill.label':            'Active project',
     'sidebar.btn.create':            '+ Create project',
-    'sidebar.section.principal':     'Main',
-    'sidebar.section.conformidade':  'ESMS Compliance',
-    'sidebar.section.partes':        'Stakeholders',
-    'sidebar.section.evidencias':    'Evidence',
-    'sidebar.section.gestao':        'ESMS Management',
-    'sidebar.section.kit':           'IFC Toolkit',
+    'sidebar.section.principal':     '1 · Main',
+    'sidebar.section.conformidade':  '2 · ESMS Compliance',
+    'sidebar.section.partes':        '3 · Stakeholders',
+    'sidebar.section.evidencias':    '4 · Evidence',
+    'sidebar.section.gestao':        '5 · ESMS Management',
+    'sidebar.section.kit':           '6 · IFC Toolkit',
     'sidebar.section.ia':            'AI Assistant',
     // Nav items
     'nav.dashboard':       'Dashboard',
