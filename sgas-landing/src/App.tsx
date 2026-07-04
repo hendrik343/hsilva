@@ -1,605 +1,350 @@
-import { lazy, Suspense, useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence, useInView } from 'motion/react'
-import { ArrowRight, Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import {
+  ArrowRight,
+  Menu,
+  X,
+  ShieldCheck,
+  Search,
+  ClipboardCheck,
+  ListChecks,
+  FolderLock,
+  BadgeCheck,
+} from 'lucide-react'
 
-const Spline = lazy(() => import('@splinetool/react-spline'))
+const EASE = 'cubic-bezier(0.25,0.1,0.25,1)'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type Lang = 'PT' | 'FR' | 'EN'
-
-interface HeadlineLine {
-  text: string
-  size: string
-  weight: string
-  op: string
+function RollButton({
+  label,
+  variant = 'dark',
+  href = '/sgas-pro.html',
+}: {
+  label: string
+  variant?: 'dark' | 'orange'
+  href?: string
+}) {
+  const bg = variant === 'orange' ? 'bg-[#F26522] hover:bg-[#e05a1a]' : 'bg-gray-900 hover:bg-gray-800'
+  const arrowColor = variant === 'orange' ? 'text-[#F26522]' : 'text-gray-900'
+  return (
+    <a
+      href={href}
+      className={`group inline-flex items-center gap-3 sm:gap-4 ${bg} text-white text-[13px] sm:text-sm font-medium rounded-full pl-5 sm:pl-6 pr-2 py-2 transition-colors duration-300 w-fit`}
+    >
+      <span className="overflow-hidden h-[20px] relative">
+        <span
+          className="flex flex-col transition-transform duration-500"
+          style={{ transitionTimingFunction: EASE }}
+        >
+          <span className="block h-[20px] leading-[20px] group-hover:-translate-y-full transition-transform duration-500" style={{ transitionTimingFunction: EASE }}>
+            {label}
+          </span>
+        </span>
+        <span
+          className="absolute top-0 left-0 block h-[20px] leading-[20px] translate-y-full group-hover:translate-y-0 transition-transform duration-500"
+          style={{ transitionTimingFunction: EASE }}
+        >
+          {label}
+        </span>
+      </span>
+      <span className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white shrink-0">
+        <ArrowRight
+          size={14}
+          className={`${arrowColor} transition-transform duration-500 group-hover:-rotate-45`}
+          style={{ transitionTimingFunction: EASE }}
+        />
+      </span>
+    </a>
+  )
 }
 
-interface SlideData {
-  lines: HeadlineLine[]
-  sub: string
-  cta1: string
-  cta2: string
-  trust: string
+function SectionBadge({ n, label, border = 'border-gray-200' }: { n: string; label: string; border?: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-6 sm:mb-8">
+      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-900 text-white text-[11px] sm:text-xs font-semibold flex items-center justify-center shrink-0">
+        {n}
+      </span>
+      <span className={`text-xs sm:text-[13px] font-medium border ${border} rounded-full px-3 sm:px-4 py-1 sm:py-1.5`}>
+        {label}
+      </span>
+    </div>
+  )
 }
-
-interface CardData {
-  n: string
-  title: string
-  checks: string[]
-  href: string
-}
-
-// ─── Content ──────────────────────────────────────────────────────────────────
-const LANGS: Lang[] = ['PT', 'FR', 'EN']
-const SAAS_URL = 'https://sgas-pro.vercel.app'
-const saasPage = (page?: string) => page ? `${SAAS_URL}/?page=${page}` : SAAS_URL
 
 const NAV_LINKS = [
-  { label: 'Plataforma',        href: '#platform' },
-  { label: 'Sala de Evidências',href: saasPage('audit-room') },
-  { label: 'Documentos',        href: saasPage('documentos') },
-  { label: 'Contacto',          href: '#contact' },
+  { label: 'Módulos', href: '#modulos' },
+  { label: 'Preços', href: '#precos' },
+  { label: 'Publicações IFC', href: '#fontes' },
 ]
 
-const QUICK_ACCESS = [
-  { label: 'Dashboard',          href: saasPage('dashboard') },
-  { label: 'Sala de Auditoria',  href: saasPage('audit-room') },
-  { label: 'Cofre de Documentos',href: saasPage('documentos') },
-  { label: 'Monitoramento KPI',  href: saasPage('monitoring') },
-  { label: 'Reclamações GRM',    href: saasPage('reclamacoes') },
-]
-
-const VIDEO_HERO = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260429_114316_1c7889ad-2885-410e-b493-98119fee0ddb.mp4'
-
-const CARD_ICONS = [
-  '/card-loan.png',
-  '/card-audit.png',
-  '/card-es.png',
-  '/card-decision.png',
-]
-
-const SLIDES: Record<Lang, SlideData> = {
-  PT: {
-    lines: [
-      { text: 'ESTEJA PRONTO',    size: 'text-[clamp(2.4rem,7vw,6rem)]',   weight: 'font-bold',  op: 'opacity-100' },
-      { text: 'PARA A AUDITORIA', size: 'text-[clamp(1.6rem,4.5vw,4rem)]', weight: 'font-light', op: 'opacity-50' },
-      { text: 'ANTES DO',         size: 'text-[clamp(2.4rem,7vw,6rem)]',   weight: 'font-bold',  op: 'opacity-80' },
-      { text: 'FINANCIADOR.',     size: 'text-[clamp(1.4rem,3.8vw,3.4rem)]',weight: 'font-light', op: 'opacity-22' },
-    ],
-    sub: 'O SGAS Pro ajuda empresas a prepararem-se para auditorias, due diligence ambiental e social, e pedidos de financiamento junto do Banco Mundial, IFC e outros financiadores de desenvolvimento.',
-    cta1: 'Preparar Auditoria',
-    cta2: 'Ver Sala de Evidências',
-    trust: 'Plataforma IFC · Banco Mundial · CAO Compliant · ESAP Ready',
+const STEPS = [
+  {
+    icon: Search,
+    title: 'Diagnóstico PS1–PS8',
+    desc: 'Caracteriza o projecto (10 min) e recebe um mapa de gaps face às 8 Performance Standards da IFC — com referência ao parágrafo exacto.',
   },
-  FR: {
-    lines: [
-      { text: 'SOYEZ PRÊT',      size: 'text-[clamp(2.4rem,7vw,6rem)]',   weight: 'font-bold',  op: 'opacity-100' },
-      { text: "POUR L'AUDIT",    size: 'text-[clamp(1.6rem,4.5vw,4rem)]', weight: 'font-light', op: 'opacity-50' },
-      { text: 'AVANT LE',        size: 'text-[clamp(2.4rem,7vw,6rem)]',   weight: 'font-bold',  op: 'opacity-80' },
-      { text: 'FINANCEUR.',      size: 'text-[clamp(1.4rem,3.8vw,3.4rem)]',weight: 'font-light', op: 'opacity-22' },
-    ],
-    sub: "SGAS Pro aide les entreprises à se préparer aux audits, à la due diligence environnementale et sociale, et aux demandes de financement auprès de la Banque mondiale, de l'IFC.",
-    cta1: "Préparer L'Audit",
-    cta2: 'Voir La Salle De Preuves',
-    trust: 'Plateforme IFC · Banque mondiale · CAO Compliant · ESAP Ready',
+  {
+    icon: ClipboardCheck,
+    title: 'Autoavaliação SGAS',
+    desc: '42 perguntas oficiais, 9 elementos do sistema de gestão, cada um pontuado de 0–5 com critérios e dicas de melhoria.',
   },
-  EN: {
-    lines: [
-      { text: 'BE AUDIT',        size: 'text-[clamp(2.4rem,7vw,6rem)]',   weight: 'font-bold',  op: 'opacity-100' },
-      { text: 'READY',           size: 'text-[clamp(2rem,6vw,5.5rem)]',   weight: 'font-bold',  op: 'opacity-100' },
-      { text: 'BEFORE THE',      size: 'text-[clamp(1.6rem,4.5vw,4rem)]', weight: 'font-light', op: 'opacity-50' },
-      { text: 'LENDER.',         size: 'text-[clamp(1.4rem,3.8vw,3.4rem)]',weight: 'font-light', op: 'opacity-22' },
-    ],
-    sub: 'SGAS Pro helps companies prepare for environmental and social audits, IFC / World Bank due diligence, and loan applications with development-finance institutions.',
-    cta1: 'Prepare for Audit',
-    cta2: 'View Evidence Room',
-    trust: 'IFC Performance Standards · World Bank ESF · CAO Compliant · ESAP Ready',
+  {
+    icon: ListChecks,
+    title: 'ESAP + GRM rastreáveis',
+    desc: 'Plano de Acção com dono e prazo por medida. Mecanismo de reclamações com relógio de 15 dias e alerta antes de expirar.',
   },
-}
-
-const CARDS_DATA: Record<Lang, CardData[]> = {
-  PT: [
-    { n: '01', title: 'Preparado para Financiamento',  href: saasPage('dashboard'),  checks: ['Due diligence IFC / Banco Mundial organizada', 'Readiness score antes da aprovação do loan', 'Evidências indexadas por performance standard'] },
-    { n: '02', title: 'Preparado para Auditoria',      href: saasPage('audit-room'), checks: ['Documentos, fotos e inspecções centralizados', 'Reclamações encerradas e rastreadas com datas', 'KPIs e validações de gestão prontos para revisão'] },
-    { n: '03', title: 'Preparado para Controlo E&S',   href: saasPage('esap'),        checks: ['ESAP / ESCP com prazos e responsáveis', 'Empreiteiros e partes interessadas monitorizados', 'Relatórios ao financiador gerados automaticamente'] },
-    { n: '04', title: 'Preparado para Decisão',        href: saasPage('relatorio'),   checks: ['Dashboard: pronto vs. o que falta', 'Gaps que podem bloquear o financiador', 'Visão executiva para decisão rápida'] },
-  ],
-  FR: [
-    { n: '01', title: 'Prêt Pour Le Financement',     href: saasPage('dashboard'),  checks: ['Due diligence IFC / Banque mondiale organisée', 'Score de préparation avant approbation', 'Preuves indexées par performance standard'] },
-    { n: '02', title: "Prêt Pour L'Audit",            href: saasPage('audit-room'), checks: ['Documents, photos, inspections centralisés', 'Plaintes clôturées et tracées avec dates', 'KPIs et validations prêts pour révision'] },
-    { n: '03', title: 'Prêt Pour Le Contrôle E&S',    href: saasPage('esap'),        checks: ['ESAP / ESCP avec délais et responsables', 'Sous-traitants et parties prenantes surveillés', 'Rapports financeur générés automatiquement'] },
-    { n: '04', title: 'Prêt Pour La Décision',        href: saasPage('relatorio'),   checks: ['Tableau de bord : prêt vs. manquant', 'Écarts pouvant bloquer le financeur', 'Vue exécutive pour décision rapide'] },
-  ],
-  EN: [
-    { n: '01', title: 'Built for Loan Readiness',      href: saasPage('dashboard'),  checks: ['IFC / World Bank due diligence organized', 'Readiness score before loan approval', 'Evidence indexed by performance standard'] },
-    { n: '02', title: 'Built for Audit Evidence',      href: saasPage('audit-room'), checks: ['Documents, photos, inspections centralized', 'Grievances closed and tracked with dates', 'KPIs and management validations review-ready'] },
-    { n: '03', title: 'Built for E&S Control',         href: saasPage('esap'),        checks: ['ESAP / ESCP tracked with deadlines and owners', 'Contractors and stakeholders monitored', 'Lender reports generated automatically'] },
-    { n: '04', title: 'Built for Management Decisions',href: saasPage('relatorio'),   checks: ['Dashboard: ready vs. missing', 'Gaps that could block lender confidence', 'Executive view for fast decision-making'] },
-  ],
-}
-
-const CLOSE: Record<Lang, [string, string]> = {
-  PT: ['Não espere pela auditoria para descobrir os gaps.', 'Construa hoje a sua sala de evidências para financiadores.'],
-  FR: ["N'attendez pas l'audit pour découvrir les écarts.", "Construisez dès aujourd'hui votre salle de preuves."],
-  EN: ['Do not wait for the audit to discover the gaps.', 'Build your lender-ready evidence room today.'],
-}
-
-const FOOTER_COLS = [
-  { label: 'SaaS', links: [
-    { text: 'Abrir Dashboard',      href: saasPage('dashboard') },
-    { text: 'Sala de Auditoria BM', href: saasPage('audit-room') },
-    { text: 'Cofre de Documentos',  href: saasPage('documentos') },
-    { text: 'Calendário IFC',       href: saasPage('calendario') },
-  ] },
-  { label: 'Controlo E&S', links: [
-    { text: 'Plano ESAP',        href: saasPage('esap') },
-    { text: 'Registo de Riscos', href: saasPage('riscos') },
-    { text: 'Reclamações GRM',   href: saasPage('reclamacoes') },
-    { text: 'Monitoramento KPI', href: saasPage('monitoring') },
-  ] },
-  { label: 'Preparação', links: [
-    { text: 'Partes Interessadas', href: saasPage('stakeholders') },
-    { text: 'Empreiteiros',        href: saasPage('terceiros') },
-    { text: 'Registo Legal',       href: saasPage('legal') },
-    { text: 'Falar com a equipa',  href: 'mailto:contact@hsilva.com?subject=SGAS%20Pro' },
-  ] },
+  {
+    icon: FolderLock,
+    title: 'Sala de Auditoria',
+    desc: 'Pacote lender-ready — evidências, fontes oficiais e histórico — organizado para quando a missão de supervisão chegar.',
+  },
 ]
 
-// ─── Green accent ─────────────────────────────────────────────────────────────
-const GREEN = 'hsl(119,99%,46%)'
-const GREEN_DIM = 'rgba(41,245,2,0.12)'
-const GREEN_BORDER = 'rgba(41,245,2,0.28)'
+const SOURCES = [
+  {
+    tag: 'PS1–PS8',
+    title: 'Performance Standards',
+    detail: 'Política e Padrões de Desempenho de Sustentabilidade Social e Ambiental',
+    meta: 'IFC · 30/04/2006',
+  },
+  {
+    tag: 'Handbook',
+    title: 'ESMS Implementation Handbook',
+    detail: 'Guia conceptual de "porquê e como" para cada um dos 9 elementos do sistema de gestão',
+    meta: 'IFC · v2.1 · Novembro 2015',
+  },
+  {
+    tag: 'Autoavaliação',
+    title: 'ESMS Self-Assessment and Improvement Guide',
+    detail: 'As 42 perguntas oficiais e a matriz de maturidade 0–5 usadas na Autoavaliação SGAS',
+    meta: 'IFC · v2.3 · Outubro 2015',
+  },
+  {
+    tag: 'Toolkit',
+    title: 'ESMS General Toolkit',
+    detail: 'Formulários e checklists — o que preencher, elemento a elemento, para fechar cada gap',
+    meta: 'IFC · v1.2 · Novembro 2015',
+  },
+]
 
-// ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [lang, setLang] = useState<Lang>('PT')
-  const [splineLoaded, setSplineLoaded] = useState(false)
-  const cardsRef = useRef<HTMLDivElement>(null)
-  const cardsInView = useInView(cardsRef, { once: true, margin: '-80px' })
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [time, setTime] = useState('')
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setLang(prev => LANGS[(LANGS.indexOf(prev) + 1) % LANGS.length])
-    }, 7000)
-    return () => clearInterval(timer)
+    const tick = () => {
+      setTime(
+        new Intl.DateTimeFormat('pt-PT', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'UTC',
+        }).format(new Date())
+      )
+    }
+    tick()
+    const id = setInterval(tick, 1000 * 30)
+    return () => clearInterval(id)
   }, [])
 
-  const slide = SLIDES[lang]
-
   return (
-    <div className="min-h-screen bg-hero-bg antialiased">
-
-      {/* ═══════════════════════════════════════════
-          NAVBAR — fixed, floating, transparent
-      ═══════════════════════════════════════════ */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 lg:px-16 py-5">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <img src="/hsilva-logo.jpg" alt="HSILVA" className="h-8 w-8 rounded-md object-cover" />
-          <span className="text-xl font-semibold tracking-tight text-foreground">
-            SGAS <span style={{ color: GREEN }}>PRO</span>
-          </span>
+    <div className="min-h-screen bg-white text-gray-900" style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" }}>
+      {/* ============ HERO ============ */}
+      <section className="relative min-h-screen flex flex-col bg-[#EFEFEF] overflow-hidden">
+        {/* Decorative animated background — CSS gradient blobs + grain, no external shader dependency */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div
+            className="hero-blob absolute -top-1/4 -left-1/4 w-[70%] h-[70%] rounded-full opacity-60 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(29,158,117,0.35), transparent 70%)' }}
+          />
+          <div
+            className="hero-blob absolute -bottom-1/4 -right-1/4 w-[70%] h-[70%] rounded-full opacity-50 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(242,101,34,0.28), transparent 70%)', animationDelay: '-9s' }}
+          />
+          <div className="absolute inset-0 bg-noise opacity-[0.08]" />
         </div>
 
-        {/* Nav links */}
-        <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map(l => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="text-xs uppercase tracking-widest transition-colors duration-200"
-              style={{ color: 'hsl(0,0%,60%)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'hsl(0,0%,96%)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'hsl(0,0%,60%)' }}
-            >
-              {l.label}
-            </a>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <a
-          href={saasPage('audit-room')}
-          className="hidden md:inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-widest transition-all duration-200 active:scale-[0.97] cursor-pointer"
-          style={{ backgroundColor: 'hsl(0,0%,18%)', color: 'hsl(0,0%,96%)' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'hsl(0,0%,22%)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'hsl(0,0%,18%)' }}
-        >
-          Preparar Auditoria
-        </a>
-      </nav>
-
-      {/* ═══════════════════════════════════════════
-          HERO — full-screen, Spline 3D + content bottom-left
-      ═══════════════════════════════════════════ */}
-      <section
-        className="relative overflow-hidden flex items-end"
-        style={{ minHeight: '100vh', background: 'hsl(0,0%,8%)' }}
-      >
-        {/* Spline 3D background */}
-        <div className="absolute inset-0">
-          <Suspense fallback={
-            <div className="absolute inset-0" style={{ background: 'hsl(0,0%,8%)' }}>
-              {/* Fallback: video while Spline loads */}
-              <video
-                src={VIDEO_HERO}
-                poster="/hero-bg.png"
-                autoPlay loop muted playsInline
-                className="w-full h-full object-cover opacity-40"
-              />
-            </div>
-          }>
-            <Spline
-              scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
-              className="w-full h-full"
-              onLoad={() => setSplineLoaded(true)}
-            />
-          </Suspense>
-        </div>
-
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/30 z-[1] pointer-events-none" />
-
-        {/* Subtle noise grain */}
-        <div className="noise-overlay absolute inset-0 z-[2] opacity-[0.3] mix-blend-overlay pointer-events-none" />
-
-        {/* Bottom-left content — pointer-events-none so Spline stays interactive */}
-        <div
-          className="relative z-10 pointer-events-none w-full max-w-[90%] sm:max-w-lg lg:max-w-2xl px-6 md:px-10 pb-10 pt-32"
-          style={{ opacity: splineLoaded || true ? 1 : 0, transition: 'opacity 0.5s' }}
-        >
-          {/* Language switcher */}
-          <div className="flex items-center gap-1 mb-7 pointer-events-auto">
-            {LANGS.map((l, i) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className="text-[9px] font-medium tracking-[0.2em] px-2.5 py-1 rounded transition-all duration-300 cursor-pointer"
-                style={{
-                  color: lang === l ? GREEN : 'rgba(255,255,255,0.28)',
-                  backgroundColor: lang === l ? GREEN_DIM : 'transparent',
-                  border: lang === l ? `1px solid ${GREEN_BORDER}` : '1px solid transparent',
-                }}
-              >
-                {l}
-                {i < LANGS.length - 1 && <span className="ml-1 opacity-20">·</span>}
-              </button>
-            ))}
-            {/* Progress bar */}
-            <div className="ml-3 relative h-px w-16 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
-              <motion.div
-                key={lang}
-                className="absolute left-0 top-0 h-full rounded-full"
-                style={{ background: GREEN }}
-                initial={{ width: '0%' }}
-                animate={{ width: '100%' }}
-                transition={{ duration: 7, ease: 'linear' }}
-              />
-            </div>
-          </div>
-
-          {/* Stacked headline — AnimatePresence per language */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={lang + '-h'}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.45, ease: 'easeOut' }}
-              className="mb-5"
-            >
-              {slide.lines.map((line, i) => (
-                <motion.span
-                  key={line.text}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.65, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                  className={`block leading-[0.92] tracking-[-0.045em] ${line.size} ${line.weight} ${line.op}`}
-                  style={{ color: 'hsl(0,0%,96%)' }}
-                >
-                  {line.text}
-                </motion.span>
-              ))}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Sub text */}
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={lang + '-s'}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="text-sm md:text-base font-light leading-relaxed mb-7 max-w-[44ch]"
-              style={{ color: 'rgba(255,255,255,0.6)' }}
-            >
-              {slide.sub}
-            </motion.p>
-          </AnimatePresence>
-
-          {/* CTA buttons — pointer-events-auto to re-enable clicks over Spline */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={lang + '-cta'}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="flex flex-wrap gap-3 pointer-events-auto"
-            >
-              <a
-                href={saasPage('audit-room')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3 md:px-8 md:py-4 text-sm font-bold rounded-sm cursor-pointer transition-all duration-200 active:scale-[0.97]"
-                style={{ backgroundColor: GREEN, color: 'hsl(0,0%,4%)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1)' }}
-              >
-                {slide.cta1}
-              </a>
-              <a
-                href={saasPage()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3 md:px-8 md:py-4 text-sm font-bold rounded-sm cursor-pointer transition-all duration-200 active:scale-[0.97]"
-                style={{ backgroundColor: 'hsl(0,0%,96%)', color: 'hsl(0,0%,8%)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1)' }}
-              >
-                {slide.cta2}
-              </a>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Trust line */}
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={lang + '-trust'}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className="text-[10px] font-light mt-6"
-              style={{ color: 'rgba(255,255,255,0.28)' }}
-            >
-              {slide.trust}
-            </motion.p>
-          </AnimatePresence>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          QUICK ACCESS STRIP
-      ═══════════════════════════════════════════ */}
-      <section className="px-6 md:px-10 py-10" style={{ background: 'hsl(0,0%,10%)' }}>
-        <div
-          className="max-w-6xl mx-auto rounded-xl px-6 py-5 md:px-8 md:py-6"
-          style={{ border: '1px solid hsl(0,0%,20%)', backgroundColor: 'hsl(0,0%,12%)' }}
-        >
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[9px] uppercase tracking-[0.22em] mb-1.5" style={{ color: 'hsl(0,0%,40%)' }}>
-                Entrada directa no SaaS
-              </p>
-              <h2 className="text-xl md:text-2xl font-semibold tracking-tight" style={{ color: 'hsl(0,0%,96%)' }}>
-                Abra o módulo certo no momento certo.
-              </h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {QUICK_ACCESS.map(item => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="rounded-lg px-4 py-2 text-[11px] font-medium transition-all duration-200 cursor-pointer"
-                  style={{ border: '1px solid hsl(0,0%,22%)', color: 'rgba(255,255,255,0.65)', backgroundColor: 'transparent' }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget
-                    el.style.borderColor = GREEN_BORDER
-                    el.style.color = GREEN
-                    el.style.backgroundColor = GREEN_DIM
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget
-                    el.style.borderColor = 'hsl(0,0%,22%)'
-                    el.style.color = 'rgba(255,255,255,0.65)'
-                    el.style.backgroundColor = 'transparent'
-                  }}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          PLATFORM CARDS
-      ═══════════════════════════════════════════ */}
-      <section id="platform" className="relative px-6 md:px-10 py-12 pb-20" style={{ background: 'hsl(0,0%,10%)' }}>
-        <div className="bg-noise absolute inset-0 opacity-[0.08] pointer-events-none" />
-
-        <p className="relative text-[9px] uppercase tracking-[0.22em] mb-10" style={{ color: 'hsl(0,0%,35%)' }}>
-          Platform capabilities
-        </p>
-
-        <div
-          ref={cardsRef}
-          className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-5"
-        >
-          <AnimatePresence mode="wait">
-            {CARDS_DATA[lang].map((card, i) => (
-              <motion.div
-                key={lang + card.n}
-                initial={{ opacity: 0, y: 20 }}
-                animate={cardsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.65, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className="rounded-xl p-8 flex flex-col gap-6 min-h-[380px] cursor-default group transition-all duration-300"
-                style={{
-                  backgroundColor: 'hsl(0,0%,12%)',
-                  border: '1px solid hsl(0,0%,20%)',
-                }}
-                whileHover={{
-                  borderColor: GREEN_BORDER,
-                  backgroundColor: 'hsl(0,0%,13%)',
-                  y: -3,
-                }}
-              >
-                {/* Icon */}
-                <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                  <img src={CARD_ICONS[i]} alt="" className="w-full h-full object-cover" />
-                </div>
-
-                {/* Number + Title */}
-                <div className="flex flex-col gap-2">
-                  <span className="text-[9px] tracking-[0.22em] uppercase font-medium" style={{ color: 'hsl(0,0%,35%)' }}>
-                    {card.n}
-                  </span>
-                  <h3 className="text-lg md:text-xl font-semibold leading-tight" style={{ color: 'hsl(0,0%,96%)' }}>
-                    {card.title}
-                  </h3>
-                </div>
-
-                {/* Checklist */}
-                <ul className="flex flex-col gap-4 flex-1">
-                  {card.checks.map(c => (
-                    <li key={c} className="flex items-start gap-3">
-                      <Check size={14} className="mt-0.5 shrink-0" style={{ color: GREEN }} />
-                      <span className="text-[13px] leading-relaxed" style={{ color: 'hsl(0,0%,60%)' }}>
-                        {c}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA */}
-                <a
-                  href={card.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 self-start px-4 py-2 rounded-lg text-[12px] font-semibold tracking-wide transition-all duration-200 cursor-pointer mt-2"
-                  style={{ color: GREEN, border: `1px solid ${GREEN_BORDER}`, backgroundColor: GREEN_DIM }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(41,245,2,0.2)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = GREEN_DIM }}
-                >
-                  Abrir módulo <ArrowRight size={12} />
-                </a>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          CLOSE + @efferd CTA
-      ═══════════════════════════════════════════ */}
-      <section className="px-6 md:px-10 py-20" style={{ background: 'hsl(0,0%,10%)' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
-          transition={{ duration: 0.9 }}
-          className="max-w-4xl mx-auto text-center mb-14"
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={lang + '-close'}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              <p className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-[-0.03em] leading-[1.15] mb-3" style={{ color: 'hsl(0,0%,96%)' }}>
-                {CLOSE[lang][0]}
-              </p>
-              <p className="text-2xl sm:text-3xl md:text-4xl font-light tracking-[-0.03em] leading-[1.15]" style={{ color: 'hsl(0,0%,40%)' }}>
-                {CLOSE[lang][1]}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
-
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          FOOTER
-      ═══════════════════════════════════════════ */}
-      <div id="contact" className="px-5 md:px-8 pb-6" style={{ background: 'hsl(0,0%,10%)' }}>
-        <motion.footer
-          initial={{ opacity: 0, y: 32 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          className="liquid-glass w-full rounded-2xl p-6 md:p-10"
-          style={{ border: '1px solid hsl(0,0%,18%)' }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 mb-10">
-            <div className="md:col-span-4">
-              <div className="flex items-center gap-3 mb-5">
-                <img src="/hsilva-logo.jpg" alt="HSILVA" className="h-9 w-9 rounded-lg object-cover" />
-                <span className="text-base font-semibold tracking-tight">
-                  SGAS <span style={{ color: GREEN }}>PRO</span>
-                </span>
+        {/* Nav */}
+        <div className="relative z-20 max-w-[1440px] w-full mx-auto p-2 sm:p-3">
+          <nav className="bg-white rounded-full p-[5px] flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-4 pl-2">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
+                <span className="text-white text-[10px] sm:text-[11px] font-bold tracking-tight">SGAS</span>
               </div>
-              <p className="text-[13px] leading-relaxed max-w-sm" style={{ color: 'hsl(0,0%,42%)' }}>
-                Porta de entrada para preparar auditorias, due diligence IFC / Banco Mundial e salas de evidências para financiadores.
+              <div className="hidden md:flex items-center gap-6">
+                {NAV_LINKS.map(l => (
+                  <a key={l.href} href={l.href} className="text-sm text-gray-900 hover:text-gray-500 transition-colors duration-300">
+                    {l.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center gap-4 pr-1">
+              <span className="text-[13px] text-gray-600 hidden lg:inline">Fórmula de prontidão 100% divulgada</span>
+              {time && <span className="text-[13px] text-gray-600">{time} UTC</span>}
+              <a
+                href="/sgas-pro.html"
+                className="group inline-flex items-center gap-3 bg-gray-900 text-white text-[13px] font-medium rounded-full pl-5 pr-2 py-2"
+              >
+                <span className="overflow-hidden h-[18px] relative w-[124px] text-left">
+                  <span className="block h-[18px] leading-[18px] transition-transform duration-500 group-hover:-translate-y-full" style={{ transitionTimingFunction: EASE }}>
+                    Entrar na conta
+                  </span>
+                  <span
+                    className="absolute top-0 left-0 block h-[18px] leading-[18px] translate-y-full group-hover:translate-y-0 transition-transform duration-500"
+                    style={{ transitionTimingFunction: EASE }}
+                  >
+                    Entrar na conta
+                  </span>
+                </span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-white shrink-0">
+                  <ArrowRight size={12} className="text-gray-900 transition-transform duration-500 group-hover:-rotate-45" style={{ transitionTimingFunction: EASE }} />
+                </span>
+              </a>
+            </div>
+
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="md:hidden w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-white mr-1"
+            >
+              <Menu size={18} />
+            </button>
+          </nav>
+        </div>
+
+        {/* Mobile menu overlay */}
+        {menuOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div className="absolute inset-0 bg-black/60" onClick={() => setMenuOpen(false)} />
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-2xl mx-3 mb-3 p-6 translate-y-0 transition-transform duration-500" style={{ transitionTimingFunction: 'cubic-bezier(0.32,0.72,0,1)' }}>
+              <div className="flex items-center justify-between mb-8">
+                <span className="text-[13px] text-gray-500">{time} UTC</span>
+                <button onClick={() => setMenuOpen(false)} className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center text-white">
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="flex flex-col gap-5 mb-8">
+                {NAV_LINKS.map(l => (
+                  <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} className="text-2xl font-medium text-gray-900">
+                    {l.label}
+                  </a>
+                ))}
+              </div>
+              <a href="/sgas-pro.html" className="inline-flex items-center gap-3 bg-[#F26522] text-white text-sm font-medium rounded-full pl-5 pr-2 py-2 w-fit">
+                Começar agora
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white">
+                  <ArrowRight size={14} className="text-[#F26522]" />
+                </span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Hero content */}
+        <div className="relative z-20 flex-1 flex flex-col justify-end max-w-[1440px] w-full mx-auto px-5 sm:px-8 lg:px-12 pb-14 sm:pb-16 lg:pb-20">
+          <p className="text-[13px] sm:text-sm text-gray-900 tracking-wide mb-5 sm:mb-8">SGAS Pro · Compliance IFC &amp; Banco Mundial</p>
+          <h1
+            className="font-medium text-gray-900"
+            style={{ fontSize: 'clamp(1.75rem, 7vw, 4.2rem)', lineHeight: 1.08, letterSpacing: '-0.03em' }}
+          >
+            Prontidão para a missão do<br className="hidden sm:block" /><span className="sm:hidden"> </span>
+            Banco Mundial.<br className="hidden sm:block" /><span className="sm:hidden"> </span>
+            Sem caixa preta.
+          </h1>
+          <p className="mt-5 sm:mt-6 max-w-xl text-[15px] sm:text-base text-gray-700 leading-relaxed">
+            Diagnóstico PS1–PS8, ESAP rastreável, GRM com prazos e um score de prontidão cuja fórmula está{' '}
+            <a href="#formula" className="underline decoration-dotted underline-offset-2">100% publicada</a> — não uma caixa preta de marketing.
+          </p>
+
+          <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+            <RollButton label="Começar agora — 7 dias grátis" variant="orange" />
+
+            <div className="inline-flex items-center gap-2 sm:gap-3 bg-white rounded-[4px] px-3 sm:px-4 py-2 sm:py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-shadow duration-300">
+              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1D9E75] shrink-0" />
+              <span className="text-[13px] sm:text-sm font-medium">Baseado em 4 publicações oficiais IFC</span>
+              <span className="text-[10px] sm:text-[11px] bg-gray-900 text-white px-1.5 sm:px-2 py-0.5 rounded shrink-0">Fontes citadas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ COMO FUNCIONA ============ */}
+      <section id="modulos" className="bg-white pt-16 sm:pt-20 lg:pt-32 pb-12 sm:pb-16 lg:pb-24 overflow-hidden">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="px-5 sm:px-8 lg:px-12">
+            <SectionBadge n="1" label="Como funciona" />
+            <h2
+              className="font-medium text-gray-900 mb-10 sm:mb-14 lg:mb-20 max-w-3xl"
+              style={{ fontSize: 'clamp(1.5rem, 4vw, 3.2rem)', lineHeight: 1.12, letterSpacing: '-0.02em' }}
+            >
+              Da preparação à missão de supervisão, numa só plataforma.
+            </h2>
+          </div>
+
+          <div className="px-5 sm:px-8 lg:px-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+            {STEPS.map((s, i) => {
+              const Icon = s.icon
+              return (
+                <div key={s.title} className="border border-gray-200 rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center text-white">
+                      <Icon size={18} />
+                    </span>
+                    <span className="text-xs text-gray-400 font-medium">0{i + 1}</span>
+                  </div>
+                  <h3 className="text-[15px] font-semibold text-gray-900">{s.title}</h3>
+                  <p className="text-[13px] text-gray-600 leading-relaxed">{s.desc}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ FONTES / CREDIBILIDADE ============ */}
+      <section id="fontes" className="bg-[#F5F5F5] pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
+        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
+          <SectionBadge n="2" label="Nada inventado. Tudo citado." border="border-gray-300" />
+          <h2
+            className="font-medium text-gray-900 mb-10 sm:mb-14 lg:mb-16 max-w-3xl"
+            style={{ fontSize: 'clamp(1.75rem, 7vw, 4.2rem)', lineHeight: 1.08, letterSpacing: '-0.03em' }}
+          >
+            Construído sobre as publicações oficiais da IFC.
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 lg:gap-7">
+            {SOURCES.map(src => (
+              <div key={src.title} className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <BadgeCheck size={16} className="text-[#1D9E75]" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-[#1D9E75]">{src.tag}</span>
+                </div>
+                <h3 className="text-[14px] sm:text-[15px] font-semibold text-gray-900 mb-1">{src.title}</h3>
+                <p className="text-[13px] text-gray-600 leading-relaxed mb-3">{src.detail}</p>
+                <p className="text-[11px] text-gray-400">{src.meta}</p>
+              </div>
+            ))}
+          </div>
+
+          <div id="precos" className="mt-16 sm:mt-20 lg:mt-24 bg-gray-900 rounded-3xl p-8 sm:p-12 lg:p-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div>
+              <h3 className="text-white font-medium mb-3" style={{ fontSize: 'clamp(1.4rem, 3vw, 2.2rem)', letterSpacing: '-0.02em' }}>
+                7 dias grátis. Depois, escolhes o plano.
+              </h3>
+              <p className="text-gray-400 text-sm max-w-md">
+                Sem cartão de crédito para começar. Pilot, Professional, Business ou Enterprise — cancela quando quiseres.
               </p>
             </div>
-
-            <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
-              {FOOTER_COLS.map(col => (
-                <div key={col.label}>
-                  <h4 className="text-[9px] uppercase tracking-[0.2em] font-semibold mb-5" style={{ color: GREEN }}>
-                    {col.label}
-                  </h4>
-                  <ul className="space-y-2.5">
-                    {col.links.map(link => (
-                      <li key={link.text}>
-                        <a
-                          href={link.href}
-                          className="text-[12px] transition-colors duration-200 cursor-pointer"
-                          style={{ color: 'hsl(0,0%,45%)' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'hsl(0,0%,96%)' }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'hsl(0,0%,45%)' }}
-                        >
-                          {link.text}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            <RollButton label="Iniciar trial de 7 dias" variant="orange" />
           </div>
+        </div>
+      </section>
 
-          <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderTop: '1px solid hsl(0,0%,18%)' }}>
-            <p className="text-[9px] uppercase tracking-[0.2em]" style={{ color: 'hsl(0,0%,30%)' }}>
-              SGAS Pro · Audit room readiness
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: 'hsl(0,0%,30%)' }}>
-                Acesso rápido:
-              </span>
-              {QUICK_ACCESS.slice(0, 3).map(item => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="text-[11px] transition-colors duration-200 cursor-pointer"
-                  style={{ color: 'hsl(0,0%,40%)' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GREEN }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'hsl(0,0%,40%)' }}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        </motion.footer>
-      </div>
-
+      <footer className="bg-white py-8 px-5 sm:px-8 lg:px-12 border-t border-gray-100">
+        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-gray-400">
+          <span>© {new Date().getFullYear()} SGAS Pro</span>
+          <span>IFC PS1–PS8 · World Bank ESS1–ESS10</span>
+        </div>
+      </footer>
     </div>
   )
 }

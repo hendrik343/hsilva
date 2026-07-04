@@ -2578,21 +2578,11 @@ function getAssessmentScore(profile, fallback) {
 
 function applyReadinessProfile(profile, row) {
   if (!profile || typeof profile !== 'object') return false;
-  const scores = profile.scores_by_ps || {};
-  const hasScores = scores && typeof scores === 'object';
-  if (hasScores) {
-    PS_DATA.forEach(ps => {
-      if (scores[ps.id] !== undefined && scores[ps.id] !== null) {
-        const n = Number(scores[ps.id]);
-        if (Number.isFinite(n)) ps.score = Math.max(0, Math.min(100, Math.round(n)));
-      }
-    });
-    const psIndex = { PS1:0, PS2:1, PS3:2, PS4:3, PS5:4, PS6:5, PS7:6, PS8:7 };
-    Object.keys(psIndex).forEach(ps => {
-      const n = Number(scores[ps]);
-      if (Number.isFinite(n)) sgasScores[psIndex[ps]] = Number((Math.max(0, Math.min(100, n)) / 20).toFixed(1));
-    });
-  }
+  // O wizard só caracteriza o projecto (nome, país, sector) — nunca escreve
+  // scores. Conformidade PS (PS_DATA) e maturidade SGAS (sgasScores) só têm
+  // uma fonte de verdade: os módulos PS1-8 e a Autoavaliação de 42 perguntas,
+  // agregados pela fórmula pública em updateReadiness(). Ver feedback do
+  // consultor: dois caminhos a escrever o mesmo número é bug de integridade.
   const score = getAssessmentScore(profile, row && row.score);
   const wizardProject = profile.project || {};
   const projectName = wizardProject.name || wizardProject.projectName || 'A preencher pelo wizard';
@@ -3783,8 +3773,9 @@ function updateReadiness(){
   const kpiProtocolScore = Math.min(100,kpiProtocols.length*20);
   const auditRoomScore = lenderPackage.length ? Math.round(lenderPackage.reduce((a,b)=>a+(b.readiness||0),0)/lenderPackage.length) : 0;
   const computedScore = Math.round(docScore*0.18 + sgasScore*0.14 + psAvg*0.15 + esapDone*100*0.11 + implementationScore*0.10 + legalScore*0.08 + riskMapScore*0.08 + grmScore*0.06 + contractorScore*0.04 + kpiProtocolScore*0.03 + auditRoomScore*0.03);
-  const assessmentScore = SGAS_READINESS_ASSESSMENT ? Number(SGAS_READINESS_ASSESSMENT.score ?? SGAS_READINESS_ASSESSMENT.profile?.score) : NaN;
-  const score = Number.isFinite(assessmentScore) ? Math.round(assessmentScore) : (Number.isFinite(computedScore) ? computedScore : 0);
+  // Fonte única do score: a fórmula de 11 componentes acima. O wizard não escreve
+  // score (só metadata do projecto) — ver applyReadinessProfile().
+  const score = Number.isFinite(computedScore) ? computedScore : 0;
   const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
   setText('readiness-text', `Prontidão para missão BM: ${score}%`);
   setText('dash-readiness', score+'%');
@@ -4266,6 +4257,15 @@ function askConsultantAbout(psId){
 function toggleReq(psId,idx){
   const cur=psReqStatus[psId][idx];
   psReqStatus[psId][idx]=cur==='none'?'done':cur==='done'?'partial':'none';
+  // Única fonte de verdade da conformidade PS: a checklist que o consultor
+  // marca aqui. Sem overrides externos (ver applyReadinessProfile).
+  const ps = PS_DATA.find(p=>p.id===psId);
+  if (ps) {
+    const reqs = psReqStatus[psId]||[];
+    const done = reqs.filter(r=>r==='done').length;
+    const total = ps.reqs.length;
+    ps.score = total > 0 ? Math.round(done/total*100) : 0;
+  }
   renderPS(); updateReadiness();
 }
 
