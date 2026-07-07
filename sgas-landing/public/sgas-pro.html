@@ -8326,6 +8326,7 @@ function bindI18nAttributes() {
 }
 
 let SGAS_LANG = localStorage.getItem('sgas_lang') || 'pt';
+window.SGAS_LANG = SGAS_LANG;
 
 function t(key, vars) {
   var dict = I18N[SGAS_LANG] || I18N.pt;
@@ -8337,6 +8338,7 @@ function t(key, vars) {
 function setLang(l) {
   if (l !== 'pt' && l !== 'en') return;
   SGAS_LANG = l;
+  window.SGAS_LANG = l;
   localStorage.setItem('sgas_lang', l);
   var dict = I18N[l] || I18N.pt;
 
