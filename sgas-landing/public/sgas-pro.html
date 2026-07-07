@@ -1155,6 +1155,7 @@ canvas { max-width: 100%; }
     <div class="section-header">
       <div><div class="section-title">Plano de Acção Ambiental e Social (<abbr class="gloss" title="ESAP — Plano de Acção Ambiental e Social: medidas contratuais acordadas com o financiador">ESAP</abbr>)</div><div class="section-sub">Rastreamento de medidas contratuais exigidas pelo Banco Mundial</div></div> <!-- TODO i18n -->
       <button class="btn primary" onclick="openModal('modal-esap')">+ Nova medida</button>
+      <button class="btn" data-i18n="esap.builder.entry_btn" onclick="openEsapGuidedBuilder()">Criar plano guiado</button>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
       <select class="form-select" style="width:160px" id="esap-filter-ps" onchange="renderEsap()">
@@ -7778,6 +7779,9 @@ const I18N = {
     'journey.next.1':'Comece pelo diagnóstico IFC para caracterizar o seu projecto.','journey.next.2':'Reveja os resultados do diagnóstico e a sua prontidão.','journey.next.3':'Construa o seu plano ESAP a partir das lacunas identificadas.','journey.next.4':'Configure o mecanismo de queixas (GRM) e registe a primeira reclamação.','journey.next.5':'Anexe evidência a cada acção ESAP concluída.','journey.next.6':'Exporte o relatório mensal em formato Banco Mundial.',
     // Path E — E1.3 welcome modal (first-run gate)
     'welcome.title':'Bem-vindo ao SGAS Pro','welcome.body':'Seis passos preparam o seu projecto para a missão do Banco Mundial. Comece pelo diagnóstico IFC — leva cerca de 10 minutos.','welcome.start':'Começar diagnóstico','welcome.later':'Explorar primeiro','welcome.tour':'Ver tour rápido primeiro',
+    // Path E — E1.6 guided ESAP builder
+    'esap.builder.entry_btn':'Criar plano guiado','esap.builder.nogaps':'Sem lacunas — todos os PS estão a ≥80%.','esap.builder.gapof':'Lacuna {i} de {n}','esap.builder.action_label':'Ação corretiva','esap.builder.gen_placeholder':'Descreva a ação corretiva','esap.builder.ai_generating':'A gerar sugestão…','esap.builder.resp_label':'Responsável','esap.builder.prazo_label':'Prazo','esap.builder.prio_label':'Prioridade','esap.builder.evid_label':'Evidência exigida ao concluir','esap.builder.skip':'Saltar lacuna','esap.builder.addplan':'Adicionar ao plano','esap.builder.justify_placeholder':'Justifique porque esta lacuna não terá ação','esap.builder.confirm_skip':'Confirmar justificação','esap.builder.justify_required':'A justificação é obrigatória para saltar uma lacuna.','esap.builder.fields_required':'Preencha ação, responsável e prazo.',
+    'esap.review.title':'Revisão do plano ESAP','esap.review.m_actions':'ações','esap.review.m_justified':'justificadas','esap.review.m_highprio':'alta prioridade','esap.review.m_nearest':'prazo mais próximo','esap.review.more':'mais','esap.review.valid':'Validação completa','esap.review.invalid':'Falta completar','esap.review.missing_resp':'{ps}: falta responsável','esap.review.missing_prazo':'{ps}: falta prazo','esap.review.past_prazo':'{ps}: prazo no passado','esap.review.missing_prio':'{ps}: falta prioridade','esap.review.back':'Voltar às lacunas','esap.review.activate':'Ativar ESAP',
   },
   en: {
     // Topbar
@@ -7870,6 +7874,9 @@ const I18N = {
     'journey.next.1':'Start with the IFC diagnostic to characterise your project.','journey.next.2':'Review the diagnostic results and your readiness.','journey.next.3':'Build your ESAP plan from the gaps identified.','journey.next.4':'Set up the grievance mechanism (GRM) and log the first complaint.','journey.next.5':'Attach evidence to every completed ESAP action.','journey.next.6':'Export the monthly World Bank–format report.',
     // Path E — E1.3 welcome modal (first-run gate)
     'welcome.title':'Welcome to SGAS Pro','welcome.body':'Six steps prepare your project for the World Bank mission. Start with the IFC diagnostic — it takes about 10 minutes.','welcome.start':'Start diagnostic','welcome.later':'Explore first','welcome.tour':'See a quick tour first',
+    // Path E — E1.6 guided ESAP builder
+    'esap.builder.entry_btn':'Create guided plan','esap.builder.nogaps':'No gaps — all PS standards are at ≥80%.','esap.builder.gapof':'Gap {i} of {n}','esap.builder.action_label':'Corrective action','esap.builder.gen_placeholder':'Describe the corrective action','esap.builder.ai_generating':'Generating suggestion…','esap.builder.resp_label':'Owner','esap.builder.prazo_label':'Deadline','esap.builder.prio_label':'Priority','esap.builder.evid_label':'Evidence required on completion','esap.builder.skip':'Skip gap','esap.builder.addplan':'Add to plan','esap.builder.justify_placeholder':'Explain why this gap will not have an action','esap.builder.confirm_skip':'Confirm justification','esap.builder.justify_required':'A justification is required to skip a gap.','esap.builder.fields_required':'Fill in action, owner and deadline.',
+    'esap.review.title':'ESAP plan review','esap.review.m_actions':'actions','esap.review.m_justified':'justified','esap.review.m_highprio':'high priority','esap.review.m_nearest':'nearest deadline','esap.review.more':'more','esap.review.valid':'Validation complete','esap.review.invalid':'Incomplete','esap.review.missing_resp':'{ps}: missing owner','esap.review.missing_prazo':'{ps}: missing deadline','esap.review.past_prazo':'{ps}: deadline in the past','esap.review.missing_prio':'{ps}: missing priority','esap.review.back':'Back to gaps','esap.review.activate':'Activate ESAP',
   }
 };
 
@@ -8934,6 +8941,252 @@ window._sgasUxRefresh=function(){if(prev)prev();ux2Refresh();};
 });
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ux2Refresh);
 else setTimeout(ux2Refresh,300);
+})();
+</script>
+
+<!-- ═══════ SGAS GUIDED ESAP BUILDER (Path E, E1.6) — additive, existing ESAP table/export untouched ═══════ -->
+<style id="sgas-esap-builder-css">
+  #esap-builder-ov{position:fixed;inset:0;z-index:100004;background:rgba(11,40,24,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+  .esap-builder-box{width:480px;max-width:100%;max-height:88vh;overflow-y:auto;background:var(--surface,#fff);border-radius:14px;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:inherit}
+  .esap-builder-head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--text,#111827);margin-bottom:8px}
+  .esap-builder-close{background:none;border:none;font-size:16px;color:#9CA3AF;cursor:pointer}
+  .esap-builder-prog{height:5px;background:var(--bg-2,#F3F4F6);border-radius:3px;margin-bottom:14px;overflow:hidden}
+  .esap-builder-prog div{height:100%;background:#1D9E75;border-radius:3px;transition:width .3s}
+  .esap-gap-card{background:rgba(217,119,6,.07);border:1px solid #FCD34D;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--text,#111827)}
+  .esap-gap-missing{margin-top:8px;font-size:11.5px;color:var(--text-2,#4B5563);line-height:1.6}
+  .esap-evid-readonly{font-size:11.5px;color:var(--text-3,#9CA3AF);background:var(--bg-2,#F9FAFB);border-radius:6px;padding:8px 10px;margin:10px 0}
+  .esap-builder-actions{display:flex;gap:10px;margin-top:14px}
+  .esap-builder-actions .btn{flex:1}
+  .esap-review-box{width:560px}
+  .esap-review-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  .esap-review-metrics div{background:var(--bg-2,#F9FAFB);border-radius:8px;padding:10px 8px;text-align:center}
+  .esap-review-metrics strong{display:block;font-size:16px;color:#1D9E75}
+  .esap-review-metrics small{font-size:10px;color:var(--text-3,#9CA3AF)}
+  .esap-review-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:10px}
+  .esap-review-table td{padding:6px 8px;border-bottom:1px solid var(--bg-2,#F3F4F6)}
+  .esap-just-list{margin-bottom:10px}
+  .esap-just-row{font-size:11.5px;color:var(--text-2,#4B5563);padding:5px 0;border-bottom:1px solid var(--bg-2,#F3F4F6)}
+  .esap-valid-badge{border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600;margin-bottom:14px}
+  .esap-valid-badge.green{background:rgba(29,158,117,.1);color:#166B4F}
+  .esap-valid-badge.amber{background:rgba(217,119,6,.1);color:#92400E}
+</style>
+<script id="sgas-esap-builder-layer">
+(function(){
+'use strict';
+
+function esapGapQueue(){
+  var out=[];
+  try{
+    PS_DATA.forEach(function(ps){
+      var reqs=psReqStatus[ps.id]||[];
+      var total=ps.reqs.length||1;
+      var done=reqs.filter(function(r){return r==='done';}).length;
+      var pct=Math.round(done/total*100);
+      if(pct<80){
+        var missing=ps.reqs.filter(function(_,i){return reqs[i]!=='done';});
+        out.push({psId:ps.id,psName:ps.name,pct:pct,missing:missing});
+      }
+    });
+  }catch(e){}
+  return out;
+}
+function esapDraftState(){
+  try{ var s=JSON.parse(localStorage.getItem('sgas_esap_draft')); return s||{idx:0,actions:[],justified:[]}; }
+  catch(e){ return {idx:0,actions:[],justified:[]}; }
+}
+function esapDraftSave(s){ localStorage.setItem('sgas_esap_draft',JSON.stringify(s)); }
+
+var ESAP_EVID_TEMPLATE={pt:'Documento aprovado + registo de implementação real (foto, acta ou teste)',en:'Approved document + real implementation record (photo, minutes or test)'};
+var esapAiInFlight=false;
+
+async function esapAiSuggest(promptText){
+  try{
+    var supa=typeof getSupaClient==='function'?getSupaClient():null;
+    if(!supa||!supa.auth)return '';
+    var sessionResult=await supa.auth.getSession();
+    var token=sessionResult&&sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.access_token;
+    if(!token)return '';
+    var controller=new AbortController();
+    var timer=setTimeout(function(){controller.abort();},6000);
+    var projectContext={};
+    try{ if(typeof ai_buildProjectContext==='function') projectContext=await ai_buildProjectContext(); }catch(e){}
+    var res;
+    try{
+      res=await fetch(AI_EDGE_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({messages:[{role:'user',content:promptText}],projectContext:projectContext,lang:(typeof SGAS_LANG!=='undefined'?SGAS_LANG:'pt')}),
+        signal:controller.signal
+      });
+    }finally{ clearTimeout(timer); }
+    if(!res||!res.ok||!res.body||typeof res.body.getReader!=='function')return '';
+    var reader=res.body.getReader(),decoder=new TextDecoder(),fullText='';
+    while(true){
+      var chunkResult=await reader.read();
+      if(chunkResult.done)break;
+      var chunk=decoder.decode(chunkResult.value,{stream:true});
+      chunk.split('\n').forEach(function(line){
+        if(line.indexOf('data: ')!==0)return;
+        var data=line.slice(6).trim();
+        if(data==='[DONE]'||!data)return;
+        try{
+          var parsed=JSON.parse(data);
+          var delta=(parsed.delta&&parsed.delta.text)||(parsed.choices&&parsed.choices[0]&&parsed.choices[0].delta&&parsed.choices[0].delta.content)||'';
+          if(delta)fullText+=delta;
+        }catch(e){}
+      });
+    }
+    return fullText.trim();
+  }catch(e){ return ''; }
+}
+function esapRequestAiSuggestion(gap){
+  if(esapAiInFlight)return;
+  esapAiInFlight=true;
+  var ta=document.getElementById('eb-action');
+  if(ta)ta.placeholder=t('esap.builder.ai_generating');
+  var prompt='Gap: '+gap.psName+' ('+gap.psId+'). Missing requirements: '+gap.missing.slice(0,2).join('; ')+
+    '. Write ONE corrective action sentence for an ESAP action plan, max 200 characters, in '+
+    (window.SGAS_LANG==='en'?'English':'Portuguese')+'. Return only the sentence, no preamble.';
+  esapAiSuggest(prompt).then(function(text){
+    esapAiInFlight=false;
+    var el=document.getElementById('eb-action');
+    if(!el)return;
+    el.placeholder=t('esap.builder.gen_placeholder');
+    if(text&&!el.value)el.value=text.slice(0,200);
+  }).catch(function(){
+    esapAiInFlight=false;
+    var el=document.getElementById('eb-action');
+    if(el)el.placeholder=t('esap.builder.gen_placeholder');
+  });
+}
+
+window.openEsapGuidedBuilder=function(){
+  var queue=esapGapQueue();
+  if(!queue.length){ alert(t('esap.builder.nogaps')); return; }
+  var st=esapDraftState();
+  if(st.idx>queue.length||st.idx<0)st.idx=0;
+  esapRenderBuilder(queue,st);
+};
+window.esapCloseBuilder=function(){ var ov=document.getElementById('esap-builder-ov'); if(ov)ov.remove(); };
+
+function esapRenderBuilder(queue,st){
+  if(st.idx>=queue.length){ esapRenderReview(queue,st); return; }
+  var gap=queue[st.idx];
+  var ov=document.getElementById('esap-builder-ov');
+  if(!ov){ ov=document.createElement('div'); ov.id='esap-builder-ov'; document.body.appendChild(ov); }
+  var draft=(st.actions&&st.actions[st.idx])||{};
+  ov.innerHTML='<div class="esap-builder-box">'
+    +'<div class="esap-builder-head"><span>'+t('esap.builder.gapof',{i:st.idx+1,n:queue.length})+'</span><button class="esap-builder-close" onclick="esapCloseBuilder()">✕</button></div>'
+    +'<div class="esap-builder-prog"><div style="width:'+Math.round(st.idx/queue.length*100)+'%"></div></div>'
+    +'<div class="esap-gap-card"><span class="badge purple">'+gap.psId+'</span> <strong>'+escapeHtml(gap.psName)+'</strong> · '+gap.pct+'%'
+    +'<div class="esap-gap-missing">'+gap.missing.slice(0,3).map(function(m){return '<div>• '+escapeHtml(m)+'</div>';}).join('')+'</div></div>'
+    +'<div class="form-group"><label class="form-label">'+t('esap.builder.action_label')+'</label><textarea class="form-input" id="eb-action" rows="2" placeholder="'+t('esap.builder.gen_placeholder')+'">'+escapeHtml(draft.action||'')+'</textarea></div>'
+    +'<div class="form-row"><div class="form-group"><label class="form-label">'+t('esap.builder.resp_label')+'</label><input class="form-input" id="eb-resp" value="'+escapeHtml(draft.resp||'')+'"></div>'
+    +'<div class="form-group"><label class="form-label">'+t('esap.builder.prazo_label')+'</label><input type="date" class="form-input" id="eb-prazo" value="'+escapeHtml(draft.prazo||'')+'"></div></div>'
+    +'<div class="form-group"><label class="form-label">'+t('esap.builder.prio_label')+'</label><select class="form-select" id="eb-prio">'
+      +'<option value="Alta"'+(draft.prio==='Alta'?' selected':'')+'>Alta</option>'
+      +'<option value="Média"'+(draft.prio==='Média'||!draft.prio?' selected':'')+'>Média</option>'
+      +'<option value="Baixa"'+(draft.prio==='Baixa'?' selected':'')+'>Baixa</option>'
+    +'</select></div>'
+    +'<div class="esap-evid-readonly">'+t('esap.builder.evid_label')+': '+(ESAP_EVID_TEMPLATE[window.SGAS_LANG]||ESAP_EVID_TEMPLATE.pt)+'</div>'
+    +'<div class="esap-builder-actions"><button class="btn" onclick="esapSkipGap()">'+t('esap.builder.skip')+'</button><button class="btn primary" onclick="esapAddGap()">'+t('esap.builder.addplan')+'</button></div>'
+    +'<div id="eb-justify-wrap" style="display:none;margin-top:10px"><textarea class="form-input" id="eb-justify" rows="2" placeholder="'+t('esap.builder.justify_placeholder')+'"></textarea><button class="btn primary" style="margin-top:8px;width:100%" onclick="esapConfirmSkip()">'+t('esap.builder.confirm_skip')+'</button></div>'
+    +'</div>';
+  if(!draft.action)esapRequestAiSuggestion(gap);
+}
+window.esapSkipGap=function(){
+  var w=document.getElementById('eb-justify-wrap'); if(w)w.style.display='block';
+};
+window.esapConfirmSkip=function(){
+  var txt=(document.getElementById('eb-justify').value||'').trim();
+  if(!txt){ alert(t('esap.builder.justify_required')); return; }
+  var queue=esapGapQueue(),st=esapDraftState(),gap=queue[st.idx];
+  st.justified=(st.justified||[]).filter(function(j){return j.psId!==gap.psId;});
+  st.justified.push({psId:gap.psId,psName:gap.psName,justification:txt});
+  st.actions=st.actions||[]; st.actions[st.idx]=null;
+  st.idx=st.idx+1; esapDraftSave(st); esapRenderBuilder(queue,st);
+};
+window.esapAddGap=function(){
+  var action=(document.getElementById('eb-action').value||'').trim();
+  var resp=(document.getElementById('eb-resp').value||'').trim();
+  var prazo=(document.getElementById('eb-prazo').value||'').trim();
+  var prio=document.getElementById('eb-prio').value;
+  if(!action||!resp||!prazo){ alert(t('esap.builder.fields_required')); return; }
+  var queue=esapGapQueue(),st=esapDraftState(),gap=queue[st.idx];
+  st.actions=st.actions||[]; st.actions[st.idx]={action:action,resp:resp,prazo:prazo,prio:prio};
+  st.justified=(st.justified||[]).filter(function(j){return j.psId!==gap.psId;});
+  st.idx=st.idx+1; esapDraftSave(st); esapRenderBuilder(queue,st);
+};
+
+function esapRenderReview(queue,st){
+  var ov=document.getElementById('esap-builder-ov');
+  if(!ov){ ov=document.createElement('div'); ov.id='esap-builder-ov'; document.body.appendChild(ov); }
+  var actionsList=[];
+  queue.forEach(function(gap,i){ if(st.actions&&st.actions[i])actionsList.push({gap:gap,a:st.actions[i]}); });
+  var justifiedList=st.justified||[];
+  var today=new Date().toISOString().slice(0,10);
+  var reasons=[];
+  actionsList.forEach(function(x){
+    if(!x.a.resp)reasons.push(t('esap.review.missing_resp',{ps:x.gap.psId}));
+    if(!x.a.prazo)reasons.push(t('esap.review.missing_prazo',{ps:x.gap.psId}));
+    else if(x.a.prazo<today)reasons.push(t('esap.review.past_prazo',{ps:x.gap.psId}));
+    if(!x.a.prio)reasons.push(t('esap.review.missing_prio',{ps:x.gap.psId}));
+  });
+  var allCovered=(actionsList.length+justifiedList.length)>=queue.length;
+  var valid=allCovered&&reasons.length===0&&actionsList.length>0;
+  var highPrio=actionsList.filter(function(x){return x.a.prio==='Alta';}).length;
+  var nearest=actionsList.map(function(x){return x.a.prazo;}).filter(Boolean).sort()[0]||'—';
+  var rows=actionsList.slice(0,5).map(function(x){
+    return '<tr><td><span class="badge purple">'+x.gap.psId+'</span></td><td style="max-width:200px">'+escapeHtml(x.a.action)+'</td><td>'+escapeHtml(x.a.resp)+'</td><td>'+escapeHtml(x.a.prazo)+'</td><td>'+escapeHtml(x.a.prio)+'</td></tr>';
+  }).join('');
+  var justRows=justifiedList.map(function(j){
+    return '<div class="esap-just-row"><span class="badge gray">'+j.psId+'</span> '+escapeHtml(j.justification)+'</div>';
+  }).join('');
+  ov.innerHTML='<div class="esap-builder-box esap-review-box">'
+    +'<div class="esap-builder-head"><span>'+t('esap.review.title')+'</span><button class="esap-builder-close" onclick="esapCloseBuilder()">✕</button></div>'
+    +'<div class="esap-review-metrics">'
+      +'<div><strong>'+actionsList.length+'</strong><small>'+t('esap.review.m_actions')+'</small></div>'
+      +'<div><strong>'+justifiedList.length+'</strong><small>'+t('esap.review.m_justified')+'</small></div>'
+      +'<div><strong>'+highPrio+'</strong><small>'+t('esap.review.m_highprio')+'</small></div>'
+      +'<div><strong>'+escapeHtml(nearest)+'</strong><small>'+t('esap.review.m_nearest')+'</small></div>'
+    +'</div>'
+    +'<table class="esap-review-table"><tbody>'+rows+'</tbody></table>'
+    +(actionsList.length>5?('<div style="font-size:11px;color:var(--text-3);margin-bottom:10px">+'+(actionsList.length-5)+' '+t('esap.review.more')+'</div>'):'')
+    +(justRows?('<div class="esap-just-list">'+justRows+'</div>'):'')
+    +'<div class="esap-valid-badge '+(valid?'green':'amber')+'">'+(valid?t('esap.review.valid'):t('esap.review.invalid')+(reasons.length?(': '+reasons.slice(0,3).join('; ')):''))+'</div>'
+    +'<div class="esap-builder-actions"><button class="btn" onclick="esapBackToQueue()">'+t('esap.review.back')+'</button><button class="btn primary" '+(valid?'':'disabled')+' onclick="esapActivate()">'+t('esap.review.activate')+'</button></div>'
+    +'</div>';
+}
+window.esapBackToQueue=function(){
+  var queue=esapGapQueue(),st=esapDraftState(),firstIncomplete=0;
+  for(var i=0;i<queue.length;i++){
+    var covered=(st.actions&&st.actions[i])||(st.justified||[]).some(function(j){return j.psId===queue[i].psId;});
+    if(!covered){firstIncomplete=i;break;}
+  }
+  st.idx=firstIncomplete; esapDraftSave(st); esapRenderBuilder(queue,st);
+};
+window.esapActivate=function(){
+  var queue=esapGapQueue(),st=esapDraftState();
+  queue.forEach(function(gap,i){
+    var a=st.actions&&st.actions[i];
+    if(a){
+      var id='ESAP-'+(esapData.length+1).toString().padStart(3,'0');
+      esapData.push({id:id,ps:gap.psId,prio:a.prio,desc:a.action,objective:'',outcome:'',kpi:'',budget:'',procedure:'',stakeholders:'',hierarchy:'',resp:a.resp,prazo:a.prazo,status:'Não iniciada',evid:''});
+    }
+  });
+  window.esapJustifiedGaps=window.esapJustifiedGaps||[];
+  (st.justified||[]).forEach(function(j){
+    window.esapJustifiedGaps=window.esapJustifiedGaps.filter(function(x){return x.psId!==j.psId;});
+    window.esapJustifiedGaps.push({psId:j.psId,psName:j.psName,justification:j.justification,date:new Date().toISOString().slice(0,10)});
+  });
+  localStorage.setItem('sgas_esap_activated','1');
+  localStorage.removeItem('sgas_esap_draft');
+  esapCloseBuilder();
+  try{renderEsap();}catch(e){}
+  try{updateReadiness();}catch(e){}
+  try{renderRoteiro();}catch(e){}
+  try{nav('dashboard');}catch(e){}
+};
 })();
 </script>
 
