@@ -912,9 +912,9 @@ canvas { max-width: 100%; }
 
     <div class="sidebar-bottom">
       <div class="audit-countdown">
-        <div class="audit-countdown-label">⏰ Próxima auditoria IFC</div>
+        <div class="audit-countdown-label" data-i18n="audit.countdown.label">⏰ Próxima auditoria IFC</div>
         <div class="audit-countdown-days" id="days-left">47</div>
-        <div class="audit-countdown-sub">dias · Missão de supervisão</div>
+        <div class="audit-countdown-sub" data-i18n="audit.countdown.sub">dias · Missão de supervisão</div>
       </div>
       <div style="margin-top:10px;padding:8px 4px;font-size:10px;color:rgba(255,255,255,0.35);line-height:1.4;text-align:center;">
         <span data-i18n="legal.disclaimer">SGAS Pro não substitui certificação oficial IFC/World Bank nem aconselhamento jurídico.</span>
@@ -1025,13 +1025,13 @@ canvas { max-width: 100%; }
       </div>
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Fase do projeto</span>
-          <span class="badge blue" id="project-phase-badge">Implementação</span>
+          <span class="card-title" data-i18n="card.title.fase_projeto">Fase do projeto</span>
+          <span class="badge blue" id="project-phase-badge" data-i18n="phase.implementacao">Implementação</span>
         </div>
         <div class="card-body">
           <div id="project-phase-detail" style="font-size:13px;color:var(--ink-dim,#aaa);line-height:1.6">
-            <strong id="project-phase-category">Categoria B</strong> &mdash; Preparação para due diligence.<br>
-            <span id="project-phase-label">Supervisão / Implementação</span>
+            <strong id="project-phase-category" data-i18n="phase.categoria_b">Categoria B</strong> <span data-i18n="phase.due_diligence_prep">&mdash; Preparação para due diligence.</span><br>
+            <span id="project-phase-label" data-i18n="phase.supervisao_implementacao">Supervisão / Implementação</span>
           </div>
           <!-- commercial-intel-mount: populated by internal/commercial-intel.js when ?internal=1 -->
           <div id="commercial-intel-mount" style="display:none"></div>
@@ -3485,7 +3485,8 @@ function riskLevel(s,p){ let v=s*p; return v>=15?'Crítico':v>=8?'Alto':v>=4?'Mo
 function riskColor(s,p){ let v=s*p; return v>=15?'#DC2626':v>=8?'#D97706':v>=4?'#2563EB':'#059669'; }
 function riskBg(s,p){ let v=s*p; return v>=15?'#FEE2E2':v>=8?'#FFEDD5':v>=4?'#EFF6FF':'#DCFCE7'; }
 function prioBadge(p){ const m={Crítica:'red',Alta:'amber',Média:'blue',Baixa:'gray'}; return `<span class="badge ${m[p]||'gray'}">${p}</span>`; }
-function statusBadge(s){ const m={'Concluída':'green','Em curso':'blue','Não iniciada':'gray','Em atraso':'red','Activo':'amber','Monitorado':'green','Em análise':'amber','Resolvida':'green','done':'green','partial':'amber','none':'gray','Sim':'green','Não':'gray','Pendente':'amber','A avaliar':'blue','Conforme':'green','Acção pendente':'amber','Não conforme':'red','Incluídas':'green','Em falta':'red','Submetido':'green','Em preparação':'blue','Atrasado':'red','Em revisão IFC':'blue','Em revisão':'blue','A vencer':'amber','Validada':'green','Insuficiente':'red','Comunicado':'green','Em seguimento':'amber','Evitado':'green','Reduzido':'blue','Mitigado':'amber','Compensado':'purple','Evitar':'green','Minimizar':'blue','Compensar':'purple','Aceite':'green','Não aceite':'red','Em triagem':'amber','Satisfeito':'green','Apelou':'red','N/A':'gray','Atualizado':'green','Monitorar':'amber','Rever versão 2025':'amber','Pronto':'green','Verificado':'green'}; const c=m[s]||'gray'; return `<span class="badge ${c}">${s}</span>`; }
+const STATUS_I18N_KEY={'Concluída':'status.concluida','Em curso':'status.emcurso','Não iniciada':'status.naoiniciada','Em atraso':'status.ematraso','Activo':'status.activo','Monitorado':'status.monitorado','Em análise':'status.emanalise','Resolvida':'status.resolvida','done':'status.done','partial':'status.partial','none':'status.none','Sim':'status.sim','Não':'status.nao','Pendente':'status.pendente','A avaliar':'status.aavaliar','Conforme':'status.conforme','Acção pendente':'status.accaopendente','Não conforme':'status.naoconforme','Incluídas':'status.incluidas','Em falta':'status.emfalta','Submetido':'status.submetido','Em preparação':'status.empreparacao','Atrasado':'status.atrasado','Em revisão IFC':'status.emrevisaoifc','Em revisão':'status.emrevisao','A vencer':'status.avencer','Validada':'status.validada','Insuficiente':'status.insuficiente','Comunicado':'status.comunicado','Em seguimento':'status.emseguimento','Evitado':'status.evitado','Reduzido':'status.reduzido','Mitigado':'status.mitigado','Compensado':'status.compensado','Evitar':'status.evitar','Minimizar':'status.minimizar','Compensar':'status.compensar','Aceite':'status.aceite','Não aceite':'status.naoaceite','Em triagem':'status.emtriagem','Satisfeito':'status.satisfeito','Apelou':'status.apelou','N/A':'status.na','Atualizado':'status.atualizado','Monitorar':'status.monitorar','Rever versão 2025':'status.reverversao2025','Pronto':'status.pronto','Verificado':'status.verificado'};
+function statusBadge(s){ const m={'Concluída':'green','Em curso':'blue','Não iniciada':'gray','Em atraso':'red','Activo':'amber','Monitorado':'green','Em análise':'amber','Resolvida':'green','done':'green','partial':'amber','none':'gray','Sim':'green','Não':'gray','Pendente':'amber','A avaliar':'blue','Conforme':'green','Acção pendente':'amber','Não conforme':'red','Incluídas':'green','Em falta':'red','Submetido':'green','Em preparação':'blue','Atrasado':'red','Em revisão IFC':'blue','Em revisão':'blue','A vencer':'amber','Validada':'green','Insuficiente':'red','Comunicado':'green','Em seguimento':'amber','Evitado':'green','Reduzido':'blue','Mitigado':'amber','Compensado':'purple','Evitar':'green','Minimizar':'blue','Compensar':'purple','Aceite':'green','Não aceite':'red','Em triagem':'amber','Satisfeito':'green','Apelou':'red','N/A':'gray','Atualizado':'green','Monitorar':'amber','Rever versão 2025':'amber','Pronto':'green','Verificado':'green'}; const c=m[s]||'gray'; const k=STATUS_I18N_KEY[s]; const label=k?t(k):s; return `<span class="badge ${c}">${label}</span>`; }
 function avg(arr){ return arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : '0.0'; }
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
@@ -3748,7 +3749,7 @@ function renderDashboard(){
       <span class="badge ${over?'red':'blue'}" style="width:36px;justify-content:center">${e.ps}</span>
       <span style="flex:1;font-size:12px">${escapeHtml(e.desc)}</span>
       <span style="font-size:11px;color:var(--text-3)">${e.prazo}</span>
-      ${over?'<span class="badge red">Atraso</span>':'<span class="badge blue">Em curso</span>'}
+      ${over?`<span class="badge red">${t('status.ematraso')}</span>`:`<span class="badge blue">${t('status.emcurso')}</span>`}
     </div>`;
   });
   document.getElementById('dash-critical-list').innerHTML=ch;
@@ -4975,24 +4976,24 @@ function renderDocuments(){
     s.docs.forEach((d,i)=>{
       const icon=d.status==='ok'?'✓':d.status==='missing'?'✕':'⚠';
       const version=escapeHtml(d.version)||'v1.0';
-      const owner=escapeHtml(d.owner)||'Owner por definir';
-      const approver=escapeHtml(d.approver)||'Aprovador por definir';
-      const nextReview=escapeHtml(d.nextReview)||'Próxima revisão por definir';
-      const replaces=escapeHtml(d.replaces)||'Sem obsoleto registado';
+      const owner=escapeHtml(d.owner)||t('doc.owner.undefined');
+      const approver=escapeHtml(d.approver)||t('doc.approver.undefined');
+      const nextReview=escapeHtml(d.nextReview)||t('doc.nextreview.undefined');
+      const replaces=escapeHtml(d.replaces)||t('doc.replaces.none');
       h+=`<div class="doc-item">
         <div class="doc-status-icon ${d.status==='ok'?'ok':d.status==='missing'?'miss':'old'}">${icon}</div>
         <div style="flex:1">
           <div class="doc-name">${escapeHtml(d.name)}</div>
-          <div class="doc-req">Controlo documental · ${d.date?'Última versão: '+d.date:'Não submetido'}</div>
+          <div class="doc-req">${t('doc.control_label')} · ${d.date?t('doc.lastversion',{date:d.date}):t('doc.notsubmitted')}</div>
           <div class="doc-version-grid">
-            <div><strong>Versão:</strong> ${version}</div>
-            <div><strong>Owner:</strong> ${owner}</div>
-            <div><strong>Aprovador:</strong> ${approver}</div>
-            <div><strong>Próxima revisão:</strong> ${nextReview}</div>
-            <div><strong>Obsoleto/substituído:</strong> ${replaces}</div>
+            <div><strong>${t('doc.version_label')}:</strong> ${version}</div>
+            <div><strong>${t('doc.owner_label')}:</strong> ${owner}</div>
+            <div><strong>${t('doc.approver_label')}:</strong> ${approver}</div>
+            <div><strong>${t('doc.nextreview_label')}:</strong> ${nextReview}</div>
+            <div><strong>${t('doc.replaces_label')}:</strong> ${replaces}</div>
           </div>
         </div>
-        <span class="doc-tag ${d.req?'req':'opt'}">${d.req?'Obrigatório':'Recomendado'}</span>
+        <span class="doc-tag ${d.req?'req':'opt'}">${d.req?t('doc.tag.obrigatorio'):t('doc.tag.recomendado')}</span>
         ${d.status==='missing'?'<button class="btn" style="font-size:11px;padding:4px 10px">↑ Upload</button>':d.status==='old'?'<button class="btn" style="font-size:11px;padding:4px 10px">↑ Actualizar</button>':'<button class="btn" style="font-size:11px;padding:4px 10px">↓ Ver</button>'}
       </div>`;
     });
@@ -7766,6 +7767,11 @@ const I18N = {
     'legal.disclaimer': 'SGAS Pro não substitui certificação oficial IFC/World Bank nem aconselhamento jurídico.',
     // AI
     'ai.greeting': 'Olá! Sou o assistente de IA do SGAS.pro. Posso ajudar com análise de conformidade PS1–PS8, plano ESAP, gestão de riscos e preparação para missões do Banco Mundial. O que precisas?',
+    // Status badges (statusBadge()) — internal data values stay PT; only display label is translated
+    'status.concluida':'Concluída','status.emcurso':'Em curso','status.naoiniciada':'Não iniciada','status.ematraso':'Em atraso','status.activo':'Activo','status.monitorado':'Monitorado','status.emanalise':'Em análise','status.resolvida':'Resolvida','status.done':'Concluído','status.partial':'Parcial','status.none':'Nenhum','status.sim':'Sim','status.nao':'Não','status.pendente':'Pendente','status.aavaliar':'A avaliar','status.conforme':'Conforme','status.accaopendente':'Acção pendente','status.naoconforme':'Não conforme','status.incluidas':'Incluídas','status.emfalta':'Em falta','status.submetido':'Submetido','status.empreparacao':'Em preparação','status.atrasado':'Atrasado','status.emrevisaoifc':'Em revisão IFC','status.emrevisao':'Em revisão','status.avencer':'A vencer','status.validada':'Validada','status.insuficiente':'Insuficiente','status.comunicado':'Comunicado','status.emseguimento':'Em seguimento','status.evitado':'Evitado','status.reduzido':'Reduzido','status.mitigado':'Mitigado','status.compensado':'Compensado','status.evitar':'Evitar','status.minimizar':'Minimizar','status.compensar':'Compensar','status.aceite':'Aceite','status.naoaceite':'Não aceite','status.emtriagem':'Em triagem','status.satisfeito':'Satisfeito','status.apelou':'Apelou','status.na':'N/A','status.atualizado':'Atualizado','status.monitorar':'Monitorar','status.reverversao2025':'Rever versão 2025','status.pronto':'Pronto','status.verificado':'Verificado',
+    // Path E — EN_SWEEP migration + document/phase chrome
+    'card.title.fase_projeto':'Fase do projeto','phase.implementacao':'Implementação','phase.categoria_b':'Categoria B','phase.due_diligence_prep':'— Preparação para due diligence.','phase.supervisao_implementacao':'Supervisão / Implementação','audit.countdown.label':'⏰ Próxima auditoria IFC','audit.countdown.sub':'dias · Missão de supervisão',
+    'doc.owner.undefined':'Owner por definir','doc.approver.undefined':'Aprovador por definir','doc.nextreview.undefined':'Próxima revisão por definir','doc.replaces.none':'Sem obsoleto registado','doc.control_label':'Controlo documental','doc.lastversion':'Última versão: {date}','doc.notsubmitted':'Não submetido','doc.version_label':'Versão','doc.owner_label':'Owner','doc.approver_label':'Aprovador','doc.nextreview_label':'Próxima revisão','doc.replaces_label':'Obsoleto/substituído','doc.tag.obrigatorio':'Obrigatório','doc.tag.recomendado':'Recomendado',
   },
   en: {
     // Topbar
@@ -7847,6 +7853,11 @@ const I18N = {
     'legal.disclaimer': 'SGAS Pro does not replace official IFC/World Bank certification or legal advice.',
     // AI
     'ai.greeting': 'Hello! I\'m the SGAS.pro AI assistant. I can help with PS1–PS8 compliance analysis, ESAP planning, risk management, and World Bank supervision mission preparation. How can I help?',
+    // Status badges (statusBadge()) — internal data values stay PT; only display label is translated
+    'status.concluida':'Completed','status.emcurso':'In progress','status.naoiniciada':'Not started','status.ematraso':'Overdue','status.activo':'Active','status.monitorado':'Monitored','status.emanalise':'Under review','status.resolvida':'Resolved','status.done':'Done','status.partial':'Partial','status.none':'None','status.sim':'Yes','status.nao':'No','status.pendente':'Pending','status.aavaliar':'To assess','status.conforme':'Compliant','status.accaopendente':'Action pending','status.naoconforme':'Non-compliant','status.incluidas':'Included','status.emfalta':'Missing','status.submetido':'Submitted','status.empreparacao':'In preparation','status.atrasado':'Late','status.emrevisaoifc':'Under IFC review','status.emrevisao':'Under review','status.avencer':'Due soon','status.validada':'Validated','status.insuficiente':'Insufficient','status.comunicado':'Communicated','status.emseguimento':'Follow-up','status.evitado':'Avoided','status.reduzido':'Reduced','status.mitigado':'Mitigated','status.compensado':'Offset','status.evitar':'Avoid','status.minimizar':'Minimize','status.compensar':'Offset','status.aceite':'Accepted','status.naoaceite':'Not accepted','status.emtriagem':'Under triage','status.satisfeito':'Satisfied','status.apelou':'Appealed','status.na':'N/A','status.atualizado':'Updated','status.monitorar':'Monitor','status.reverversao2025':'Review 2025 version','status.pronto':'Ready','status.verificado':'Verified',
+    // Path E — EN_SWEEP migration + document/phase chrome
+    'card.title.fase_projeto':'Project phase','phase.implementacao':'Implementation','phase.categoria_b':'Category B','phase.due_diligence_prep':'— Due diligence preparation.','phase.supervisao_implementacao':'Supervision / Implementation','audit.countdown.label':'⏰ Next IFC audit','audit.countdown.sub':'days · Supervision mission',
+    'doc.owner.undefined':'Owner to be defined','doc.approver.undefined':'Approver to be defined','doc.nextreview.undefined':'Next review to be defined','doc.replaces.none':'No superseded version recorded','doc.control_label':'Document control','doc.lastversion':'Latest version: {date}','doc.notsubmitted':'Not submitted','doc.version_label':'Version','doc.owner_label':'Owner','doc.approver_label':'Approver','doc.nextreview_label':'Next review','doc.replaces_label':'Superseded by','doc.tag.obrigatorio':'Required','doc.tag.recomendado':'Recommended',
   }
 };
 
@@ -8325,12 +8336,18 @@ function bindI18nAttributes() {
   });
 }
 
-let SGAS_LANG = localStorage.getItem('sgas_lang') || 'pt';
+function detectDefaultLang() {
+  try { return (navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en'; }
+  catch (e) { return 'pt'; }
+}
+let SGAS_LANG = localStorage.getItem('sgas_lang') || detectDefaultLang();
 window.SGAS_LANG = SGAS_LANG;
 
 function t(key, vars) {
   var dict = I18N[SGAS_LANG] || I18N.pt;
-  var str = (dict[key] !== undefined ? dict[key] : (I18N.pt[key] || key));
+  var str;
+  if (dict[key] !== undefined) { str = dict[key]; }
+  else { console.warn('[i18n] missing EN key:', key); str = I18N.pt[key] || key; }
   if (vars) Object.keys(vars).forEach(function(k) { str = str.replace('{' + k + '}', vars[k]); });
   return str;
 }
@@ -8404,6 +8421,17 @@ function setLang(l) {
   if (toggle) toggle.querySelectorAll('button').forEach(function(b) {
     b.setAttribute('tabindex', '0');
   });
+
+  // 7. Re-render JS-built dynamic content (tables/cards) in the new language
+  rerenderDynamic();
+}
+
+// Re-invokes render functions for content built from template literals (not covered by
+// data-i18n's static-node walk above). Each render fn re-reads current data + t() fresh.
+function rerenderDynamic() {
+  ['renderDashboard', 'renderEsap', 'renderComplaints', 'renderAll'].forEach(function(fn) {
+    try { if (typeof window[fn] === 'function') window[fn](); } catch (e) {}
+  });
 }
 
 // Keyboard support for lang toggle
@@ -8421,9 +8449,8 @@ document.addEventListener('keydown', function(e) {
 // Boot: apply saved language after DOM is ready
 (function() {
   bindI18nAttributes();
-  var lang = localStorage.getItem('sgas_lang') || 'pt';
-  if (lang !== 'pt') setLang(lang);
-  else setLang('pt');  // ensure toggle state is correct even on default
+  var lang = localStorage.getItem('sgas_lang') || detectDefaultLang();
+  setLang(lang);  // always run once so toggle state + dynamic re-render are correct even on default
 })();
 </script>
 
@@ -8617,23 +8644,12 @@ function fixOverdueSub(){
   var total=0;try{total=esapData.length;}catch(e){}
   try{el.textContent=t('kpi.overdue.sub',{n:total});}catch(e){}
 }
-var EN_SWEEP={'Implementação':'Implementation','Supervisão / Implementação':'Supervision / Implementation','Categoria B — Preparação para due diligence.':'Category B — Due diligence preparation.','Atraso':'Overdue','Em curso':'In progress','Obrigatório':'Required','Recomendado':'Recommended','Owner por definir':'Owner to be defined','Aprovador por definir':'Approver to be defined','Próxima revisão por definir':'Next review to be defined','Sem obsoleto registado':'No superseded version recorded','Não submetido':'Not submitted','Projecto activo':'Active project','dias · Missão de supervisão':'days · Supervision mission','⏰ Próxima auditoria IFC':'⏰ Next IFC audit'};
-function enSweep(){
-  if(L()!=='en')return;
-  var main=document.querySelector('.main')||document.body;
-  var walker=document.createTreeWalker(main,NodeFilter.SHOW_TEXT,null),tn;
-  while((tn=walker.nextNode())){
-    var v=(tn.nodeValue||'').trim();
-    if(EN_SWEEP[v])tn.nodeValue=tn.nodeValue.replace(v,EN_SWEEP[v]);
-  }
-  document.querySelectorAll('.sidebar-bottom,.project-pill').forEach(function(sb){
-    var w=document.createTreeWalker(sb,NodeFilter.SHOW_TEXT,null),n2;
-    while((n2=w.nextNode())){var v2=(n2.nodeValue||'').trim();if(EN_SWEEP[v2])n2.nodeValue=n2.nodeValue.replace(v2,EN_SWEEP[v2]);}
-  });
-}
+/* EN_SWEEP retired (Path E) — its 14 string pairs now live as I18N keys (card.title.fase_projeto,
+   phase.*, audit.countdown.*, status.ematraso/emcurso, doc.tag.*, doc.*.undefined/none/notsubmitted,
+   sidebar.pill.label) consumed via data-i18n or t() at their actual render sites. See docs/path-e-report.md. */
 
 /* ───── 5. HOOKS (wrap, never modify) ───── */
-function uxRefresh(){try{renderOnb();}catch(e){}try{renderPsChips();}catch(e){}try{fixOverdueSub();}catch(e){}try{glossApply();}catch(e){}try{enSweep();}catch(e){}}
+function uxRefresh(){try{renderOnb();}catch(e){}try{renderPsChips();}catch(e){}try{fixOverdueSub();}catch(e){}try{glossApply();}catch(e){}}
 window._sgasUxRefresh=uxRefresh;
 ['renderAll','renderDashboard','setLang'].forEach(function(fn){
   var orig=window[fn];
