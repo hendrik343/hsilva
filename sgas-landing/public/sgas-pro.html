@@ -8425,6 +8425,414 @@ document.addEventListener('keydown', function(e) {
 })();
 </script>
 
+<!-- ═══════════════════ SGAS UX LAYER (additive — safe to remove) ═══════════════════
+     Adds: (1) glossary tooltips for acronyms, (2) "Primeiros 30 minutos" onboarding
+     checklist, (3) PS1–PS8 progress chips in the Document Vault, (4) {n} KPI fix and
+     targeted EN translation sweep. No existing content or logic is modified. -->
+<style id="sgas-ux-css">
+  .gloss{border-bottom:1px dotted var(--accent,#1D9E75);cursor:help;text-decoration:none;color:inherit}
+  #gloss-tip{position:fixed;z-index:99999;max-width:280px;background:#111827;color:#F9FAFB;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none;opacity:0;transition:opacity .12s;font-family:inherit}
+  #gloss-tip strong{color:#6EE7B7;display:block;margin-bottom:2px;font-size:11px;letter-spacing:.4px}
+  .onb-card{background:var(--surface,#fff);border:1px solid var(--border,#E5E7EB);border-left:4px solid #1D9E75;border-radius:12px;padding:18px 20px;margin-bottom:20px}
+  .onb-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .onb-title{font-size:15px;font-weight:700;color:var(--text,#111827);flex:1}
+  .onb-sub{font-size:12px;color:var(--text-2,#6B7280);margin-bottom:12px}
+  .onb-dismiss{background:none;border:none;font-size:16px;color:var(--text-3,#9CA3AF);cursor:pointer;padding:2px 6px}
+  .onb-prog{height:6px;background:var(--bg-2,#F3F4F6);border-radius:3px;margin-bottom:14px;overflow:hidden}
+  .onb-prog-fill{height:100%;background:#1D9E75;border-radius:3px;transition:width .3s}
+  .onb-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+  .onb-step{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border,#E5E7EB);border-radius:8px;background:var(--bg-2,#FAFAFA)}
+  .onb-step.done{opacity:.62}
+  .onb-step.next{border-color:#1D9E75;background:rgba(29,158,117,.06)}
+  .onb-num{width:22px;height:22px;border-radius:50%;background:var(--bg-3,#E5E7EB);color:var(--text-2,#6B7280);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+  .onb-step.done .onb-num{background:#1D9E75;color:#fff}
+  .onb-step.next .onb-num{background:#1D9E75;color:#fff}
+  .onb-label{flex:1;font-size:12px;font-weight:600;color:var(--text,#111827);line-height:1.3}
+  .onb-label small{display:block;font-weight:400;color:var(--text-3,#9CA3AF);font-size:11px}
+  .onb-go{background:#1D9E75;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit}
+  .onb-step.done .onb-go{display:none}
+  .ps-chip-strip{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .ps-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--border,#E5E7EB);background:var(--surface,#fff);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  .ps-chip .dot{width:8px;height:8px;border-radius:50%}
+  .ps-chip:hover{border-color:#1D9E75}
+</style>
+<script id="sgas-ux-layer">
+(function(){
+'use strict';
+var L=function(){return window.SGAS_LANG||'pt';};
+
+/* ───── 1. GLOSSARY ───── */
+var GLOSS={
+ 'SGAS':{pt:'Sistema de Gestão Ambiental e Social — os processos que a sua organização usa para gerir riscos ambientais e sociais.',en:'Environmental & Social Management System — the processes your organisation uses to manage E&S risks.'},
+ 'ESMS':{pt:'Environmental & Social Management System — o nome inglês do SGAS.',en:'Environmental & Social Management System — the framework of policies and procedures to manage E&S risk.'},
+ 'IFC':{pt:'International Finance Corporation — braço do Grupo Banco Mundial para o sector privado; autor dos Padrões de Desempenho.',en:'International Finance Corporation — the World Bank Group’s private-sector arm; author of the Performance Standards.'},
+ 'PS1':{pt:'Padrão de Desempenho 1 — Avaliação e gestão de riscos e impactos ambientais e sociais.',en:'Performance Standard 1 — Assessment and management of environmental and social risks and impacts.'},
+ 'PS2':{pt:'Padrão de Desempenho 2 — Condições de trabalho e emprego.',en:'Performance Standard 2 — Labour and working conditions.'},
+ 'PS3':{pt:'Padrão de Desempenho 3 — Eficiência de recursos e prevenção da poluição.',en:'Performance Standard 3 — Resource efficiency and pollution prevention.'},
+ 'PS4':{pt:'Padrão de Desempenho 4 — Saúde, segurança e protecção da comunidade.',en:'Performance Standard 4 — Community health, safety and security.'},
+ 'PS5':{pt:'Padrão de Desempenho 5 — Aquisição de terras e reassentamento involuntário.',en:'Performance Standard 5 — Land acquisition and involuntary resettlement.'},
+ 'PS6':{pt:'Padrão de Desempenho 6 — Conservação da biodiversidade e recursos naturais vivos.',en:'Performance Standard 6 — Biodiversity conservation and living natural resources.'},
+ 'PS7':{pt:'Padrão de Desempenho 7 — Povos Indígenas.',en:'Performance Standard 7 — Indigenous Peoples.'},
+ 'PS8':{pt:'Padrão de Desempenho 8 — Património cultural.',en:'Performance Standard 8 — Cultural heritage.'},
+ 'ESAP':{pt:'Plano de Acção Ambiental e Social — a lista de medidas acordadas com o financiador, com prazos e responsáveis.',en:'Environmental & Social Action Plan — the list of measures agreed with the lender, with deadlines and owners.'},
+ 'GRM':{pt:'Mecanismo de Reclamações — canal formal para trabalhadores e comunidades apresentarem queixas (resposta em 15 dias).',en:'Grievance Redress Mechanism — formal channel for workers and communities to raise complaints (15-day response).'},
+ 'BCS':{pt:'Broad Community Support — evidência de apoio amplo da comunidade, exigida pelo IFC antes da aprovação.',en:'Broad Community Support — evidence of wide community backing, required by IFC before Board approval.'},
+ 'FPIC':{pt:'Consentimento Livre, Prévio e Informado — exigido quando o projecto afecta Povos Indígenas.',en:'Free, Prior and Informed Consent — required when the project affects Indigenous Peoples.'},
+ 'CAO':{pt:'Compliance Advisor/Ombudsman — provedor independente do IFC para reclamações não resolvidas pelo GRM interno.',en:'Compliance Advisor/Ombudsman — IFC’s independent recourse body for complaints unresolved by the internal GRM.'},
+ 'KPI':{pt:'Indicador-chave de desempenho — métrica que mostra se o sistema está a funcionar.',en:'Key Performance Indicator — a metric showing whether the system is working.'},
+ 'ESIA':{pt:'Avaliação de Impacto Ambiental e Social do projecto.',en:'Environmental and Social Impact Assessment of the project.'},
+ 'SEP':{pt:'Plano de Engajamento de Partes Interessadas.',en:'Stakeholder Engagement Plan.'},
+ 'PGAS':{pt:'Plano de Gestão Ambiental e Social.',en:'Environmental and Social Management Plan (ESMP).'},
+ 'EHS':{pt:'Directrizes de Ambiente, Saúde e Segurança do Grupo Banco Mundial.',en:'Environmental, Health and Safety Guidelines of the World Bank Group.'},
+ 'ESRP':{pt:'Procedimento de Revisão Ambiental e Social do IFC.',en:'IFC’s Environmental and Social Review Procedure.'},
+ 'PDCA':{pt:'Ciclo Planear–Fazer–Verificar–Agir — método de melhoria contínua.',en:'Plan–Do–Check–Act cycle — a continuous-improvement method.'},
+ 'UIP':{pt:'Unidade de Implementação de Projecto.',en:'Project Implementation Unit (PIU).'},
+ 'ESS':{pt:'Environmental and Social Standards — as normas do Banco Mundial, equivalentes aos PS do IFC.',en:'Environmental and Social Standards — the World Bank’s norms, equivalent to IFC’s PS.'}
+};
+var GLOSS_RE=/\b(SGAS|ESMS|ESAP|GRM|BCS|FPIC|CAO|KPI|ESIA|SEP|PGAS|EHS|ESRP|PDCA|UIP|IFC|ESS|PS[1-8])\b/g;
+var GLOSS_SEL='.section-title,.section-sub,.metric-label,.card-title,.alert-banner,.sidebar-section,.doc-section-title,.nav-item>span:not(.nav-icon):not(.nav-badge)';
+function glossApply(){
+  document.querySelectorAll(GLOSS_SEL).forEach(function(root){
+    var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],tn;
+    while((tn=walker.nextNode())) nodes.push(tn);
+    nodes.forEach(function(node){
+      if(!node.nodeValue||!GLOSS_RE.test(node.nodeValue)){GLOSS_RE.lastIndex=0;return;}
+      GLOSS_RE.lastIndex=0;
+      var p=node.parentElement;
+      if(!p||p.closest('.gloss')||p.closest('#gloss-tip')||p.closest('.onb-card'))return;
+      var frag=document.createDocumentFragment(),last=0,m,txt=node.nodeValue;
+      while((m=GLOSS_RE.exec(txt))){
+        if(!GLOSS[m[1]])continue;
+        frag.appendChild(document.createTextNode(txt.slice(last,m.index)));
+        var s=document.createElement('span');s.className='gloss';s.setAttribute('data-gloss',m[1]);s.setAttribute('tabindex','0');s.textContent=m[0];
+        frag.appendChild(s);last=m.index+m[0].length;
+      }
+      GLOSS_RE.lastIndex=0;
+      frag.appendChild(document.createTextNode(txt.slice(last)));
+      node.parentNode.replaceChild(frag,node);
+    });
+  });
+}
+var tip=null;
+function showTip(target){
+  var term=target.getAttribute('data-gloss');if(!term||!GLOSS[term])return;
+  if(!tip){tip=document.createElement('div');tip.id='gloss-tip';document.body.appendChild(tip);}
+  tip.innerHTML='<strong>'+term+'</strong>'+(GLOSS[term][L()]||GLOSS[term].pt);
+  var r=target.getBoundingClientRect();
+  tip.style.left=Math.min(window.innerWidth-296,Math.max(8,r.left))+'px';
+  tip.style.top=(r.bottom+8)+'px';tip.style.opacity='1';
+}
+function hideTip(){if(tip)tip.style.opacity='0';}
+document.addEventListener('mouseover',function(e){var g=e.target.closest&&e.target.closest('.gloss');if(g)showTip(g);else hideTip();});
+document.addEventListener('focusin',function(e){var g=e.target.closest&&e.target.closest('.gloss');if(g)showTip(g);});
+document.addEventListener('focusout',hideTip);
+
+/* ───── 2. ONBOARDING — Primeiros 30 minutos ───── */
+var ONB_T={
+ pt:{title:'🚀 Primeiros 30 minutos',sub:'Seis passos e o seu projecto fica com a base pronta para a supervisão do Banco Mundial.',dismiss:'Ocultar',go:'Fazer agora',s1:'Criar o projecto',s1s:'Nome + país. 1 minuto.',s2:'Diagnóstico IFC (wizard)',s2s:'Caracterize o projecto em ~10 min.',s3:'Ver a sua prontidão',s3s:'O score % no topo do Dashboard.',s4:'Autoavaliação SGAS',s4s:'42 perguntas · maturidade 0–5.',s5:'Primeira acção ESAP',s5s:'Registe uma medida com prazo.',s6:'Exportar um relatório',s6s:'Formato Banco Mundial, 1 clique.',done:'✅ Concluído! Já domina o essencial do SGAS Pro.'},
+ en:{title:'🚀 First 30 minutes',sub:'Six steps and your project has the groundwork ready for World Bank supervision.',dismiss:'Hide',go:'Do it now',s1:'Create the project',s1s:'Name + country. 1 minute.',s2:'IFC Diagnostic (wizard)',s2s:'Characterise the project in ~10 min.',s3:'See your readiness',s3s:'The % score at the top of the Dashboard.',s4:'ESMS Self-Assessment',s4s:'42 questions · maturity 0–5.',s5:'First ESAP action',s5s:'Record one measure with a deadline.',s6:'Export a report',s6s:'World Bank format, 1 click.',done:'✅ Done! You’ve mastered the essentials of SGAS Pro.'}
+};
+function onbState(){try{return JSON.parse(localStorage.getItem('sgas_onb_v1'))||{};}catch(e){return{};}}
+function onbSave(s){localStorage.setItem('sgas_onb_v1',JSON.stringify(s));}
+window.sgasOnbMark=function(k){var s=onbState();s[k]=true;onbSave(s);renderOnb();};
+window.sgasOnbDismiss=function(){var s=onbState();s.dismissed=true;onbSave(s);renderOnb();};
+window.sgasOnbGo=function(k){
+  var s=onbState();
+  try{
+    if(k==='s1'){openCreateProjectModal();}
+    else if(k==='s2'){openReadinessWizard();}
+    else if(k==='s3'){nav('dashboard');var kg=document.getElementById('dash-kpi-grid');if(kg)kg.scrollIntoView({behavior:'smooth'});s.s3=true;}
+    else if(k==='s4'){nav('avaliacao');}
+    else if(k==='s5'){nav('esap');}
+    else if(k==='s6'){nav('relatorio');s.s6=true;}
+  }catch(e){}
+  onbSave(s);renderOnb();
+};
+function onbSteps(){
+  var s=onbState(),proj=document.getElementById('proj-pill-name');
+  var hasProj=proj&&proj.textContent.trim()!=='—'&&proj.textContent.trim()!=='';
+  var wiz=false;try{wiz=!!SGAS_READINESS_ASSESSMENT;}catch(e){}
+  var selfA=0;try{selfA=parseFloat(avg(sgasScores))>0;}catch(e){}
+  var esap=false;try{esap=esapData.length>0;}catch(e){}
+  return[
+   {k:'s1',done:hasProj||!!s.s1},{k:'s2',done:wiz||!!s.s2},{k:'s3',done:!!s.s3||wiz},
+   {k:'s4',done:selfA||!!s.s4},{k:'s5',done:esap||!!s.s5},{k:'s6',done:!!s.s6}
+  ];
+}
+function renderOnb(){
+  var dash=document.getElementById('page-dashboard');if(!dash)return;
+  var host=document.getElementById('sgas-onb-host');
+  if(!host){
+    host=document.createElement('div');host.id='sgas-onb-host';
+    var anchor=document.getElementById('dash-empty-state');
+    if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(host,anchor);else dash.insertBefore(host,dash.firstChild);
+  }
+  var st=onbState(),steps=onbSteps(),doneN=steps.filter(function(x){return x.done;}).length,tr=ONB_T[L()]||ONB_T.pt;
+  if(window.SGAS_DEMO_ACTIVE||st.dismissed||doneN===6){
+    host.innerHTML=(doneN===6&&!st.dismissed&&!window.SGAS_DEMO_ACTIVE)?'<div class="onb-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;flex:1">'+tr.done+'</span><button class="onb-dismiss" onclick="sgasOnbDismiss()">✕</button></div>':'';
+    var es0=document.getElementById('dash-empty-state');if(es0&&host.innerHTML==='')return;
+    return;
+  }
+  var nextSeen=false,rows='';
+  steps.forEach(function(x,i){
+    var isNext=!x.done&&!nextSeen;if(isNext)nextSeen=true;
+    rows+='<div class="onb-step '+(x.done?'done':'')+(isNext?' next':'')+'">'
+      +'<span class="onb-num">'+(x.done?'✓':(i+1))+'</span>'
+      +'<span class="onb-label">'+tr[x.k]+'<small>'+tr[x.k+'s']+'</small></span>'
+      +'<button class="onb-go" onclick="sgasOnbGo(\''+x.k+'\')">'+tr.go+'</button></div>';
+  });
+  host.innerHTML='<div class="onb-card">'
+    +'<div class="onb-head"><span class="onb-title">'+tr.title+'</span>'
+    +'<span style="font-size:11px;color:var(--text-3)">'+doneN+'/6</span>'
+    +'<button class="onb-dismiss" title="'+tr.dismiss+'" onclick="sgasOnbDismiss()">✕</button></div>'
+    +'<div class="onb-sub">'+tr.sub+'</div>'
+    +'<div class="onb-prog"><div class="onb-prog-fill" style="width:'+Math.round(doneN/6*100)+'%"></div></div>'
+    +'<div class="onb-steps">'+rows+'</div></div>';
+  var es=document.getElementById('dash-empty-state');if(es)es.style.display='none';
+}
+
+/* ───── 3. PS1–PS8 CHIPS in Document Vault ───── */
+function renderPsChips(){
+  var cont=document.getElementById('docs-container');if(!cont)return;
+  var SECS;try{SECS=DOC_SECTIONS;}catch(e){return;}
+  var strip=document.getElementById('ps-chip-strip');
+  if(!strip){strip=document.createElement('div');strip.id='ps-chip-strip';strip.className='ps-chip-strip';cont.parentNode.insertBefore(strip,cont);}
+  var h='';
+  SECS.forEach(function(s,i){
+    var m=(s.title||'').match(/PS[1-8]/),label=m?m[0]:(L()==='en'?'General':'Gerais');
+    var ok=s.docs.filter(function(d){return d.status==='ok';}).length,total=s.docs.length;
+    var col=ok===total?'#1D9E75':ok>0?'#D97706':'#DC2626';
+    var sec=cont.children[i];if(sec&&!sec.id)sec.id='doc-sec-'+i;
+    h+='<button class="ps-chip" onclick="var e=document.getElementById(\'doc-sec-'+i+'\');if(e)e.scrollIntoView({behavior:\'smooth\'})">'
+      +'<span class="dot" style="background:'+col+'"></span>'+label+' · '+ok+'/'+total+'</button>';
+  });
+  strip.innerHTML=h;
+}
+
+/* ───── 4. {n} FIX + targeted EN sweep ───── */
+function fixOverdueSub(){
+  var el=document.getElementById('dash-overdue-sub');if(!el)return;
+  var total=0;try{total=esapData.length;}catch(e){}
+  try{el.textContent=t('kpi.overdue.sub',{n:total});}catch(e){}
+}
+var EN_SWEEP={'Implementação':'Implementation','Supervisão / Implementação':'Supervision / Implementation','Categoria B — Preparação para due diligence.':'Category B — Due diligence preparation.','Atraso':'Overdue','Em curso':'In progress','Obrigatório':'Required','Recomendado':'Recommended','Owner por definir':'Owner to be defined','Aprovador por definir':'Approver to be defined','Próxima revisão por definir':'Next review to be defined','Sem obsoleto registado':'No superseded version recorded','Não submetido':'Not submitted','Projecto activo':'Active project','dias · Missão de supervisão':'days · Supervision mission','⏰ Próxima auditoria IFC':'⏰ Next IFC audit'};
+function enSweep(){
+  if(L()!=='en')return;
+  var main=document.querySelector('.main')||document.body;
+  var walker=document.createTreeWalker(main,NodeFilter.SHOW_TEXT,null),tn;
+  while((tn=walker.nextNode())){
+    var v=(tn.nodeValue||'').trim();
+    if(EN_SWEEP[v])tn.nodeValue=tn.nodeValue.replace(v,EN_SWEEP[v]);
+  }
+  document.querySelectorAll('.sidebar-bottom,.project-pill').forEach(function(sb){
+    var w=document.createTreeWalker(sb,NodeFilter.SHOW_TEXT,null),n2;
+    while((n2=w.nextNode())){var v2=(n2.nodeValue||'').trim();if(EN_SWEEP[v2])n2.nodeValue=n2.nodeValue.replace(v2,EN_SWEEP[v2]);}
+  });
+}
+
+/* ───── 5. HOOKS (wrap, never modify) ───── */
+function uxRefresh(){try{renderOnb();}catch(e){}try{renderPsChips();}catch(e){}try{fixOverdueSub();}catch(e){}try{glossApply();}catch(e){}try{enSweep();}catch(e){}}
+window._sgasUxRefresh=uxRefresh;
+['renderAll','renderDashboard','setLang'].forEach(function(fn){
+  var orig=window[fn];
+  if(typeof orig==='function'){window[fn]=function(){var r=orig.apply(this,arguments);try{uxRefresh();}catch(e){}return r;};}
+});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',uxRefresh);
+else setTimeout(uxRefresh,0);
+})();
+</script>
+
+<!-- ═══════ SGAS UX LAYER 2 — welcome tour · guided empty states · per-page help ═══════ -->
+<style id="sgas-ux2-css">
+  #ux-tour-ov{position:fixed;inset:0;z-index:100000;background:rgba(11,40,24,.55)}
+  #ux-tour-hl{position:fixed;z-index:100001;border:2px solid #34D399;border-radius:10px;box-shadow:0 0 0 6px rgba(52,211,153,.25);pointer-events:none;transition:all .25s}
+  #ux-tour-box{position:fixed;z-index:100002;width:300px;background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);font-family:inherit}
+  #ux-tour-box h4{margin:0 0 6px;font-size:14px;color:#111827}
+  #ux-tour-box p{margin:0 0 12px;font-size:12px;line-height:1.5;color:#4B5563}
+  #ux-tour-box .row{display:flex;justify-content:space-between;align-items:center}
+  #ux-tour-box .step{font-size:11px;color:#9CA3AF}
+  #ux-tour-box button{font-family:inherit;cursor:pointer;border-radius:6px;font-size:12px;font-weight:600}
+  #ux-tour-next{background:#1D9E75;color:#fff;border:none;padding:7px 14px}
+  #ux-tour-skip{background:none;border:none;color:#6B7280;padding:7px 8px}
+  .ux-empty{background:rgba(29,158,117,.05);border:1px dashed #1D9E75;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+  .ux-empty .txt{flex:1;font-size:12.5px;line-height:1.5;color:var(--text-2,#4B5563)}
+  .ux-empty .txt strong{color:var(--text,#111827)}
+  .ux-empty button{background:#1D9E75;color:#fff;border:none;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit}
+  #ux-help-btn{margin-left:8px;width:20px;height:20px;border-radius:50%;border:1.5px solid #1D9E75;background:transparent;color:#1D9E75;font-size:12px;font-weight:700;cursor:pointer;line-height:1;vertical-align:middle}
+  #ux-help-panel{position:fixed;top:0;right:-360px;width:340px;height:100vh;background:var(--surface,#fff);z-index:99998;box-shadow:-8px 0 30px rgba(0,0,0,.15);transition:right .25s;padding:22px;overflow-y:auto;font-family:inherit}
+  #ux-help-panel.open{right:0}
+  #ux-help-panel h3{margin:0 0 4px;font-size:15px;color:var(--text,#111827)}
+  #ux-help-panel .purpose{font-size:12.5px;color:var(--text-2,#4B5563);line-height:1.55;margin-bottom:14px}
+  #ux-help-panel .steps{margin:0 0 14px;padding:0;list-style:none}
+  #ux-help-panel .steps li{font-size:12.5px;line-height:1.5;color:var(--text-2,#4B5563);padding:7px 0 7px 26px;position:relative;border-bottom:1px solid var(--bg-2,#F3F4F6)}
+  #ux-help-panel .steps li:before{content:attr(data-n);position:absolute;left:0;top:8px;width:18px;height:18px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  #ux-help-panel .good{background:rgba(29,158,117,.07);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;color:#166B4F}
+  #ux-help-close{position:absolute;top:14px;right:14px;background:none;border:none;font-size:16px;color:#9CA3AF;cursor:pointer}
+</style>
+<script id="sgas-ux-layer-2">
+(function(){
+'use strict';
+var L=function(){return window.SGAS_LANG||'pt';};
+function pageMeta(id){try{return PAGE_META[id]||{};}catch(e){return{};}}
+function activePage(){var p=document.querySelector('.page-content.active');return p?p.id.replace('page-',''):null;}
+
+/* ───── A. WELCOME TOUR (one-time) ───── */
+var TOUR=[
+ {sel:'.rail, nav.rail, #rail-ia',t:{pt:['Grupos de módulos','Esta barra de ícones alterna entre os 6 grupos: Principal, Conformidade, Partes Interessadas, Evidências, Gestão e Kit IFC — e o Assistente IA.'],en:['Module groups','This icon bar switches between the 6 groups: Main, Compliance, Stakeholders, Evidence, Management and IFC Toolkit — plus the AI Assistant.']}},
+ {sel:'.sidebar',t:{pt:['Navegação','Aqui vê os módulos do grupo seleccionado, o projecto activo e a contagem para a próxima missão.'],en:['Navigation','Here you see the modules of the selected group, the active project and the countdown to the next mission.']}},
+ {sel:'#readiness-pill',t:{pt:['A sua prontidão','Este número diz-lhe, em %, o quão pronto está para a missão do Banco Mundial. Meta: ≥85%. Clique no ⓘ para ver a fórmula.'],en:['Your readiness','This number tells you, in %, how ready you are for the World Bank mission. Target: ≥85%. Click ⓘ to see the formula.']}},
+ {sel:'#sgas-onb-host',t:{pt:['Comece aqui','Siga estes 6 passos — em 30 minutos o seu projecto fica com a base montada. O sistema marca cada passo automaticamente.'],en:['Start here','Follow these 6 steps — in 30 minutes your project has its foundation in place. The system ticks each step automatically.']}},
+ {sel:'#topbar-action',t:{pt:['Acção rápida','Este botão cria o registo mais importante de cada página — comece sempre por aqui quando um módulo estiver vazio.'],en:['Quick action','This button creates the key record of each page — always start here when a module is empty.']}}
+];
+var tourIdx=0;
+function tourEls(){
+  var ov=document.getElementById('ux-tour-ov'),hl=document.getElementById('ux-tour-hl'),box=document.getElementById('ux-tour-box');
+  if(!ov){
+    ov=document.createElement('div');ov.id='ux-tour-ov';document.body.appendChild(ov);
+    hl=document.createElement('div');hl.id='ux-tour-hl';document.body.appendChild(hl);
+    box=document.createElement('div');box.id='ux-tour-box';document.body.appendChild(box);
+    ov.addEventListener('click',endTour);
+  }
+  return{ov:ov,hl:hl,box:box};
+}
+function endTour(){localStorage.setItem('sgas_tour_v1','done');['ux-tour-ov','ux-tour-hl','ux-tour-box'].forEach(function(id){var e=document.getElementById(id);if(e)e.remove();});}
+window._uxTourNext=function(){tourIdx++;if(tourIdx>=TOUR.length)endTour();else showTourStep();};
+function showTourStep(){
+  var st=TOUR[tourIdx],target=null;
+  st.sel.split(',').some(function(s){target=document.querySelector(s.trim());return !!target;});
+  if(!target){window._uxTourNext();return;}
+  var e=tourEls(),r=target.getBoundingClientRect(),tr=st.t[L()]||st.t.pt;
+  e.hl.style.cssText+=';left:'+(r.left-6)+'px;top:'+(r.top-6)+'px;width:'+(r.width+12)+'px;height:'+(r.height+12)+'px';
+  var bx=Math.min(window.innerWidth-320,Math.max(12,r.right+14));
+  var by=Math.min(window.innerHeight-190,Math.max(12,r.top));
+  if(r.right+330>window.innerWidth)bx=Math.max(12,r.left-320);
+  e.box.style.left=bx+'px';e.box.style.top=by+'px';
+  var isLast=tourIdx===TOUR.length-1,nextL=L()==='en'?(isLast?'Finish':'Next'):(isLast?'Terminar':'Seguinte'),skipL=L()==='en'?'Skip':'Saltar';
+  e.box.innerHTML='<h4>'+tr[0]+'</h4><p>'+tr[1]+'</p><div class="row"><span class="step">'+(tourIdx+1)+'/'+TOUR.length+'</span><span><button id="ux-tour-skip" onclick="localStorage.setItem(\'sgas_tour_v1\',\'done\');document.getElementById(\'ux-tour-ov\').click()">'+skipL+'</button> <button id="ux-tour-next" onclick="_uxTourNext()">'+nextL+'</button></span></div>';
+}
+function maybeStartTour(){
+  if(localStorage.getItem('sgas_tour_v1'))return;
+  var auth=document.getElementById('auth-overlay');
+  if(auth&&auth.style.display!=='none'&&getComputedStyle(auth).display!=='none')return;
+  var dash=document.getElementById('page-dashboard');
+  if(!dash||!dash.classList.contains('active'))return;
+  if(document.getElementById('ux-tour-ov'))return;
+  localStorage.setItem('sgas_tour_v1','done');
+  tourIdx=0;tourEls();showTourStep();
+}
+
+/* ───── B. GUIDED EMPTY STATES ───── */
+function dataLen(name){try{var v=eval(name);return Array.isArray(v)?v.length:-1;}catch(e){return -1;}}
+var EMPTY_CFG={
+ esap:{arr:'esapData',pt:'<strong>Ainda não há medidas no ESAP.</strong> Registe a primeira medida contratual: associe-a a um Padrão IFC, defina prazo e responsável.',en:'<strong>No ESAP measures yet.</strong> Record the first contractual measure: link it to an IFC Standard, set a deadline and an owner.'},
+ riscos:{arr:'riskData',pt:'<strong>O Registo de Riscos está vazio.</strong> Registe o primeiro risco ambiental ou social — a matriz posiciona-o automaticamente.',en:'<strong>The Risk Register is empty.</strong> Record the first environmental or social risk — the matrix positions it automatically.'},
+ reclamacoes:{arr:'complaints',pt:'<strong>Sem reclamações registadas.</strong> Quando receber a primeira queixa de um trabalhador ou da comunidade, registe-a aqui — o prazo de 15 dias conta a partir desse momento.',en:'<strong>No grievances recorded.</strong> When you receive the first complaint from a worker or the community, log it here — the 15-day clock starts then.'},
+ stakeholders:{arr:'stakeholders',pt:'<strong>Ainda não registou partes interessadas.</strong> Comece pelas comunidades afectadas e autoridades locais.',en:'<strong>No stakeholders registered yet.</strong> Start with affected communities and local authorities.'},
+ terceiros:{arr:'contractors',pt:'<strong>Sem contratantes registados.</strong> Adicione cada subempreiteiro com o âmbito e os PS críticos do contrato.',en:'<strong>No contractors registered.</strong> Add each subcontractor with the scope and critical PS of the contract.'},
+ implementacao:{arr:'implementationEvidence',pt:'<strong>Sem evidências de implementação.</strong> Documento aprovado não prova implementação — registe a primeira foto, observação ou teste.',en:'<strong>No implementation evidence.</strong> An approved document doesn’t prove implementation — record the first photo, observation or test.'},
+ calendario:{arr:'ifcReports',pt:'<strong>Sem submissões registadas.</strong> Registe a primeira obrigação de reporte ao IFC/Banco Mundial para activar os avisos de prazo.',en:'<strong>No submissions recorded.</strong> Record the first IFC/World Bank reporting obligation to activate deadline alerts.'},
+ legal:{arr:'legalRegister',pt:'<strong>O Registo Legal está vazio.</strong> Comece pelas licenças ambientais em vigor — as renovações passam a ser sinalizadas automaticamente.',en:'<strong>The Legal Register is empty.</strong> Start with the environmental licences in force — renewals will be flagged automatically.'},
+ treinamento:{arr:'trainingPlan',pt:'<strong>Sem formações planeadas.</strong> Registe a primeira formação SGAS — inclua também os trabalhadores contratados.',en:'<strong>No training planned.</strong> Record the first ESMS training — include contracted workers too.'}
+};
+function renderEmpties(){
+  if(window.SGAS_DEMO_ACTIVE)return;
+  Object.keys(EMPTY_CFG).forEach(function(pid){
+    var cfg=EMPTY_CFG[pid],page=document.getElementById('page-'+pid);if(!page)return;
+    var host=document.getElementById('ux-empty-'+pid);
+    var n=dataLen(cfg.arr);
+    if(n!==0){if(host)host.style.display='none';return;}
+    if(!host){
+      host=document.createElement('div');host.id='ux-empty-'+pid;
+      var hd=page.querySelector('.section-header');
+      if(hd&&hd.parentNode)hd.parentNode.insertBefore(host,hd.nextSibling);else page.insertBefore(host,page.firstChild);
+    }
+    host.style.display='';
+    var m=pageMeta(pid),btn=m.action||'+';
+    host.innerHTML='<div class="ux-empty"><span style="font-size:22px">👋</span><span class="txt">'+(cfg[L()]||cfg.pt)+'</span>'
+      +'<button onclick="try{new Function(PAGE_META[\''+pid+'\'].fn||\'void 0\')()}catch(e){}">'+btn+'</button></div>';
+  });
+}
+
+/* ───── C. PER-PAGE HELP (?) ───── */
+var HELP={
+ dashboard:{pt:['Ver num só ecrã o quão pronto está para a missão do Banco Mundial.',['Olhe para o % de prontidão — meta ≥85%.','Siga os passos do cartão «Primeiros 30 minutos».','Trate primeiro do que está a vermelho.'],'Bom = prontidão ≥85%, sem acções ESAP em atraso, sem reclamações fora de prazo.'],en:['See on one screen how ready you are for the World Bank mission.',['Look at the readiness % — target ≥85%.','Follow the steps in the “First 30 minutes” card.','Deal with what is red first.'],'Good = readiness ≥85%, no overdue ESAP actions, no grievances past deadline.']},
+ avaliacao:{pt:['Medir a maturidade real do seu sistema de gestão (0–5) com o questionário oficial do IFC.',['Preencha os dados da avaliação.','Responda às 42 perguntas com evidência real.','Analise as barras e o radar Actual vs Meta.'],'Bom = média ≥4 em todos os 9 elementos, com evidência documental para cada resposta.'],en:['Measure the real maturity of your management system (0–5) with the official IFC questionnaire.',['Fill in the assessment details.','Answer the 42 questions with real evidence.','Review the bars and the Actual vs Target radar.'],'Good = average ≥4 on all 9 elements, with documentary evidence for each answer.']},
+ ps:{pt:['Ver, norma a norma (PS1–PS8), o que o IFC exige e o que ainda falta no seu projecto.',['Abra cada PS aplicável ao projecto.','Leia os requisitos com referência ao parágrafo exacto.','Trate primeiro dos PS «Não conforme».'],'Bom = todos os PS aplicáveis a ≥80% (Conforme).'],en:['See, standard by standard (PS1–PS8), what IFC requires and what is still missing in your project.',['Open each PS applicable to the project.','Read the requirements with exact paragraph references.','Fix “Non-compliant” PS first.'],'Good = all applicable PS at ≥80% (Compliant).']},
+ esap:{pt:['Gerir as medidas contratuais exigidas pelo financiador, do compromisso à evidência.',['Crie a medida e associe-a a um PS.','Defina prioridade, responsável e prazo.','Anexe a evidência quando concluir.'],'Bom = nenhuma medida em atraso e todas com evidência de conclusão.'],en:['Manage the contractual measures required by the lender, from commitment to evidence.',['Create the measure and link it to a PS.','Set priority, owner and deadline.','Attach evidence when complete.'],'Good = no overdue measures and all with completion evidence.']},
+ riscos:{pt:['Registar e pontuar os riscos ambientais e sociais do projecto.',['Escolha o tipo de risco e o PS relevante.','Pontue Severidade e Probabilidade (1–5).','Indique a medida de controlo existente.'],'Bom = riscos críticos todos com controlo definido e responsável.'],en:['Record and score the project’s environmental and social risks.',['Choose the risk type and relevant PS.','Score Severity and Probability (1–5).','State the existing control measure.'],'Good = all critical risks with a defined control and owner.']},
+ 'mapas-risco':{pt:['Ver o risco no terreno (planta) e no fluxo operacional (processos).',['Marque hotspots na planta física.','Mapeie processo → risco → controlo.','Ligue cada controlo à evidência.'],'Bom = cadeia completa processo→risco→controlo→evidência→responsável.'],en:['See risk on the ground (site map) and in the operational flow (processes).',['Mark hotspots on the physical map.','Map process → risk → control.','Link each control to evidence.'],'Good = full chain process→risk→control→evidence→owner.']},
+ terceiros:{pt:['Demonstrar controlo sobre subempreiteiros e cadeia de fornecimento.',['Registe cada contratante e o seu âmbito.','Confirme cláusulas IFC no contrato.','Preencha o scorecard dos 9 elementos.'],'Bom = todos os contratantes com cláusulas IFC e scorecard sem vermelhos.'],en:['Demonstrate control over subcontractors and the supply chain.',['Register each contractor and their scope.','Confirm IFC clauses in the contract.','Complete the 9-element scorecard.'],'Good = all contractors with IFC clauses and no red scorecards.']},
+ stakeholders:{pt:['Registar quem é afectado pelo projecto e como está a ser envolvido.',['Adicione comunidades, autoridades, ONGs.','Marque FPIC quando aplicável.','Acompanhe o estado do engajamento.'],'Bom = todas as PI mapeadas com plano de engajamento activo.'],en:['Record who is affected by the project and how they are being engaged.',['Add communities, authorities, NGOs.','Flag FPIC where applicable.','Track engagement status.'],'Good = all stakeholders mapped with an active engagement plan.']},
+ comunidades:{pt:['Provar que dá feedback regular às comunidades afectadas (mínimo anual).',['Registe cada comunicação com data e canal.','Guarde o feedback recebido.','Anexe a evidência (acta, foto, lista).'],'Bom = pelo menos 1 comunicação/ano por comunidade, com evidência.'],en:['Prove you give regular feedback to affected communities (at least annually).',['Record each communication with date and channel.','Capture the feedback received.','Attach evidence (minutes, photo, list).'],'Good = at least 1 communication/year per community, with evidence.']},
+ reclamacoes:{pt:['Operar o canal formal de reclamações (GRM) com prazo de 15 dias.',['Registe a reclamação e a origem.','Atribua um responsável pela investigação.','Feche o ciclo com evidência e satisfação.'],'Bom = 100% das reclamações respondidas em ≤15 dias e encerradas com evidência.'],en:['Run the formal grievance channel (GRM) with a 15-day deadline.',['Log the grievance and its origin.','Assign an investigation owner.','Close the loop with evidence and satisfaction.'],'Good = 100% of grievances answered in ≤15 days and closed with evidence.']},
+ implementacao:{pt:['Provar que os procedimentos são usados na prática — não só no papel.',['Registe observações, medições, entrevistas.','Associe cada evidência ao procedimento.','Descarregue tudo em lote para o auditor.'],'Bom = cada procedimento crítico com ≥1 evidência recente validada.'],en:['Prove procedures are used in practice — not just on paper.',['Record observations, measurements, interviews.','Link each piece of evidence to its procedure.','Bulk-download everything for the auditor.'],'Good = each critical procedure with ≥1 recent validated evidence.']},
+ documentos:{pt:['Ter todos os documentos obrigatórios da auditoria num só lugar, organizados por PS.',['Veja os chips PS1–PS8 no topo.','Carregue os documentos em falta (✕).','Actualize os desactualizados (⚠).'],'Bom = 100% dos obrigatórios presentes e dentro da validade.'],en:['Keep all mandatory audit documents in one place, organised by PS.',['Check the PS1–PS8 chips at the top.','Upload the missing documents (✕).','Update the outdated ones (⚠).'],'Good = 100% of mandatory documents present and current.']},
+ monitoring:{pt:['Acompanhar os indicadores E&S mensais e os protocolos de medição.',['Active os indicadores padrão IFC.','Defina o protocolo de cada KPI.','Registe os valores todos os meses.'],'Bom = todos os KPIs com protocolo e histórico mensal sem falhas.'],en:['Track monthly E&S indicators and measurement protocols.',['Enable the standard IFC indicators.','Define each KPI’s protocol.','Record values every month.'],'Good = all KPIs with a protocol and an unbroken monthly history.']},
+ calendario:{pt:['Nunca falhar uma obrigação de reporte ao IFC/Banco Mundial.',['Registe cada obrigação e a sua data.','Veja o que vence nos próximos 60 dias.','Marque as submissões efectuadas.'],'Bom = zero submissões atrasadas.'],en:['Never miss an IFC/World Bank reporting obligation.',['Record each obligation and its date.','See what is due in the next 60 days.','Mark completed submissions.'],'Good = zero late submissions.']},
+ relatorio:{pt:['Gerar com um clique o relatório mensal em formato Banco Mundial.',['Clique em «Relatório mensal (formato BM)».','Reveja ESAP + monitoramento + reclamações.','Partilhe com o lender ou a UIP.'],'Bom = relatório gerado e submetido todos os meses.'],en:['Generate the monthly World Bank–format report in one click.',['Click “Monthly report (WB format)”.','Review ESAP + monitoring + grievances.','Share with the lender or the PIU.'],'Good = report generated and submitted every month.']},
+ 'audit-room':{pt:['Montar o pacote lender-ready para a missão de supervisão.',['Clique em «Preparar pacote».','Percorra secção a secção e feche os gaps.','Vigie alterações das fontes oficiais.'],'Bom = todas as secções ≥85% e sem gaps críticos.'],en:['Assemble the lender-ready package for the supervision mission.',['Click “Prepare package”.','Go section by section and close the gaps.','Watch for changes in official sources.'],'Good = all sections ≥85% with no critical gaps.']},
+ revisao:{pt:['Provar que a gestão de topo lidera o sistema (mínimo 1×/ano).',['Crie a sessão de revisão.','Percorra a agenda de 7 pontos do IFC.','Registe decisões e plano de seguimento.'],'Bom = 1 revisão/ano com decisões documentadas e seguidas.'],en:['Prove top management leads the system (at least once a year).',['Create the review session.','Work through IFC’s 7-point agenda.','Record decisions and a follow-up plan.'],'Good = 1 review/year with documented, followed-up decisions.']},
+ treinamento:{pt:['Garantir que a equipa (incluindo contratados) sabe implementar o SGAS.',['Registe cada formação e o público-alvo.','Acompanhe o progresso.','Avalie a eficácia depois da formação.'],'Bom = plano coberto, com avaliação de eficácia e provas de realização.'],en:['Ensure the team (including contractors) can implement the ESMS.',['Record each training and its audience.','Track progress.','Evaluate effectiveness afterwards.'],'Good = plan covered, with effectiveness evaluation and completion proof.']},
+ legal:{pt:['Manter licenças e requisitos legais num registo único e auditável.',['Registe cada licença com validade.','Atribua um responsável.','Renove antes do vencimento (alerta automático).'],'Bom = zero licenças vencidas; renovações tratadas com antecedência.'],en:['Keep licences and legal requirements in a single auditable register.',['Record each licence with its validity.','Assign an owner.','Renew before expiry (automatic alert).'],'Good = zero expired licences; renewals handled ahead of time.']},
+ politicas:{pt:['Preparar a declaração de política SGAS assinada pela gestão de topo (Elemento 1).',['Percorra o checklist da política.','Personalize a Carta do CEO.','Publique e comunique à equipa.'],'Bom = política assinada, datada e comunicada a todos.'],en:['Prepare the ESMS policy statement signed by top management (Element 1).',['Work through the policy checklist.','Customise the CEO Letter.','Publish and communicate to the team.'],'Good = policy signed, dated and communicated to everyone.']},
+ 'riscos-id':{pt:['Identificar riscos por área com a Ficha 2A oficial (matriz 4×4).',['Preencha as folhas por área.','Pontue Probabilidade × Gravidade.','Exporte a Ficha 2A em PDF.'],'Bom = todas as áreas avaliadas e riscos altos transferidos para o Registo de Riscos.'],en:['Identify risks by area with the official Worksheet 2A (4×4 matrix).',['Fill in the worksheets per area.','Score Probability × Severity.','Export Worksheet 2A as PDF.'],'Good = all areas assessed and high risks moved to the Risk Register.']},
+ 'causa-raiz':{pt:['Atacar a causa raiz de não-conformidades com os 5 Porquês (Ficha 3A).',['Descreva o incidente.','Pergunte «porquê?» até 5 vezes.','Defina a acção sobre a causa raiz.'],'Bom = acção corrige a causa, não o sintoma — e o incidente não se repete.'],en:['Attack the root cause of non-conformities with the 5 Whys (Worksheet 3A).',['Describe the incident.','Ask “why?” up to 5 times.','Define the action on the root cause.'],'Good = the action fixes the cause, not the symptom — and the incident doesn’t recur.']},
+ emergencias:{pt:['Ter procedimentos de emergência prontos e afixados no estaleiro.',['Priorize as emergências na matriz.','Adapte os procedimentos EM001–EM004.','Imprima e afixe no estaleiro.'],'Bom = procedimentos afixados e equipa treinada em simulacro.'],en:['Have emergency procedures ready and posted on site.',['Prioritise emergencies in the matrix.','Adapt procedures EM001–EM004.','Print and post on site.'],'Good = procedures posted and the team drilled.']},
+ 'mapeamento-pi':{pt:['Posicionar cada parte interessada na matriz Influência × Impacto (Ficha 6A).',['Posicione cada PI na matriz.','Aplique a estratégia do quadrante.','Ligue ao plano de engajamento.'],'Bom = PI críticas «geridas de perto» com acções concretas.'],en:['Position each stakeholder on the Influence × Impact matrix (Worksheet 6A).',['Place each stakeholder on the matrix.','Apply the quadrant strategy.','Link to the engagement plan.'],'Good = critical stakeholders “managed closely” with concrete actions.']},
+ auditoria:{pt:['Auditar o próprio sistema antes que o Banco Mundial o faça (Ficha 9B).',['Percorra as 7 secções A–G.','Marque Conforme / Não conforme com evidência.','Exporte o Relatório 9B.'],'Bom = auditoria anual feita e não-conformidades com plano de correcção.'],en:['Audit your own system before the World Bank does (Worksheet 9B).',['Work through the 7 sections A–G.','Mark Compliant / Non-compliant with evidence.','Export Report 9B.'],'Good = annual audit done and non-conformities with a correction plan.']},
+ ia:{pt:['Tirar dúvidas E&S com um especialista que conhece o contexto do seu projecto.',['Escreva a pergunta em linguagem natural.','Use os atalhos de perguntas rápidas.','Verifique o contexto usado no painel lateral.'],'Bom = usar o assistente antes de decidir — não depois.'],en:['Ask E&S questions to an expert that knows your project context.',['Type your question in natural language.','Use the quick-question shortcuts.','Check the context used in the side panel.'],'Good = use the assistant before deciding — not after.']}
+};
+var HELP_T={pt:{btnTitle:'Ajuda desta página',purpose:'Para que serve',steps:'Os 3 passos que interessam',good:'O que é «bom»'},en:{btnTitle:'Help for this page',purpose:'What this is for',steps:'The 3 steps that matter',good:'What “good” looks like'}};
+function ensureHelpUI(){
+  if(!document.getElementById('ux-help-btn')){
+    var title=document.getElementById('topbar-title');
+    if(title&&title.parentNode){
+      var b=document.createElement('button');b.id='ux-help-btn';b.textContent='?';
+      b.onclick=function(){toggleHelp();};
+      title.parentNode.insertBefore(b,title.nextSibling);
+    }
+  }
+  if(!document.getElementById('ux-help-panel')){
+    var p=document.createElement('div');p.id='ux-help-panel';document.body.appendChild(p);
+    document.addEventListener('click',function(e){
+      var pn=document.getElementById('ux-help-panel');
+      if(pn&&pn.classList.contains('open')&&!pn.contains(e.target)&&e.target.id!=='ux-help-btn')pn.classList.remove('open');
+    });
+  }
+  var btn=document.getElementById('ux-help-btn');
+  if(btn)btn.title=(HELP_T[L()]||HELP_T.pt).btnTitle;
+}
+window.toggleHelp=function(){
+  var p=document.getElementById('ux-help-panel');if(!p)return;
+  if(p.classList.contains('open')){p.classList.remove('open');return;}
+  var pid=activePage(),h=HELP[pid],tr=HELP_T[L()]||HELP_T.pt;
+  if(!h){p.classList.remove('open');return;}
+  var c=h[L()]||h.pt,m=pageMeta(pid);
+  var steps='';c[1].forEach(function(s,i){steps+='<li data-n="'+(i+1)+'">'+s+'</li>';});
+  p.innerHTML='<button id="ux-help-close" onclick="document.getElementById(\'ux-help-panel\').classList.remove(\'open\')">✕</button>'
+    +'<h3>'+(m.title||pid)+'</h3>'
+    +'<div style="font-size:10px;letter-spacing:.6px;color:#1D9E75;font-weight:700;margin-bottom:4px;text-transform:uppercase">'+tr.purpose+'</div>'
+    +'<div class="purpose">'+c[0]+'</div>'
+    +'<div style="font-size:10px;letter-spacing:.6px;color:#1D9E75;font-weight:700;margin-bottom:4px;text-transform:uppercase">'+tr.steps+'</div>'
+    +'<ul class="steps">'+steps+'</ul>'
+    +'<div style="font-size:10px;letter-spacing:.6px;color:#1D9E75;font-weight:700;margin-bottom:4px;text-transform:uppercase">'+tr.good+'</div>'
+    +'<div class="good">'+c[2]+'</div>';
+  p.classList.add('open');
+};
+
+/* ───── hooks ───── */
+function ux2Refresh(){try{renderEmpties();}catch(e){}try{ensureHelpUI();}catch(e){}try{maybeStartTour();}catch(e){}}
+var prev=window._sgasUxRefresh;
+window._sgasUxRefresh=function(){if(prev)prev();ux2Refresh();};
+['renderAll','renderDashboard','setLang'].forEach(function(fn){
+  var orig=window[fn];
+  if(typeof orig==='function'){window[fn]=function(){var r=orig.apply(this,arguments);try{ux2Refresh();}catch(e){}return r;};}
+});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ux2Refresh);
+else setTimeout(ux2Refresh,300);
+})();
+</script>
+
 <script>
 /* INTERNAL_MODE — gates the commercial-intelligence module.
    Access via ?internal=1  or  localStorage.setItem('sgas_internal','1') */
