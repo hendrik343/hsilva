@@ -7772,6 +7772,12 @@ const I18N = {
     // Path E — EN_SWEEP migration + document/phase chrome
     'card.title.fase_projeto':'Fase do projeto','phase.implementacao':'Implementação','phase.categoria_b':'Categoria B','phase.due_diligence_prep':'— Preparação para due diligence.','phase.supervisao_implementacao':'Supervisão / Implementação','audit.countdown.label':'⏰ Próxima auditoria IFC','audit.countdown.sub':'dias · Missão de supervisão',
     'doc.owner.undefined':'Owner por definir','doc.approver.undefined':'Aprovador por definir','doc.nextreview.undefined':'Próxima revisão por definir','doc.replaces.none':'Sem obsoleto registado','doc.control_label':'Controlo documental','doc.lastversion':'Última versão: {date}','doc.notsubmitted':'Não submetido','doc.version_label':'Versão','doc.owner_label':'Owner','doc.approver_label':'Aprovador','doc.nextreview_label':'Próxima revisão','doc.replaces_label':'Obsoleto/substituído','doc.tag.obrigatorio':'Obrigatório','doc.tag.recomendado':'Recomendado',
+    // Path E — E1 Roteiro missão BM (guided journey)
+    'journey.title':'Roteiro missão Banco Mundial','journey.progress_label':'do roteiro concluído','journey.locked_tooltip':'Complete o passo anterior','journey.continue':'Continuar','journey.done':'✅ Concluído! O seu projecto tem a base pronta para a missão do Banco Mundial.',
+    'journey.step.1':'Diagnóstico','journey.step.2':'Resultados','journey.step.3':'ESAP','journey.step.4':'GRM','journey.step.5':'Evidências','journey.step.6':'Relatório',
+    'journey.next.1':'Comece pelo diagnóstico IFC para caracterizar o seu projecto.','journey.next.2':'Reveja os resultados do diagnóstico e a sua prontidão.','journey.next.3':'Construa o seu plano ESAP a partir das lacunas identificadas.','journey.next.4':'Configure o mecanismo de queixas (GRM) e registe a primeira reclamação.','journey.next.5':'Anexe evidência a cada acção ESAP concluída.','journey.next.6':'Exporte o relatório mensal em formato Banco Mundial.',
+    // Path E — E1.3 welcome modal (first-run gate)
+    'welcome.title':'Bem-vindo ao SGAS Pro','welcome.body':'Seis passos preparam o seu projecto para a missão do Banco Mundial. Comece pelo diagnóstico IFC — leva cerca de 10 minutos.','welcome.start':'Começar diagnóstico','welcome.later':'Explorar primeiro','welcome.tour':'Ver tour rápido primeiro',
   },
   en: {
     // Topbar
@@ -7858,6 +7864,12 @@ const I18N = {
     // Path E — EN_SWEEP migration + document/phase chrome
     'card.title.fase_projeto':'Project phase','phase.implementacao':'Implementation','phase.categoria_b':'Category B','phase.due_diligence_prep':'— Due diligence preparation.','phase.supervisao_implementacao':'Supervision / Implementation','audit.countdown.label':'⏰ Next IFC audit','audit.countdown.sub':'days · Supervision mission',
     'doc.owner.undefined':'Owner to be defined','doc.approver.undefined':'Approver to be defined','doc.nextreview.undefined':'Next review to be defined','doc.replaces.none':'No superseded version recorded','doc.control_label':'Document control','doc.lastversion':'Latest version: {date}','doc.notsubmitted':'Not submitted','doc.version_label':'Version','doc.owner_label':'Owner','doc.approver_label':'Approver','doc.nextreview_label':'Next review','doc.replaces_label':'Superseded by','doc.tag.obrigatorio':'Required','doc.tag.recomendado':'Recommended',
+    // Path E — E1 Roteiro missão BM (guided journey)
+    'journey.title':'World Bank mission roadmap','journey.progress_label':'of the roadmap complete','journey.locked_tooltip':'Complete the previous step','journey.continue':'Continue','journey.done':'✅ Done! Your project has its foundation ready for the World Bank mission.',
+    'journey.step.1':'Diagnostic','journey.step.2':'Results','journey.step.3':'ESAP','journey.step.4':'GRM','journey.step.5':'Evidence','journey.step.6':'Report',
+    'journey.next.1':'Start with the IFC diagnostic to characterise your project.','journey.next.2':'Review the diagnostic results and your readiness.','journey.next.3':'Build your ESAP plan from the gaps identified.','journey.next.4':'Set up the grievance mechanism (GRM) and log the first complaint.','journey.next.5':'Attach evidence to every completed ESAP action.','journey.next.6':'Export the monthly World Bank–format report.',
+    // Path E — E1.3 welcome modal (first-run gate)
+    'welcome.title':'Welcome to SGAS Pro','welcome.body':'Six steps prepare your project for the World Bank mission. Start with the IFC diagnostic — it takes about 10 minutes.','welcome.start':'Start diagnostic','welcome.later':'Explore first','welcome.tour':'See a quick tour first',
   }
 };
 
@@ -8484,6 +8496,18 @@ document.addEventListener('keydown', function(e) {
   .ps-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--border,#E5E7EB);background:var(--surface,#fff);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
   .ps-chip .dot{width:8px;height:8px;border-radius:50%}
   .ps-chip:hover{border-color:#1D9E75}
+  .rt-steps{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .rt-step{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid var(--border,#E5E7EB);font-size:11px;font-weight:600;flex:1;min-width:120px}
+  .rt-step.done{opacity:.65;cursor:pointer}
+  .rt-step.current{border-color:#1D9E75;background:rgba(29,158,117,.07);cursor:pointer}
+  .rt-step.current .rt-label{font-weight:800}
+  .rt-step.locked{color:var(--text-3,#9CA3AF);cursor:not-allowed}
+  .rt-dot{width:20px;height:20px;border-radius:50%;background:var(--bg-3,#E5E7EB);color:var(--text-2,#6B7280);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+  .rt-step.done .rt-dot{background:#1D9E75;color:#fff}
+  .rt-step.current .rt-dot{background:#1D9E75;color:#fff}
+  .rt-next{display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid var(--bg-2,#F3F4F6)}
+  .rt-next-txt{flex:1;font-size:12px;color:var(--text-2,#4B5563)}
+  .rt-next-btn{background:#1D9E75;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit}
 </style>
 <script id="sgas-ux-layer">
 (function(){
@@ -8556,39 +8580,49 @@ document.addEventListener('mouseover',function(e){var g=e.target.closest&&e.targ
 document.addEventListener('focusin',function(e){var g=e.target.closest&&e.target.closest('.gloss');if(g)showTip(g);});
 document.addEventListener('focusout',hideTip);
 
-/* ───── 2. ONBOARDING — Primeiros 30 minutos ───── */
-var ONB_T={
- pt:{title:'🚀 Primeiros 30 minutos',sub:'Seis passos e o seu projecto fica com a base pronta para a supervisão do Banco Mundial.',dismiss:'Ocultar',go:'Fazer agora',s1:'Criar o projecto',s1s:'Nome + país. 1 minuto.',s2:'Diagnóstico IFC (wizard)',s2s:'Caracterize o projecto em ~10 min.',s3:'Ver a sua prontidão',s3s:'O score % no topo do Dashboard.',s4:'Autoavaliação SGAS',s4s:'42 perguntas · maturidade 0–5.',s5:'Primeira acção ESAP',s5s:'Registe uma medida com prazo.',s6:'Exportar um relatório',s6s:'Formato Banco Mundial, 1 clique.',done:'✅ Concluído! Já domina o essencial do SGAS Pro.'},
- en:{title:'🚀 First 30 minutes',sub:'Six steps and your project has the groundwork ready for World Bank supervision.',dismiss:'Hide',go:'Do it now',s1:'Create the project',s1s:'Name + country. 1 minute.',s2:'IFC Diagnostic (wizard)',s2s:'Characterise the project in ~10 min.',s3:'See your readiness',s3s:'The % score at the top of the Dashboard.',s4:'ESMS Self-Assessment',s4s:'42 questions · maturity 0–5.',s5:'First ESAP action',s5s:'Record one measure with a deadline.',s6:'Export a report',s6s:'World Bank format, 1 click.',done:'✅ Done! You’ve mastered the essentials of SGAS Pro.'}
-};
-function onbState(){try{return JSON.parse(localStorage.getItem('sgas_onb_v1'))||{};}catch(e){return{};}}
-function onbSave(s){localStorage.setItem('sgas_onb_v1',JSON.stringify(s));}
-window.sgasOnbMark=function(k){var s=onbState();s[k]=true;onbSave(s);renderOnb();};
-window.sgasOnbDismiss=function(){var s=onbState();s.dismissed=true;onbSave(s);renderOnb();};
-window.sgasOnbGo=function(k){
-  var s=onbState();
-  try{
-    if(k==='s1'){openCreateProjectModal();}
-    else if(k==='s2'){openReadinessWizard();}
-    else if(k==='s3'){nav('dashboard');var kg=document.getElementById('dash-kpi-grid');if(kg)kg.scrollIntoView({behavior:'smooth'});s.s3=true;}
-    else if(k==='s4'){nav('avaliacao');}
-    else if(k==='s5'){nav('esap');}
-    else if(k==='s6'){nav('relatorio');s.s6=true;}
-  }catch(e){}
-  onbSave(s);renderOnb();
-};
-function onbSteps(){
-  var s=onbState(),proj=document.getElementById('proj-pill-name');
-  var hasProj=proj&&proj.textContent.trim()!=='—'&&proj.textContent.trim()!=='';
-  var wiz=false;try{wiz=!!SGAS_READINESS_ASSESSMENT;}catch(e){}
-  var selfA=0;try{selfA=parseFloat(avg(sgasScores))>0;}catch(e){}
-  var esap=false;try{esap=esapData.length>0;}catch(e){}
-  return[
-   {k:'s1',done:hasProj||!!s.s1},{k:'s2',done:wiz||!!s.s2},{k:'s3',done:!!s.s3||wiz},
-   {k:'s4',done:selfA||!!s.s4},{k:'s5',done:esap||!!s.s5},{k:'s6',done:!!s.s6}
-  ];
+/* ───── 2. ROTEIRO MISSÃO BM (Path E — evolves the former "Primeiros 30 minutos" onboarding
+   card into a 6-step guided journey; same host #sgas-onb-host, same card visual language,
+   single dictionary via t(). Journey % is a PROCESS metric, distinct from the compliance
+   "Prontidão missão BM" score — never merged. ───── */
+function journeyState(){
+  if(window.SGAS_DEMO_ACTIVE){
+    // Fixed mid-journey narrative for demo tenants (E1.4): steps 1-2 done, step 3 (ESAP) current,
+    // regardless of the demo tenant's own sample ESAP/complaint data.
+    var demoDone=[true,true,false,false,false,false];
+    return demoDone.map(function(d,i){return{done:d,current:i===2,locked:i>2};});
+  }
+  var wiz=false; try{wiz=!!SGAS_READINESS_ASSESSMENT;}catch(e){}
+  var resultsSeen=localStorage.getItem('sgas_journey_results_seen')==='1';
+  var esapActivated=localStorage.getItem('sgas_esap_activated')==='1';
+  var esapHas=false; try{esapHas=esapData.length>0;}catch(e){}
+  // GRM has no dedicated "channel/SLA config" screen today — every logged complaint already
+  // requires origin + investigation owner (manual §6.4), so first complaint = GRM operating.
+  var grmHas=false; try{grmHas=complaints.length>0;}catch(e){}
+  var completedTotal=0,completedNoEvid=0;
+  try{ esapData.forEach(function(e){ if(e.status==='Concluída'){ completedTotal++; if(!e.evid) completedNoEvid++; } }); }catch(e){}
+  var reportExported=localStorage.getItem('sgas_journey_report_exported')==='1';
+
+  var d1=wiz;
+  var d2=d1&&resultsSeen;
+  var d3=esapActivated||esapHas;
+  var d4=grmHas;
+  var d5=completedTotal>0&&completedNoEvid===0;
+  var d6=d1&&d2&&d3&&d4&&d5&&reportExported;
+  var doneArr=[d1,d2,d3,d4,d5,d6];
+  var curIdx=doneArr.indexOf(false); if(curIdx===-1)curIdx=6;
+  return doneArr.map(function(d,i){return{done:d,current:i===curIdx,locked:i>curIdx};});
 }
-function renderOnb(){
+window.journeyGo=function(stepIdx){
+  try{
+    if(stepIdx===0){ openReadinessWizard(); }
+    else if(stepIdx===1){ localStorage.setItem('sgas_journey_results_seen','1'); nav('dashboard'); var kg=document.getElementById('dash-kpi-grid'); if(kg)kg.scrollIntoView({behavior:'smooth'}); renderRoteiro(); }
+    else if(stepIdx===2){ if(typeof window.openEsapGuidedBuilder==='function'){window.openEsapGuidedBuilder();} else {nav('esap');} }
+    else if(stepIdx===3){ nav('reclamacoes'); }
+    else if(stepIdx===4){ nav('implementacao'); }
+    else if(stepIdx===5){ nav('relatorio'); }
+  }catch(e){}
+};
+function renderRoteiro(){
   var dash=document.getElementById('page-dashboard');if(!dash)return;
   var host=document.getElementById('sgas-onb-host');
   if(!host){
@@ -8596,27 +8630,34 @@ function renderOnb(){
     var anchor=document.getElementById('dash-empty-state');
     if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(host,anchor);else dash.insertBefore(host,dash.firstChild);
   }
-  var st=onbState(),steps=onbSteps(),doneN=steps.filter(function(x){return x.done;}).length,tr=ONB_T[L()]||ONB_T.pt;
-  if(window.SGAS_DEMO_ACTIVE||st.dismissed||doneN===6){
-    host.innerHTML=(doneN===6&&!st.dismissed&&!window.SGAS_DEMO_ACTIVE)?'<div class="onb-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;flex:1">'+tr.done+'</span><button class="onb-dismiss" onclick="sgasOnbDismiss()">✕</button></div>':'';
-    var es0=document.getElementById('dash-empty-state');if(es0&&host.innerHTML==='')return;
+  var js=journeyState(),doneN=js.filter(function(x){return x.done;}).length,pct=Math.round(doneN/6*100);
+  if(doneN===6){
+    host.innerHTML='<div class="onb-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;flex:1">'+t('journey.done')+'</span></div>';
+    var es0=document.getElementById('dash-empty-state');if(es0)es0.style.display='none';
     return;
   }
-  var nextSeen=false,rows='';
-  steps.forEach(function(x,i){
-    var isNext=!x.done&&!nextSeen;if(isNext)nextSeen=true;
-    rows+='<div class="onb-step '+(x.done?'done':'')+(isNext?' next':'')+'">'
-      +'<span class="onb-num">'+(x.done?'✓':(i+1))+'</span>'
-      +'<span class="onb-label">'+tr[x.k]+'<small>'+tr[x.k+'s']+'</small></span>'
-      +'<button class="onb-go" onclick="sgasOnbGo(\''+x.k+'\')">'+tr.go+'</button></div>';
+  var proj=document.getElementById('proj-pill-name');
+  var projName=(proj&&proj.textContent.trim()&&proj.textContent.trim()!=='—')?proj.textContent.trim():'';
+  var rows='';
+  js.forEach(function(s,i){
+    var cls=s.done?'done':s.current?'current':'locked';
+    var dot=s.done?'✓':s.locked?'🔒':(i+1);
+    var attr=s.locked?(' title="'+t('journey.locked_tooltip')+'"'):'';
+    var click=(s.done||s.current)?(' onclick="journeyGo('+i+')"'):'';
+    rows+='<div class="rt-step '+cls+'"'+attr+click+'>'
+      +'<span class="rt-dot">'+dot+'</span>'
+      +'<span class="rt-label">'+t('journey.step.'+(i+1))+'</span></div>';
   });
+  var curIdx=js.findIndex(function(s){return s.current;});
   host.innerHTML='<div class="onb-card">'
-    +'<div class="onb-head"><span class="onb-title">'+tr.title+'</span>'
-    +'<span style="font-size:11px;color:var(--text-3)">'+doneN+'/6</span>'
-    +'<button class="onb-dismiss" title="'+tr.dismiss+'" onclick="sgasOnbDismiss()">✕</button></div>'
-    +'<div class="onb-sub">'+tr.sub+'</div>'
-    +'<div class="onb-prog"><div class="onb-prog-fill" style="width:'+Math.round(doneN/6*100)+'%"></div></div>'
-    +'<div class="onb-steps">'+rows+'</div></div>';
+    +'<div class="onb-head"><span class="onb-title">'+t('journey.title')+'</span>'
+    +(projName?('<span style="font-size:11px;color:var(--text-3)">'+escapeHtml(projName)+'</span>'):'')
+    +'</div>'
+    +'<div class="onb-sub">'+pct+'% '+t('journey.progress_label')+'</div>'
+    +'<div class="onb-prog"><div class="onb-prog-fill" style="width:'+pct+'%"></div></div>'
+    +'<div class="rt-steps">'+rows+'</div>'
+    +(curIdx>=0?('<div class="rt-next"><span class="rt-next-txt">'+t('journey.next.'+(curIdx+1))+'</span><button class="rt-next-btn" onclick="journeyGo('+curIdx+')">'+t('journey.continue')+'</button></div>'):'')
+    +'</div>';
   var es=document.getElementById('dash-empty-state');if(es)es.style.display='none';
 }
 
@@ -8649,12 +8690,24 @@ function fixOverdueSub(){
    sidebar.pill.label) consumed via data-i18n or t() at their actual render sites. See docs/path-e-report.md. */
 
 /* ───── 5. HOOKS (wrap, never modify) ───── */
-function uxRefresh(){try{renderOnb();}catch(e){}try{renderPsChips();}catch(e){}try{fixOverdueSub();}catch(e){}try{glossApply();}catch(e){}}
+function uxRefresh(){try{renderRoteiro();}catch(e){}try{renderPsChips();}catch(e){}try{fixOverdueSub();}catch(e){}try{glossApply();}catch(e){}}
 window._sgasUxRefresh=uxRefresh;
 ['renderAll','renderDashboard','setLang'].forEach(function(fn){
   var orig=window[fn];
   if(typeof orig==='function'){window[fn]=function(){var r=orig.apply(this,arguments);try{uxRefresh();}catch(e){}return r;};}
 });
+// Path E (E1.1, step 6): mark journey step "Relatório" done once a mission export actually runs.
+(function(){
+  var origExport=window.exportAudit;
+  if(typeof origExport==='function'){
+    window.exportAudit=function(){
+      var r=origExport.apply(this,arguments);
+      var mark=function(){localStorage.setItem('sgas_journey_report_exported','1');try{renderRoteiro();}catch(e){}};
+      if(r&&typeof r.then==='function')r.then(mark); else mark();
+      return r;
+    };
+  }
+})();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',uxRefresh);
 else setTimeout(uxRefresh,0);
 })();
@@ -8686,6 +8739,14 @@ else setTimeout(uxRefresh,0);
   #ux-help-panel .steps li:before{content:attr(data-n);position:absolute;left:0;top:8px;width:18px;height:18px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
   #ux-help-panel .good{background:rgba(29,158,117,.07);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;color:#166B4F}
   #ux-help-close{position:absolute;top:14px;right:14px;background:none;border:none;font-size:16px;color:#9CA3AF;cursor:pointer}
+  #welcome-modal-ov{position:fixed;inset:0;z-index:100003;background:rgba(11,40,24,.55);display:flex;align-items:center;justify-content:center}
+  .welcome-modal-box{width:360px;max-width:90vw;background:#fff;border-radius:14px;padding:24px 26px;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:inherit;text-align:center}
+  .welcome-modal-box h3{margin:0 0 10px;font-size:17px;color:#111827}
+  .welcome-modal-box p{margin:0 0 18px;font-size:13px;line-height:1.55;color:#4B5563}
+  .welcome-start-btn{background:#1D9E75;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+  .welcome-links{margin-top:14px;font-size:12px;color:#6B7280}
+  .welcome-links a{color:#1D9E75;text-decoration:none;cursor:pointer}
+  .welcome-links a:hover{text-decoration:underline}
 </style>
 <script id="sgas-ux-layer-2">
 (function(){
@@ -8728,16 +8789,13 @@ function showTourStep(){
   var isLast=tourIdx===TOUR.length-1,nextL=L()==='en'?(isLast?'Finish':'Next'):(isLast?'Terminar':'Seguinte'),skipL=L()==='en'?'Skip':'Saltar';
   e.box.innerHTML='<h4>'+tr[0]+'</h4><p>'+tr[1]+'</p><div class="row"><span class="step">'+(tourIdx+1)+'/'+TOUR.length+'</span><span><button id="ux-tour-skip" onclick="localStorage.setItem(\'sgas_tour_v1\',\'done\');document.getElementById(\'ux-tour-ov\').click()">'+skipL+'</button> <button id="ux-tour-next" onclick="_uxTourNext()">'+nextL+'</button></span></div>';
 }
-function maybeStartTour(){
-  if(localStorage.getItem('sgas_tour_v1'))return;
-  var auth=document.getElementById('auth-overlay');
-  if(auth&&auth.style.display!=='none'&&getComputedStyle(auth).display!=='none')return;
-  var dash=document.getElementById('page-dashboard');
-  if(!dash||!dash.classList.contains('active'))return;
+/* Path E (E1.3): tour no longer auto-fires on first dashboard visit — it's now an opt-in
+   link inside the welcome modal (see startTourManual/welcome modal below). sgas_tour_v1 is
+   still written on finish/skip so the tour itself doesn't repeat once walked. */
+window.startTourManual=function(){
   if(document.getElementById('ux-tour-ov'))return;
-  localStorage.setItem('sgas_tour_v1','done');
   tourIdx=0;tourEls();showTourStep();
-}
+};
 
 /* ───── B. GUIDED EMPTY STATES ───── */
 function dataLen(name){try{var v=eval(name);return Array.isArray(v)?v.length:-1;}catch(e){return -1;}}
@@ -8839,7 +8897,35 @@ window.toggleHelp=function(){
 };
 
 /* ───── hooks ───── */
-function ux2Refresh(){try{renderEmpties();}catch(e){}try{ensureHelpUI();}catch(e){}try{maybeStartTour();}catch(e){}}
+function ux2Refresh(){try{renderEmpties();}catch(e){}try{ensureHelpUI();}catch(e){}try{maybeShowWelcome();}catch(e){}}
+
+/* ───── D. WELCOME MODAL (Path E, E1.3) — first-run gate, replaces tour auto-fire ───── */
+function maybeShowWelcome(){
+  if(window.SGAS_DEMO_ACTIVE)return;
+  if(localStorage.getItem('sgas_welcome_v1'))return;
+  var js; try{js=journeyState();}catch(e){return;}
+  if(js[0]&&js[0].done)return;
+  var auth=document.getElementById('auth-overlay');
+  if(auth&&getComputedStyle(auth).display!=='none')return;
+  var dash=document.getElementById('page-dashboard');
+  if(!dash||!dash.classList.contains('active'))return;
+  if(document.getElementById('welcome-modal-ov'))return;
+  var ov=document.createElement('div');ov.id='welcome-modal-ov';
+  ov.innerHTML='<div class="welcome-modal-box">'
+    +'<h3>'+t('welcome.title')+'</h3>'
+    +'<p>'+t('welcome.body')+'</p>'
+    +'<button class="welcome-start-btn" onclick="_welcomeStart()">'+t('welcome.start')+'</button>'
+    +'<div class="welcome-links"><a onclick="_welcomeTour();return false;" href="#">'+t('welcome.tour')+'</a> · <a onclick="_welcomeDismiss();return false;" href="#">'+t('welcome.later')+'</a></div>'
+    +'</div>';
+  document.body.appendChild(ov);
+}
+function _welcomeDismiss(){
+  localStorage.setItem('sgas_welcome_v1','1');
+  var ov=document.getElementById('welcome-modal-ov');if(ov)ov.remove();
+}
+window._welcomeDismiss=_welcomeDismiss;
+window._welcomeStart=function(){ _welcomeDismiss(); try{openReadinessWizard();}catch(e){} };
+window._welcomeTour=function(){ _welcomeDismiss(); try{startTourManual();}catch(e){} };
 var prev=window._sgasUxRefresh;
 window._sgasUxRefresh=function(){if(prev)prev();ux2Refresh();};
 ['renderAll','renderDashboard','setLang'].forEach(function(fn){
