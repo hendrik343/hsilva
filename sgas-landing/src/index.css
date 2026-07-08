@@ -40,3 +40,23 @@ body {
 .hero-blob {
   animation: drift 18s ease-in-out infinite;
 }
+
+/* Emerald Prestige — landing v2 */
+:root {
+  --emerald-ink: #041d16;
+  --emerald-deep: #064e3b;
+  --emerald: #0d7a5f;
+  --emerald-soft: #e9f3ef;
+  --gold: #c9a84c;
+  --gold-soft: #f5f0e0;
+  --cream: #faf7ef;
+  --surface-container-lowest: #ffffff;
+}
+
+.font-display { font-family: 'Sora', 'Manrope', sans-serif; letter-spacing: -0.02em; }
+
+.grain-noise {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(201, 168, 76, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(13, 122, 95, 0.12), transparent 45%);
+}
