@@ -408,6 +408,32 @@ canvas { max-width: 100%; }
 @media (max-width: 820px) {
   #auth-video-panel { display: none !important; }
   #auth-overlay > div:last-of-type { width: 100% !important; padding: 32px 24px !important; }
+
+  /* Path G (P5): dashboard responsive stacking — reuses this existing breakpoint,
+     no new one introduced. Order: topbar -> context -> roteiro hero -> status strip
+     -> Onde atuar primeiro -> PS bars -> footer (roteiro comes BEFORE the strip on
+     mobile, the opposite of desktop, per spec). */
+  #page-dashboard { display: flex; flex-direction: column; }
+  #dash-context { order: 1; }
+  #dash-diligence-note { order: 2; }
+  #sgas-onb-host, #dash-empty-state { order: 3; }
+  #status-strip { order: 4; grid-template-columns: 1fr; }
+  #status-strip .strip-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  #status-strip .strip-cell:last-child { border-bottom: none; }
+  #dash-detail-grid { order: 5; grid-template-columns: 1fr; }
+  #dash-card-priority { order: 1; }
+  #dash-card-ps { order: 2; }
+  .dash-ps-compact { grid-template-columns: 1fr; }
+  #dash-footer-strip { order: 6; grid-template-columns: 1fr; }
+  .footer-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  .footer-cell:last-child { border-bottom: none; }
+  .dash-ctx-link { margin-left: 0; width: 100%; }
+
+  /* Roteiro stepper: compress to dots + current-step label only; Continuar stays full-width */
+  .rt-step { min-width: 0; flex: 0 1 auto; padding: 6px 8px; }
+  .rt-step:not(.current) .rt-label { display: none; }
+  .rt-next { flex-direction: column; align-items: stretch; }
+  .rt-next-btn { width: 100%; }
 }
 
 /* ===================== IFC TOOLKIT MODULE STYLES ===================== */
@@ -1068,11 +1094,11 @@ canvas { max-width: 100%; }
 
     <!-- Detail grid: PS1-8 compact (left) + Onde atuar primeiro (right, wired in P3) -->
     <div class="dash-detail-grid" id="dash-detail-grid">
-      <div class="card">
+      <div class="card" id="dash-card-ps">
         <div class="card-header"><span class="card-title" data-i18n="dash.ps.title">🏛 Conformidade IFC PS1–PS8</span><button class="btn" onclick="nav('ps',navItemFor('ps'))" data-i18n="dash.ps.verdetalhes">Ver detalhes</button></div>
         <div class="card-body dash-ps-compact" id="dash-ps-compact"></div>
       </div>
-      <div class="card">
+      <div class="card" id="dash-card-priority">
         <div class="card-header"><span class="card-title" data-i18n="dash.priority.title">🎯 Onde atuar primeiro</span></div>
         <div class="card-body" id="dash-priority-list"></div>
         <div class="dash-priority-footer"><a href="#" onclick="openModal('modal-maturity');return false;" data-i18n="dash.priority.maturitylink">Ver maturidade SGAS (9 elementos) →</a></div>
@@ -3873,7 +3899,7 @@ function renderDashPriority(){
     const chip = hasOpenAction ? `<span class="badge blue" style="cursor:pointer" onclick="nav('esap',navItemFor('esap'))">${t('dash.priority.noesap')}</span>` : '';
     return `<div class="dash-priority-item">
       <span class="badge" style="background:${color}22;color:${color};font-weight:700">${g.psId} · ${g.pct}%</span>
-      <span style="flex:1;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(gapText)}</span>
+      <span style="flex:1;min-width:0;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(gapText)}</span>
       ${chip}
     </div>`;
   }).join('');
