@@ -172,6 +172,13 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 .strip-bar-tick{position:absolute;top:-3px;width:2px;height:12px;background:var(--text-3,#9CA3AF);}
 #readiness-pill{box-shadow:none;padding:2px 10px 2px 8px;}
 #readiness-pill .audit-score-text{font-size:20px;font-weight:700;}
+.strip-sub{font-size:10.5px;color:var(--text-3,#9CA3AF);margin-top:6px;}
+
+/* Path G (P4): zero-state lock cards — pre-diagnostic, never a red 0 / 0% / empty radar */
+.dash-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:28px 16px;color:var(--text-3,#9CA3AF);text-align:center;grid-column:1/-1;}
+.dash-locked-icon{font-size:20px;opacity:.6;}
+.dash-locked-text{font-size:12px;}
+.footer-cell.dash-locked{flex-direction:row;padding:11px 16px;gap:8px;}
 
 .dash-diligence-note{display:flex;align-items:center;gap:10px;background:var(--info-bg);border:1px solid var(--border);border-radius:8px;padding:9px 14px;margin-bottom:16px;font-size:12px;color:var(--text-2);}
 .dash-diligence-dismiss{background:none;border:none;color:var(--text-3,#9CA3AF);cursor:pointer;font-size:14px;margin-left:auto;}
@@ -1026,7 +1033,8 @@ canvas { max-width: 100%; }
           <div class="audit-score-dot warn" id="readiness-dot"></div>
           <span class="audit-score-text" id="readiness-text">68%</span>
         </div>
-        <div class="strip-bar"><div class="strip-bar-fill" id="strip-readiness-fill" style="width:68%"></div><div class="strip-bar-tick" style="left:85%"></div></div>
+        <div class="strip-bar" id="strip-readiness-bar"><div class="strip-bar-fill" id="strip-readiness-fill" style="width:68%"></div><div class="strip-bar-tick" style="left:85%"></div></div>
+        <div class="strip-sub" id="strip-readiness-microcopy" style="display:none" data-i18n="dash.locked_readiness_sub">calculado após o diagnóstico</div>
       </div>
       <div class="strip-cell strip-clickable" id="strip-docs-cell" onclick="nav('documentos',navItemFor('documentos'))">
         <div class="strip-label" data-i18n="strip.docs.label">Cofre de documentos</div>
@@ -1074,12 +1082,12 @@ canvas { max-width: 100%; }
     <!-- Operational footer: absorbs the former KPI overdue/complaints cards + critical-actions
          card (counts only, no itemised list — see docs/path-g-report.md removed-DOM table) -->
     <div class="dash-footer-strip" id="dash-footer-strip">
-      <div class="footer-cell" onclick="nav('esap',navItemFor('esap'))" style="cursor:pointer">
+      <div class="footer-cell" id="footer-cell-esap" onclick="nav('esap',navItemFor('esap'))" style="cursor:pointer">
         <span class="footer-num red" id="dash-overdue">3</span>
         <span class="footer-label" data-i18n="dash.footer.esap">acções ESAP em atraso</span>
         <span class="footer-sub" id="dash-overdue-sub" data-i18n="kpi.overdue.sub">de 18 acções totais</span>
       </div>
-      <div class="footer-cell" onclick="nav('reclamacoes',navItemFor('reclamacoes'))" style="cursor:pointer">
+      <div class="footer-cell" id="footer-cell-complaints" onclick="nav('reclamacoes',navItemFor('reclamacoes'))" style="cursor:pointer">
         <span class="footer-num amber" id="dash-complaints">2</span>
         <span class="footer-label" data-i18n="dash.footer.complaints">reclamações abertas</span>
         <span class="footer-sub" data-i18n="kpi.complaints.sub">Prazo médio: 8 dias</span>
@@ -3779,32 +3787,36 @@ function renderProjectCategory(){
   }
 }
 
+// Path G (P4): true only when there's genuinely no diagnostic yet — demo tenants are
+// always fully hydrated, never locked (existing SGAS_DEMO_ACTIVE guard pattern).
+function isPreDiagnostic(){
+  return !window.SGAS_DEMO_ACTIVE && !SGAS_READINESS_ASSESSMENT;
+}
+function dashLockCardHtml(){
+  return `<div class="dash-locked"><span class="dash-locked-icon">🔒</span><span class="dash-locked-text">${t('dash.locked_pre_diagnostic')}</span></div>`;
+}
+
 function renderDashboard(){
   renderProjectCategory();
   // B3: empty-state — projecto novo sem dados reais (nunca em tenants demo)
   var isEmptyProject = !window.SGAS_DEMO_ACTIVE && !SGAS_READINESS_ASSESSMENT && riskData.length===0 && esapData.length===0;
   var emptyEl = document.getElementById('dash-empty-state');
-  // Path G (P2): dash-kpi-grid was removed (readiness/docs moved to the status strip,
-  // which always renders); toggle the detail grid + footer strip instead.
   var detailGridEl = document.getElementById('dash-detail-grid');
   var footerStripEl = document.getElementById('dash-footer-strip');
-  if (emptyEl) {
-    emptyEl.style.display = isEmptyProject ? 'block' : 'none';
-    if (detailGridEl) detailGridEl.style.display = isEmptyProject ? 'none' : '';
-    if (footerStripEl) footerStripEl.style.display = isEmptyProject ? 'none' : '';
-  }
-  // Path G (P2): compact PS1-8 bars (2-color threshold, same 80% used by renderPS()/
-  // esapGapQueue()) replace the old full-size ps-bars card. Itemised "critical actions"
-  // list removed — its counts already surface in the operational footer via
-  // updateReadiness()'s dash-overdue/dash-complaints; no separate stacked card.
+  // Path G (P4): detail grid + footer stay visible (they now render locked placeholders
+  // pre-diagnostic instead of disappearing) — only dash-empty-state itself toggles.
+  if (emptyEl) emptyEl.style.display = isEmptyProject ? 'block' : 'none';
+  if (detailGridEl) detailGridEl.style.display = '';
+  if (footerStripEl) footerStripEl.style.display = '';
+
+  var preDiag = isPreDiagnostic();
+
+  // Path G (P2/P4): compact PS1-8 bars (2-color threshold, same 80% used by renderPS()/
+  // esapGapQueue()), or a locked placeholder pre-diagnostic — never a 0% bar.
   const psCompact = document.getElementById('dash-ps-compact');
   if (psCompact) {
-    if (SGAS_READINESS_LOAD_DONE && !SGAS_READINESS_ASSESSMENT) {
-      psCompact.innerHTML = `<div class="readiness-empty">
-        <strong>Ainda não há diagnóstico de prontidão.</strong>
-        Completa o wizard PS1–PS8 para alimentar o dashboard, os gráficos e o assistente IA com dados reais.
-        <button type="button" data-open-readiness-wizard="true">Abrir diagnóstico</button>
-      </div>`;
+    if (preDiag) {
+      psCompact.innerHTML = dashLockCardHtml();
     } else {
       let ph='';
       PS_DATA.forEach(ps=>{
@@ -3844,6 +3856,7 @@ function renderDashContext(){
 function renderDashPriority(){
   const list = document.getElementById('dash-priority-list');
   if (!list) return;
+  if (isPreDiagnostic()) { list.innerHTML = dashLockCardHtml(); return; }
   if (typeof window.esapGapQueue !== 'function') { list.innerHTML=''; return; }
   const gaps = window.esapGapQueue().filter(function(g){
     return g.pct > 0 || (psReqStatus[g.psId]||[]).some(function(r){ return r !== 'none'; });
@@ -3886,20 +3899,49 @@ function updateReadiness(){
   // score (só metadata do projecto) — ver applyReadinessProfile().
   const score = Number.isFinite(computedScore) ? computedScore : 0;
   const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-  // Path G (P2): readiness-text now shows the % only — the "Prontidão para missão"
-  // label lives once in the status strip's .strip-label, no longer duplicated here.
-  setText('readiness-text', `${score}%`);
+  const preDiag = isPreDiagnostic();
+  // Path G (P4): readiness cell shows "—" + microcopy pre-diagnostic — never a
+  // computed %, since the components that feed it (PS/ESAP/etc.) are all still zero.
   const pill=document.getElementById('readiness-pill');
   const dot=document.getElementById('readiness-dot');
-  if(pill && dot){
-    if(score>=80){pill.className='audit-score-pill';dot.className='audit-score-dot';}
-    else if(score>=60){pill.className='audit-score-pill warn';dot.className='audit-score-dot warn';}
-    else{pill.className='audit-score-pill danger';dot.className='audit-score-dot danger';}
-  }
   const stripFill=document.getElementById('strip-readiness-fill');
-  if(stripFill) stripFill.style.width=Math.max(0,Math.min(100,score))+'%';
-  setText('dash-overdue', esapData.filter(e=>e.status==='Em atraso').length);
-  setText('dash-complaints', complaints.filter(c=>c.status==='Em análise').length);
+  const stripBar=document.getElementById('strip-readiness-bar');
+  const microcopy=document.getElementById('strip-readiness-microcopy');
+  if (preDiag) {
+    setText('readiness-text', t('dash.locked_readiness'));
+    if (pill) pill.className = 'audit-score-pill';
+    if (dot) dot.style.display = 'none';
+    if (stripBar) stripBar.style.display = 'none';
+    if (microcopy) microcopy.style.display = '';
+  } else {
+    // Path G (P2): readiness-text shows the % only — the "Prontidão para missão"
+    // label lives once in the status strip's .strip-label, no longer duplicated here.
+    setText('readiness-text', `${score}%`);
+    if (dot) dot.style.display = '';
+    if (stripBar) stripBar.style.display = '';
+    if (microcopy) microcopy.style.display = 'none';
+    if(pill && dot){
+      if(score>=80){pill.className='audit-score-pill';dot.className='audit-score-dot';}
+      else if(score>=60){pill.className='audit-score-pill warn';dot.className='audit-score-dot warn';}
+      else{pill.className='audit-score-pill danger';dot.className='audit-score-dot danger';}
+    }
+    if(stripFill) stripFill.style.width=Math.max(0,Math.min(100,score))+'%';
+  }
+  // Path G (P4): ESAP-overdue / complaints footer cells lock instead of showing "0"
+  // when there's no diagnostic yet. Cell content is rebuilt in full each render (not
+  // just setText on child spans) so locked <-> unlocked transitions never reference
+  // a span that the other state's innerHTML overwrite removed.
+  const esapCell=document.getElementById('footer-cell-esap');
+  const complaintsCell=document.getElementById('footer-cell-complaints');
+  if (preDiag) {
+    if (esapCell) esapCell.innerHTML = dashLockCardHtml();
+    if (complaintsCell) complaintsCell.innerHTML = dashLockCardHtml();
+  } else {
+    const overdueN = esapData.filter(e=>e.status==='Em atraso').length;
+    const complaintsN = complaints.filter(c=>c.status==='Em análise').length;
+    if (esapCell) esapCell.innerHTML = `<span class="footer-num red" id="dash-overdue">${overdueN}</span><span class="footer-label">${t('dash.footer.esap')}</span><span class="footer-sub" id="dash-overdue-sub">${t('kpi.overdue.sub',{n:esapData.length})}</span>`;
+    if (complaintsCell) complaintsCell.innerHTML = `<span class="footer-num amber" id="dash-complaints">${complaintsN}</span><span class="footer-label">${t('dash.footer.complaints')}</span><span class="footer-sub">${t('kpi.complaints.sub')}</span>`;
+  }
   setText('badge-esap', esapData.filter(e=>e.status==='Em atraso').length);
   setText('badge-rec', complaints.filter(c=>c.status==='Em análise').length);
   let missCount = 0;
