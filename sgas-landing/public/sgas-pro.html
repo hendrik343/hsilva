@@ -3815,6 +3815,7 @@ function renderDashboard(){
     }
   }
   renderDashContext();
+  renderDashPriority();
 
   // Readiness
   updateReadiness();
@@ -3836,6 +3837,33 @@ function renderDashContext(){
   const faseEl = document.getElementById('ctx-chip-fase');
   const faseBadge = document.getElementById('project-phase-badge');
   if (faseEl) faseEl.textContent = faseBadge ? faseBadge.textContent : '—';
+}
+
+// Path G (P3): "Onde atuar primeiro" — bottom 3 PS by score, ascending, same gap
+// source as the guided ESAP builder queue (window.esapGapQueue, Path E/E1.6.1).
+function renderDashPriority(){
+  const list = document.getElementById('dash-priority-list');
+  if (!list) return;
+  if (typeof window.esapGapQueue !== 'function') { list.innerHTML=''; return; }
+  const gaps = window.esapGapQueue().filter(function(g){
+    return g.pct > 0 || (psReqStatus[g.psId]||[]).some(function(r){ return r !== 'none'; });
+  });
+  const ranked = gaps.slice().sort(function(a,b){ return a.pct - b.pct; }).slice(0,3);
+  if (!ranked.length) {
+    list.innerHTML = `<div style="padding:14px 18px;font-size:12px;color:var(--text-2)">${t('dash.priority.empty')}</div>`;
+    return;
+  }
+  list.innerHTML = ranked.map(function(g){
+    const color = g.pct < 40 ? '#DC2626' : '#D97706';
+    const gapText = g.missing && g.missing[0] ? g.missing[0] : '';
+    const hasOpenAction = esapData.some(function(e){ return e.ps === g.psId && e.status !== 'Concluída'; });
+    const chip = hasOpenAction ? `<span class="badge blue" style="cursor:pointer" onclick="nav('esap',navItemFor('esap'))">${t('dash.priority.noesap')}</span>` : '';
+    return `<div class="dash-priority-item">
+      <span class="badge" style="background:${color}22;color:${color};font-weight:700">${g.psId} · ${g.pct}%</span>
+      <span style="flex:1;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(gapText)}</span>
+      ${chip}
+    </div>`;
+  }).join('');
 }
 
 function updateReadiness(){
@@ -9094,6 +9122,7 @@ function esapGapQueue(){
   }catch(e){}
   return out;
 }
+window.esapGapQueue=esapGapQueue; // Path G (P3): reused by renderDashPriority(), same source of truth
 function esapDraftState(){
   try{ var s=JSON.parse(localStorage.getItem('sgas_esap_draft')); return s||{idx:0,actions:[],justified:[]}; }
   catch(e){ return {idx:0,actions:[],justified:[]}; }
