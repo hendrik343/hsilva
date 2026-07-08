@@ -2741,24 +2741,22 @@ async function syncFromSupabase() {
   if (!client || !ACTIVE_PROJECT_ID) return false;
   try {
     const pid = ACTIVE_PROJECT_ID;
-    const [esap, griev, scores] = await Promise.all([
+    const [esap, griev] = await Promise.all([
       client.from('esap_actions').select('*').eq('project_id', pid),
       client.from('grievances').select('*').eq('project_id', pid),
-      client.from('compliance_scores').select('*').eq('project_id', pid),
     ]);
 
     if (esap.data?.length)   esapData             = esap.data.map(fromDB.esap);
     if (griev.data?.length)  complaints           = griev.data.map(fromDB.grievance);
 
-    // compliance_scores → sgasScores[0..7] (PS1=0 .. PS8=7)
-    // DB stores 0-100; UI radar/maturity uses 0-5 → divide by 20
-    if (scores.data?.length) {
-      const psMap = { PS1:0, PS2:1, PS3:2, PS4:3, PS5:4, PS6:5, PS7:6, PS8:7 };
-      scores.data.forEach(r => {
-        if (psMap[r.ps_code] !== undefined)
-          sgasScores[psMap[r.ps_code]] = parseFloat((r.score / 20).toFixed(1));
-      });
-    }
+    // Path G (P1): removed a stray compliance_scores → sgasScores[0..7] sync that
+    // used PS-code indices (PS1=0..PS8=7) into the SAME array the 9-element ESMS
+    // autoavaliação uses with Elemento-number indices (0..8) via saveAvaliacao().
+    // Two incompatible index schemes sharing one array meant whichever ran last
+    // silently corrupted the other's display — a real bug behind "Maturidade SGAS"
+    // showing wrong/zeroed values. compliance_scores was already read-only/unused
+    // for live PS scoring (PS_DATA/psReqStatus is that source of truth); sgasScores'
+    // only real writer is saveAvaliacao(). See docs/path-g-report.md.
     await loadReadinessAssessmentFromSupabase();
     saveCache({ esapData, complaints, riskData, stakeholders, contractors, implementationEvidence, communityReports, legalRegister, ifcReports, lenderPackage, kpiProtocols, sourceWatchers, physicalRiskHotspots, processRiskMap });
     return true;
