@@ -297,8 +297,8 @@ export default function App() {
               ))}
             </div>
             <a
-              href="#form"
-              className="group hidden items-center gap-2 rounded-full px-4 py-2 text-[13px] font-semibold transition-transform hover:-translate-y-0.5 sm:inline-flex"
+              href="/sgas-pro.html"
+              className="group inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] font-semibold transition-transform hover:-translate-y-0.5 sm:px-4"
               style={{ background: 'var(--emerald-ink)', color: 'var(--gold-soft)' }}
             >
               {t.nav.cta}
