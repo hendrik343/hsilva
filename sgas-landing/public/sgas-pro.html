@@ -3884,12 +3884,18 @@ function renderDashPriority(){
   if (!list) return;
   if (isPreDiagnostic()) { list.innerHTML = dashLockCardHtml(); return; }
   if (typeof window.esapGapQueue !== 'function') { list.innerHTML=''; return; }
-  const gaps = window.esapGapQueue().filter(function(g){
+  const rawGaps = window.esapGapQueue();
+  const gaps = rawGaps.filter(function(g){
     return g.pct > 0 || (psReqStatus[g.psId]||[]).some(function(r){ return r !== 'none'; });
   });
   const ranked = gaps.slice().sort(function(a,b){ return a.pct - b.pct; }).slice(0,3);
   if (!ranked.length) {
-    list.innerHTML = `<div style="padding:14px 18px;font-size:12px;color:var(--text-2)">${t('dash.priority.empty')}</div>`;
+    // esapGapQueue() lists every PS below 80%. It is empty ONLY when all PS truly
+    // reached >=80% (genuine all-clear). If sub-80 PS exist but none were assessed
+    // yet, show a not-yet-assessed prompt instead of a false "all clear" — a wrong
+    // all-clear is dangerous in a compliance tool.
+    const emptyKey = rawGaps.length === 0 ? 'dash.priority.empty' : 'dash.priority.unassessed';
+    list.innerHTML = `<div style="padding:14px 18px;font-size:12px;color:var(--text-2)">${t(emptyKey)}</div>`;
     return;
   }
   list.innerHTML = ranked.map(function(g){
@@ -7968,7 +7974,7 @@ const I18N = {
     'strip.readiness.label':'Prontidão para missão','strip.readiness.formula_title':'Como se calcula','strip.readiness.formula_body':'Documentos 18% · Conformidade PS 15% · Maturidade SGAS 14% · ESAP 11% · Evidências 10% · Registo legal 8% · Mapas de risco 8% · GRM 6% · Contratantes 4% · KPIs 3% · Sala de auditoria 3%','strip.readiness.formula_legend':'≥80% verde · 60–79% âmbar · <60% vermelho · meta pré-missão ≥85%',
     'strip.docs.label':'Cofre de documentos','strip.docs.unit':'em falta',
     'dash.ps.title':'🏛 Conformidade IFC PS1–PS8','dash.ps.verdetalhes':'Ver detalhes',
-    'dash.priority.title':'🎯 Onde atuar primeiro','dash.priority.maturitylink':'Ver maturidade SGAS (9 elementos) →','dash.priority.empty':'Sem lacunas identificadas — todos os PS avaliados estão a ≥80%.','dash.priority.noesap':'no ESAP',
+    'dash.priority.title':'🎯 Onde atuar primeiro','dash.priority.maturitylink':'Ver maturidade SGAS (9 elementos) →','dash.priority.empty':'Sem lacunas identificadas — todos os PS avaliados estão a ≥80%.','dash.priority.unassessed':'Ainda sem avaliação — corra o diagnóstico para identificar lacunas.','dash.priority.noesap':'no ESAP',
     'dash.footer.esap':'acções ESAP em atraso','dash.footer.complaints':'reclamações abertas','dash.footer.export':'↓ Relatório mensal disponível',
     'dash.profile.title':'Perfil do projecto','dash.profile.close':'Fechar','dash.maturity.title':'📊 Maturidade SGAS — 9 Elementos',
     'dash.locked_pre_diagnostic':'Disponível após o diagnóstico','dash.locked_readiness':'—','dash.locked_readiness_sub':'calculado após o diagnóstico',
@@ -8073,7 +8079,7 @@ const I18N = {
     'strip.readiness.label':'Readiness for mission','strip.readiness.formula_title':'How it is calculated','strip.readiness.formula_body':'Documents 18% · PS compliance 15% · SGAS maturity 14% · ESAP 11% · Implementation evidence 10% · Legal register 8% · Risk maps 8% · GRM 6% · Contractors 4% · KPIs 3% · Audit room 3%','strip.readiness.formula_legend':'≥80% green · 60–79% amber · <60% red · pre-mission target ≥85%',
     'strip.docs.label':'Document vault','strip.docs.unit':'missing',
     'dash.ps.title':'🏛 IFC PS1–PS8 compliance','dash.ps.verdetalhes':'View details',
-    'dash.priority.title':'🎯 Where to act first','dash.priority.maturitylink':'View SGAS maturity (9 elements) →','dash.priority.empty':'No gaps identified — all assessed PS standards are at ≥80%.','dash.priority.noesap':'in ESAP',
+    'dash.priority.title':'🎯 Where to act first','dash.priority.maturitylink':'View SGAS maturity (9 elements) →','dash.priority.empty':'No gaps identified — all assessed PS standards are at ≥80%.','dash.priority.unassessed':'Not yet assessed — run the diagnosis to identify gaps.','dash.priority.noesap':'in ESAP',
     'dash.footer.esap':'overdue ESAP actions','dash.footer.complaints':'open grievances','dash.footer.export':'↓ Monthly report available',
     'dash.profile.title':'Project profile','dash.profile.close':'Close','dash.maturity.title':'📊 SGAS Maturity — 9 Elements',
     'dash.locked_pre_diagnostic':'Available after the diagnostic','dash.locked_readiness':'—','dash.locked_readiness_sub':'calculated after the diagnostic',
@@ -8606,6 +8612,18 @@ function setLang(l) {
 
   var topbarSub = document.getElementById('topbar-sub');
   if (topbarSub) topbarSub.textContent = dict['topbar.sub'] || topbarSub.textContent;
+
+  // #proj-name holds either a real project name (set by the wizard) or the
+  // "to be completed" placeholder. It has no data-i18n on purpose — a blind walk
+  // would clobber a real name on toggle. Only translate when it still shows the
+  // placeholder, in either language.
+  var projNameEl = document.getElementById('proj-name');
+  if (projNameEl) {
+    var projCur = projNameEl.textContent.trim();
+    if (projCur === 'A preencher pelo wizard' || projCur === 'To be completed by the wizard') {
+      projNameEl.textContent = (l === 'en' ? 'To be completed by the wizard' : 'A preencher pelo wizard');
+    }
+  }
 
   // 4. Auth overlay — elements with existing IDs
   var authIds = {
