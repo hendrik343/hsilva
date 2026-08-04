@@ -31,8 +31,9 @@ interface CardData {
 
 // ─── Content ──────────────────────────────────────────────────────────────────
 const LANGS: Lang[] = ['PT', 'FR', 'EN']
-const SAAS_URL = 'https://sgas-pro.vercel.app'
-const saasPage = (page?: string) => page ? `${SAAS_URL}/?page=${page}` : SAAS_URL
+const SAAS_URL = '/sgas-pro.html'
+const saasPage = (page?: string) => page ? `${SAAS_URL}?page=${page}` : SAAS_URL
+const demoPage = (page = 'dashboard') => `${SAAS_URL}?projectId=demo-kibala&page=${page}`
 
 const NAV_LINKS = [
   { label: 'Plataforma',        href: '#platform' },
@@ -69,7 +70,7 @@ const SLIDES: Record<Lang, SlideData> = {
     sub: 'O SGAS Pro ajuda empresas a prepararem-se para auditorias, due diligence ambiental e social, e pedidos de financiamento junto do Banco Mundial, IFC e outros financiadores de desenvolvimento.',
     cta1: 'Preparar Auditoria',
     cta2: 'Ver Sala de Evidências',
-    trust: 'Plataforma IFC · Banco Mundial · CAO Compliant · ESAP Ready',
+    trust: 'Orientado aos Padrões IFC · Banco Mundial · Preparação ESAP e CAO',
   },
   FR: {
     lines: [
@@ -81,7 +82,7 @@ const SLIDES: Record<Lang, SlideData> = {
     sub: "SGAS Pro aide les entreprises à se préparer aux audits, à la due diligence environnementale et sociale, et aux demandes de financement auprès de la Banque mondiale, de l'IFC.",
     cta1: "Préparer L'Audit",
     cta2: 'Voir La Salle De Preuves',
-    trust: 'Plateforme IFC · Banque mondiale · CAO Compliant · ESAP Ready',
+    trust: 'Aligné sur les standards IFC · Banque mondiale · Préparation ESAP et CAO',
   },
   EN: {
     lines: [
@@ -93,7 +94,7 @@ const SLIDES: Record<Lang, SlideData> = {
     sub: 'SGAS Pro helps companies prepare for environmental and social audits, IFC / World Bank due diligence, and loan applications with development-finance institutions.',
     cta1: 'Prepare for Audit',
     cta2: 'View Evidence Room',
-    trust: 'IFC Performance Standards · World Bank ESF · CAO Compliant · ESAP Ready',
+    trust: 'Aligned with IFC Performance Standards · World Bank ESF · ESAP and CAO readiness',
   },
 }
 
@@ -246,7 +247,7 @@ export default function App() {
         {/* Bottom-left content — pointer-events-none so Spline stays interactive */}
         <div
           className="relative z-10 pointer-events-none w-full max-w-[90%] sm:max-w-lg lg:max-w-2xl px-6 md:px-10 pb-10 pt-32"
-          style={{ opacity: splineLoaded || true ? 1 : 0, transition: 'opacity 0.5s' }}
+          style={{ opacity: splineLoaded ? 1 : 0.85, transition: 'opacity 0.5s' }}
         >
           {/* Language switcher */}
           <div className="flex items-center gap-1 mb-7 pointer-events-auto">
@@ -340,7 +341,7 @@ export default function App() {
                 {slide.cta1}
               </a>
               <a
-                href={saasPage()}
+                href={demoPage('audit-room')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3 md:px-8 md:py-4 text-sm font-bold rounded-sm cursor-pointer transition-all duration-200 active:scale-[0.97]"
@@ -580,6 +581,8 @@ export default function App() {
               SGAS Pro · Audit room readiness
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
+              <a href="/privacidade.html" className="text-[11px] transition-colors duration-200" style={{ color: 'hsl(0,0%,40%)' }}>Privacidade</a>
+              <a href="/termos.html" className="text-[11px] transition-colors duration-200" style={{ color: 'hsl(0,0%,40%)' }}>Termos</a>
               <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: 'hsl(0,0%,30%)' }}>
                 Acesso rápido:
               </span>

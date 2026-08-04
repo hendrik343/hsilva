@@ -1,0 +1,4 @@
+window.SGAS_CONFIG = {
+  SUPABASE_URL: "https://txkyedcqancetuoxtapf.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4a3llZGNxYW5jZXR1b3h0YXBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDg5MDAsImV4cCI6MjA5Nzg4NDkwMH0.suG74mD4naF5VV0TSD0b3QrC6AwbAvMrhX2bxZDhcmI"
+};
