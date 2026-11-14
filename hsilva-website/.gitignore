@@ -1,7 +1,10 @@
 .vercel
 node_modules
+node_modules.nosync
+node_modules.icloud-old
 dist
 *.tsbuildinfo
 playwright-*.png
 playwright-*.jpg
 playwright-*.jpeg
+.env*

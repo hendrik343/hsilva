@@ -10,9 +10,9 @@ export default defineConfig({
     },
   },
   server: {
-    open: true,
+    open: false,
   },
   preview: {
-    open: true,
+    open: false,
   },
 })

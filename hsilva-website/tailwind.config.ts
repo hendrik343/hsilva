@@ -1,35 +1,41 @@
 import type { Config } from 'tailwindcss'
 
+const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
-        display: ['"Instrument Serif"', 'serif'],
+        display: ['Figtree', 'system-ui', 'sans-serif'],
+        sans: ['"Noto Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
-        bg: 'hsl(var(--bg))',
-        surface: 'hsl(var(--surface))',
-        'text-primary': 'hsl(var(--text))',
-        muted: 'hsl(var(--muted))',
-        stroke: 'hsl(var(--stroke))',
-        lime: '#d7ff00',
+        page: token('page'),
+        card: token('card'),
+        ink: token('ink'),
+        body: token('body'),
+        muted: token('muted'),
+        line: token('line'),
+        brand: token('brand'),
+        panel: token('panel'),
+        tint: token('tint'),
+        'tint-line': token('tint-line'),
+        accent: token('accent'),
+        cta: { DEFAULT: '#FBBF24', hover: '#FCD34D', ink: '#1F1300' },
+      },
+      boxShadow: {
+        soft: '0 1px 2px rgb(4 47 46 / .05), 0 12px 32px -16px rgb(4 47 46 / .18)',
+        lift: '0 24px 60px -24px rgb(4 47 46 / .45)',
       },
       keyframes: {
-        scrollDown: {
-          '0%':   { transform: 'translateY(-100%)' },
-          '100%': { transform: 'translateY(200%)' },
-        },
-        roleFadeIn: {
-          '0%':   { opacity: '0', transform: 'translateY(8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+        rise: {
+          from: { opacity: '0', transform: 'translateY(14px)' },
+          to: { opacity: '1', transform: 'none' },
         },
       },
       animation: {
-        'scroll-down':  'scrollDown 1.5s ease-in-out infinite',
-        'role-fade-in': 'roleFadeIn 0.4s ease-out forwards',
+        rise: 'rise .55s cubic-bezier(.2,.7,.3,1) both',
       },
     },
   },
