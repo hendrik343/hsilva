@@ -12,7 +12,7 @@ export default function Hero() {
             <video
               className="size-full object-cover"
               src={HERO_VIDEO_URL}
-              poster="/images/hero-taxi.webp"
+              poster="/images/hero-mountain.webp"
               autoPlay
               muted
               loop
@@ -20,8 +20,8 @@ export default function Hero() {
             />
           ) : (
             <Image
-              src="/images/hero-taxi.webp"
-              alt="Táxi amarelo da SilvaGo numa rua arborizada do Huambo, ao entardecer"
+              src="/images/hero-mountain.webp"
+              alt="Formação rochosa íngreme coberta de vegetação na paisagem do Huambo"
               fill
               priority
               sizes="100vw"
