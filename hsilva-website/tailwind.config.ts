@@ -1,41 +1,55 @@
 import type { Config } from 'tailwindcss'
 
-const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
-
 export default {
-  content: ['./index.html', './src/**/*.{ts,tsx}'],
+  content: [
+    './app/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+  ],
   theme: {
     extend: {
       fontFamily: {
-        display: ['Figtree', 'system-ui', 'sans-serif'],
-        sans: ['"Noto Sans"', 'system-ui', 'sans-serif'],
+        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
+        sans: ['var(--font-plus-jakarta)', 'system-ui', 'sans-serif'],
       },
       colors: {
-        page: token('page'),
-        card: token('card'),
-        ink: token('ink'),
-        body: token('body'),
-        muted: token('muted'),
-        line: token('line'),
-        brand: token('brand'),
-        panel: token('panel'),
-        tint: token('tint'),
-        'tint-line': token('tint-line'),
-        accent: token('accent'),
-        cta: { DEFAULT: '#FBBF24', hover: '#FCD34D', ink: '#1F1300' },
+        teal: '#0B3B38',
+        deep: '#062624',
+        amber: '#F5B544',
+        'amber-dark': '#B07A12',
+        cream: '#F7F2E8',
+        ink: '#0E1F1D',
+        muted: '#5B6B68',
+        mint: '#E3F1EB',
       },
-      boxShadow: {
-        soft: '0 1px 2px rgb(4 47 46 / .05), 0 12px 32px -16px rgb(4 47 46 / .18)',
-        lift: '0 24px 60px -24px rgb(4 47 46 / .45)',
+      maxWidth: {
+        content: '1312px',
+      },
+      opacity: {
+        7: '0.07',
+        12: '0.12',
+        14: '0.14',
+        28: '0.28',
+        42: '0.42',
+        55: '0.55',
+        65: '0.65',
+        72: '0.72',
+        82: '0.82',
+        88: '0.88',
+        97: '0.97',
+      },
+      borderRadius: {
+        '2xl-card': '28px',
+        '3xl-card': '36px',
+        '4xl-card': '44px',
       },
       keyframes: {
-        rise: {
-          from: { opacity: '0', transform: 'translateY(14px)' },
-          to: { opacity: '1', transform: 'none' },
+        reveal: {
+          from: { opacity: '0', transform: 'translateY(24px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
       },
       animation: {
-        rise: 'rise .55s cubic-bezier(.2,.7,.3,1) both',
+        reveal: 'reveal .7s cubic-bezier(.2,.7,.3,1) both',
       },
     },
   },
