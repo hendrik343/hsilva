@@ -61,6 +61,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-AO" className={`${fraunces.variable} ${plusJakarta.variable}`}>
+      <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/motion.js" />
+      </head>
       <body>{children}</body>
     </html>
   )
