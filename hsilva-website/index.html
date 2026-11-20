@@ -1,29 +1,629 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-AO">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpeg" href="/hsilva-logo.jpg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SilvaGo — táxi em Huambo. Corridas normais e corridas gratuitas para o hospital, para grávidas, idosos e pessoas sem condições." />
-    <title>SilvaGo — Táxi & Corrida Solidária, Huambo</title>
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/jpeg" href="/hsilva-logo.jpg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SilvaGo — táxi em Huambo. Corridas normais e corridas gratuitas para o hospital, para grávidas, idosos e pessoas sem condições.">
+<title>SilvaGo — Táxi &amp; Corrida Solidária, Huambo</title>
 
-    <meta property="og:title" content="SilvaGo — Táxi & Corrida Solidária, Huambo" />
-    <meta property="og:description" content="SilvaGo — táxi em Huambo. Corridas normais e corridas gratuitas para o hospital, para grávidas, idosos e pessoas sem condições." />
-    <meta property="og:image" content="/og.png" />
-    <meta property="og:locale" content="pt_AO" />
-    <meta property="og:site_name" content="SilvaGo" />
+<meta property="og:title" content="SilvaGo — Táxi &amp; Corrida Solidária, Huambo">
+<meta property="og:description" content="SilvaGo — táxi em Huambo. Corridas normais e corridas gratuitas para o hospital, para grávidas, idosos e pessoas sem condições.">
+<meta property="og:image" content="/hsilva-logo.jpg">
+<meta property="og:locale" content="pt_AO">
+<meta property="og:site_name" content="SilvaGo">
 
-    <meta name="twitter:title" content="SilvaGo — Táxi & Corrida Solidária, Huambo" />
-    <meta name="twitter:description" content="SilvaGo — táxi em Huambo. Corridas normais e corridas gratuitas para o hospital, para grávidas, idosos e pessoas sem condições." />
+<meta name="twitter:title" content="SilvaGo — Táxi &amp; Corrida Solidária, Huambo">
+<meta name="twitter:description" content="SilvaGo — táxi em Huambo. Corridas normais e corridas gratuitas para o hospital, para grávidas, idosos e pessoas sem condições.">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#0B3B38" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0B3B38">
+<style>
+  :root{
+    --ink:#042f2e;
+    --ink-soft:#526e6c;
+    --muted:#7f938f;
+    --bg:#ffffff;
+    --bg-soft:#f4fbfa;
+    --line:#d7e8e4;
+    --brand:#0f766e;
+    --panel:#0b3b38;
+    --cta:#fbbf24;
+    --cta-hover:#fcd34d;
+    --cta-ink:#1f1300;
+    --grad: linear-gradient(120deg,var(--brand),var(--cta));
+    --radius:18px;
+    --shadow: 0 20px 50px -25px rgba(4,47,46,.35);
+    --shadow-lift: 0 24px 60px -24px rgba(4,47,46,.55);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Noto Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    line-height:1.5;
+  }
+  a{color:inherit;text-decoration:none;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+  .icon{width:20px;height:20px;flex:none;}
+  .icon svg{width:100%;height:100%;}
+  h1,h2,h3,.logo,.btn,.kicker,.eyebrow,.num,.step-title,.mini-title,.ticket-badge,.ticket-free,.cost{
+    font-family:"Figtree",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    padding:13px 24px;border-radius:999px;font-weight:700;font-size:15px;
+    border:1px solid transparent;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--cta);color:var(--cta-ink);}
+  .btn-primary:hover{box-shadow:0 10px 22px -8px rgba(251,191,36,.65);}
+  .btn-grad{background:var(--grad);color:#fff;}
+  .btn-grad:hover{box-shadow:0 10px 24px -8px rgba(15,118,110,.45);}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line);}
+  .btn-ghost:hover{background:var(--bg-soft);}
+  .btn-block{width:100%;}
+
+  /* ---------- Nav ---------- */
+  header{
+    position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  nav{display:flex;align-items:center;justify-content:space-between;height:76px;position:relative;}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:21px;letter-spacing:-.02em;}
+  .logo-mark{width:32px;height:32px;border-radius:10px;background:var(--grad);position:relative;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;}
+  .logo .go{color:var(--brand);}
+  .nav-links{display:flex;gap:28px;font-weight:600;font-size:15px;color:var(--ink-soft);}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex;align-items:center;gap:14px;}
+  .nav-toggle{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink);}
+  @media (max-width:860px){
+    .nav-links{display:none;}
+    .nav-links.open{
+      display:flex;flex-direction:column;position:absolute;top:76px;left:0;right:0;
+      background:#fff;border-bottom:1px solid var(--line);padding:16px 24px;gap:14px;box-shadow:var(--shadow);
+    }
+    .nav-toggle{display:block;}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{padding:72px 0 40px;background:
+    radial-gradient(60% 50% at 85% 10%, rgba(15,118,110,.12), transparent 60%),
+    radial-gradient(50% 40% at 100% 60%, rgba(251,191,36,.14), transparent 60%);
+  }
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;}
+  @media (max-width:900px){.hero-grid{grid-template-columns:1fr;}}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;
+    background:var(--bg-soft);font-size:13px;font-weight:700;color:var(--brand);margin-bottom:18px;
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--grad);}
+  h1{font-size:clamp(34px,5vw,52px);line-height:1.08;letter-spacing:-.02em;margin:0 0 18px;}
+  .hero p.lead{font-size:18px;color:var(--ink-soft);max-width:480px;margin:0 0 30px;}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:14px;}
+
+  .ticket-card{
+    background:var(--panel);color:#fff;border-radius:28px;box-shadow:var(--shadow-lift);
+    padding:26px;
+  }
+  .ticket-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:22px;}
+  .ticket-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);padding:7px 14px;border-radius:999px;font-weight:700;font-size:14px;}
+  .ticket-badge .icon{color:var(--cta);}
+  .ticket-free{background:var(--cta);color:var(--cta-ink);padding:7px 14px;border-radius:999px;font-weight:800;font-size:14px;}
+  .ticket-steps{list-style:none;margin:0;padding:0;}
+  .ticket-steps li{display:flex;gap:14px;padding-bottom:22px;}
+  .ticket-steps li:last-child{padding-bottom:0;}
+  .step-ico{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex:none;}
+  .step-ico.cta{background:var(--cta);color:var(--cta-ink);}
+  .step-title{margin:0;font-weight:800;font-size:18px;}
+  .step-sub{margin:2px 0 0;font-size:14px;color:rgba(255,255,255,.75);}
+  .ticket-cost-row{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-top:1px solid rgba(255,255,255,.15);padding-top:16px;margin-top:4px;}
+  .ticket-cost-row .label{font-size:14px;color:rgba(255,255,255,.75);}
+  .ticket-cost-row .cost{font-size:40px;font-weight:800;color:var(--cta);line-height:1;}
+
+  .mini-card{margin-top:14px;display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--bg);box-shadow:var(--shadow);}
+  .mini-ico{width:42px;height:42px;border-radius:12px;background:var(--bg-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:none;}
+  .mini-title{margin:0;font-weight:800;font-size:16px;}
+  .mini-sub{margin:2px 0 0;font-size:14px;color:var(--ink-soft);}
+
+  .hero-art{position:relative;}
+  .map-card{
+    background:var(--bg-soft);border-radius:28px;padding:28px;position:relative;overflow:hidden;min-height:360px;
+  }
+  .map-card svg{width:100%;height:auto;}
+  .float-chip{
+    position:absolute;background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:12px 16px;
+    display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;
+  }
+  .chip-eta{top:18px;left:18px;}
+  .chip-fare{bottom:18px;right:18px;}
+  .chip-dot{width:10px;height:10px;border-radius:50%;background:var(--grad);flex:none;}
+
+  /* ---------- Trust strip ---------- */
+  .trust{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:34px 0;background:var(--bg-soft);}
+  .trust .wrap{display:flex;flex-wrap:wrap;gap:36px;justify-content:space-between;}
+  .stat{text-align:left;}
+  .stat .num{font-size:26px;font-weight:800;letter-spacing:-.01em;}
+  .stat .label{font-size:14px;color:var(--ink-soft);}
+
+  /* ---------- Section heading ---------- */
+  section{padding:84px 0;}
+  .section-head{max-width:620px;margin:0 0 46px;}
+  .section-head .kicker{color:var(--brand);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:block;}
+  .section-head h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.02em;margin:0 0 12px;}
+  .section-head p{color:var(--ink-soft);font-size:16px;margin:0;}
+
+  /* ---------- How it works ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+  @media (max-width:860px){.steps{grid-template-columns:1fr;}}
+  .step{padding:28px;border:1px solid var(--line);border-radius:var(--radius);}
+  .step .num-badge{
+    width:40px;height:40px;border-radius:12px;background:var(--grad);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  }
+  .step h3{margin:0 0 8px;font-size:19px;}
+  .step p{margin:0;color:var(--ink-soft);font-size:15px;}
+
+  /* ---------- Services ---------- */
+  .options-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;}
+  @media (max-width:760px){.options-grid{grid-template-columns:1fr;}}
+  .option-card{
+    border:1px solid var(--line);border-radius:var(--radius);padding:30px;transition:box-shadow .15s ease, transform .15s ease;
+    display:flex;flex-direction:column;
+  }
+  .option-card.tint{border:2px solid #fcd34d;background:#fffbeb;}
+  .option-card:hover{box-shadow:var(--shadow);transform:translateY(-3px);}
+  .option-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .option-glyph{width:48px;height:48px;border-radius:14px;background:var(--bg-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;}
+  .option-glyph.cta{background:var(--cta);color:var(--cta-ink);}
+  .option-tag{border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;border:1px solid var(--line);color:var(--ink-soft);}
+  .option-tag.free{background:var(--cta);color:var(--cta-ink);border-color:transparent;font-weight:800;}
+  .option-card h3{margin:16px 0 6px;font-size:19px;}
+  .option-card p{margin:0 0 14px;color:var(--ink-soft);font-size:15px;}
+  .option-list{list-style:none;margin:0 0 20px;padding:0;display:flex;flex-direction:column;gap:9px;}
+  .option-list li{display:flex;align-items:flex-start;gap:10px;font-size:14.5px;font-weight:600;}
+  .option-list .icon{width:16px;height:16px;color:var(--brand);margin-top:3px;}
+  .option-card .btn{margin-top:auto;align-self:flex-start;}
+
+  /* ---------- Split (quem tem direito) ---------- */
+  .split-cta{
+    background:var(--panel);color:#fff;border-radius:28px;padding:54px;display:grid;
+    grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;
+  }
+  @media (max-width:860px){.split-cta{grid-template-columns:1fr;padding:36px;}}
+  .split-cta h2{font-size:clamp(24px,3vw,34px);margin:0 0 14px;letter-spacing:-.02em;}
+  .split-cta p{color:#cfe8e4;font-size:16px;max-width:460px;margin:0 0 26px;}
+  .earn-card{background:#0f433f;border-radius:18px;padding:24px;}
+  .earn-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #1d5852;font-size:14px;color:#cfe8e4;}
+  .earn-row:last-child{border-bottom:none;}
+  .earn-row .icon{color:var(--cta);margin-top:2px;}
+  .earn-row b{color:#fff;font-size:15.5px;display:block;}
+  .coverage{margin-top:30px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+  .coverage .lbl{font-weight:700;font-size:14px;color:var(--ink-soft);margin-right:4px;}
+  .coverage .tag{background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:700;font-size:14px;color:var(--ink);display:inline-flex;align-items:center;gap:7px;}
+  .coverage .tag .icon{width:15px;height:15px;color:var(--brand);}
+  .coverage-note{margin-top:14px;font-size:14px;color:var(--ink-soft);}
+
+  /* ---------- Contact ---------- */
+  .app-section .wrap{display:grid;grid-template-columns:.95fr 1.05fr;gap:50px;align-items:center;}
+  @media (max-width:900px){.app-section .wrap{grid-template-columns:1fr;}}
+  .phone-mock{
+    width:230px;height:460px;border-radius:36px;background:var(--panel);padding:10px;margin:0 auto;box-shadow:var(--shadow);
+  }
+  .phone-screen{
+    width:100%;height:100%;border-radius:28px;background:var(--grad);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  }
+  .phone-screen .icon{width:34px;height:34px;color:#fff;}
+  .phone-screen span{color:#fff;font-weight:800;font-size:22px;letter-spacing:-.02em;}
+  .store-badges{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap;}
+  .store-badge{
+    display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px 20px;font-weight:700;font-size:15px;
+  }
+  .store-badge.primary{background:var(--cta);border-color:transparent;color:var(--cta-ink);}
+  .store-badge .icon{color:var(--brand);}
+  .store-badge.primary .icon{color:var(--cta-ink);}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);padding:56px 0 28px;background:var(--bg-soft);}
+  .footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:30px;margin-bottom:40px;}
+  @media (max-width:760px){.footer-grid{grid-template-columns:1fr;}}
+  .footer-grid h4{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:0 0 14px;}
+  .footer-grid ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14.5px;}
+  .footer-grid ul a:hover{text-decoration:underline;}
+  .footer-grid ul li{display:flex;align-items:center;gap:8px;}
+  .footer-grid ul li .icon{width:16px;height:16px;color:var(--brand);}
+  .footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;border-top:1px solid var(--line);padding-top:24px;font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- City gallery ---------- */
+  .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media (max-width:760px){.gallery-grid{grid-template-columns:1fr;}}
+  .gallery-grid figure{margin:0;}
+  .gallery-grid img{width:100%;height:260px;object-fit:cover;border-radius:var(--radius);box-shadow:var(--shadow);display:block;}
+  .gallery-grid figcaption{margin-top:8px;font-size:13.5px;color:var(--ink-soft);}
+  .photo-credit{margin-top:18px;font-size:12.5px;color:var(--muted);}
+  .photo-credit a{text-decoration:underline;}
+
+  /* ---------- Polish: scroll reveal + nav shadow ---------- */
+  header{transition:box-shadow .25s ease, border-color .25s ease;}
+  header.scrolled{box-shadow:0 8px 24px -16px rgba(4,47,46,.25);border-bottom-color:transparent;}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in-view{opacity:1;transform:none;}
+  .reveal-group.in-view .reveal-item{opacity:1;transform:none;}
+  .reveal-item{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1);}
+  .reveal-item:nth-child(1){transition-delay:0ms;}
+  .reveal-item:nth-child(2){transition-delay:90ms;}
+  .reveal-item:nth-child(3){transition-delay:180ms;}
+  .reveal-item:nth-child(4){transition-delay:270ms;}
+  @media (prefers-reduced-motion: reduce){
+    .reveal,.reveal-item{opacity:1;transform:none;transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <a href="#top" class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+            <circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>
+          </svg>
+        </span>
+        Silva<span class="go">Go</span>
+      </a>
+      <div class="nav-links">
+        <a href="#servicos">Serviços</a>
+        <a href="#solidaria">Corrida Solidária</a>
+        <a href="#porque">Porquê</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#contacto">Contacto</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="#solidaria">Quem tem direito</a>
+        <a class="btn btn-primary" href="tel:+244945786313">Ligar 945 786 313</a>
+        <button class="nav-toggle" aria-label="Menu">☰</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span>Táxi no Huambo</span>
+      <h1>O táxi do Huambo que leva quem precisa ao hospital,<br>
+        <span style="background:linear-gradient(transparent 62%, rgba(251,191,36,.6) 62%);">de graça.</span>
+      </h1>
+      <p class="lead">A SilvaGo é um serviço de táxi como os outros — com uma diferença. Grávidas, idosos e pessoas sem condições ligam, marcam, e nós vamos buscá-los a casa para os levar ao hospital. Sem pagar nada.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="tel:+244945786313">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          Ligar 945 786 313
+        </a>
+        <a class="btn btn-ghost" href="#solidaria">
+          Quem tem direito
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <div class="ticket-card">
+        <div class="ticket-top">
+          <span class="ticket-badge">
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>
+            Corrida Solidária
+          </span>
+          <span class="ticket-free">Grátis</span>
+        </div>
+        <ol class="ticket-steps">
+          <li>
+            <span class="step-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+            <div><p class="step-title">A sua casa</p><p class="step-sub">Vamos buscar à porta</p></div>
+          </li>
+          <li>
+            <span class="step-ico cta"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>
+            <div><p class="step-title">Hospital</p><p class="step-sub">Consulta, parto ou urgência</p></div>
+          </li>
+        </ol>
+        <div class="ticket-cost-row">
+          <span class="label">Custo da corrida</span>
+          <span class="cost">0 Kz</span>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <span class="mini-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span>
+        <div><p class="mini-title">Táxi SilvaGo</p><p class="mini-sub">Para qualquer destino no Huambo</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="trust">
+  <div class="wrap reveal-group">
+    <div class="stat reveal-item"><div class="num">Huambo</div><div class="label">cidade servida</div></div>
+    <div class="stat reveal-item"><div class="num">945 786 313</div><div class="label">número único, uma chamada</div></div>
+    <div class="stat reveal-item"><div class="num">0 Kz</div><div class="label">custo da corrida solidária</div></div>
+    <div class="stat reveal-item"><div class="num">3</div><div class="label">grupos com direito à corrida grátis</div></div>
+  </div>
+</div>
+
+<section id="cidade">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">A nossa cidade</span>
+      <h2>Huambo</h2>
+      <p>A SilvaGo nasceu no Huambo e serve o Huambo — a cidade onde trabalhamos e vivemos todos os dias.</p>
+    </div>
+    <div class="gallery-grid reveal-group">
+      <figure class="reveal-item">
+        <img src="/images/huambo/rotunda.jpg" alt="Rotunda central do Huambo, com o monumento dos heróis e o antigo palácio do governador ao fundo." loading="lazy">
+        <figcaption>Rotunda central</figcaption>
+      </figure>
+      <figure class="reveal-item">
+        <img src="/images/huambo/mercado.jpg" alt="Mercado no Huambo, com vendedores, bancas e motas." loading="lazy">
+        <figcaption>Mercado</figcaption>
+      </figure>
+      <figure class="reveal-item">
+        <img src="/images/huambo/rua.jpg" alt="Vista de uma avenida no centro do Huambo, com prédios, carros e camiões." loading="lazy">
+        <figcaption>Centro da cidade</figcaption>
+      </figure>
+    </div>
+    <p class="photo-credit">Fotos: Carolyn Parsons, via <a href="https://commons.wikimedia.org/wiki/Category:Huambo" target="_blank" rel="noopener">Wikimedia Commons</a>, licença <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
+  </div>
+</section>
+
+<section id="como-funciona">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Como funciona</span>
+      <h2>Três passos. Uma chamada.</h2>
+      <p>Não é preciso aplicação nem internet. Basta um telefone.</p>
+    </div>
+    <div class="steps reveal-group">
+      <div class="step reveal-item">
+        <div class="num-badge">1</div>
+        <h3>Ligue para a SilvaGo</h3>
+        <p>945 786 313. Diga se é táxi normal ou corrida para o hospital.</p>
+      </div>
+      <div class="step reveal-item">
+        <div class="num-badge">2</div>
+        <h3>Diga onde está e para onde vai</h3>
+        <p>A morada onde vamos buscar, o hospital ou destino, e o dia e a hora.</p>
+      </div>
+      <div class="step reveal-item">
+        <div class="num-badge">3</div>
+        <h3>Vamos buscar a casa</h3>
+        <p>O motorista chega ao local combinado e leva a pessoa até ao destino.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="servicos" style="background:var(--bg-soft);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Serviços</span>
+      <h2>Um táxi para todos os dias. Uma corrida grátis para os dias difíceis.</h2>
+    </div>
+    <div class="options-grid reveal-group">
+      <div class="option-card reveal-item">
+        <div class="option-top">
+          <span class="option-glyph">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+          </span>
+          <span class="option-tag">Serviço normal</span>
+        </div>
+        <h3>Táxi SilvaGo</h3>
+        <p>Precisa de ir ao mercado, ao trabalho ou a casa de alguém? Ligue, diga onde está e para onde vai. É um táxi normal, pago, para qualquer destino no Huambo.</p>
+        <ul class="option-list">
+          <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Qualquer destino no Huambo</li>
+          <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Marque com antecedência ou peça na hora</li>
+          <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Uma chamada e fica marcado</li>
+        </ul>
+        <a class="btn btn-ghost" href="tel:+244945786313">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          Pedir um táxi
+        </a>
+      </div>
+
+      <div class="option-card tint reveal-item">
+        <div class="option-top">
+          <span class="option-glyph cta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          </span>
+          <span class="option-tag free">Grátis</span>
+        </div>
+        <h3>Corrida Solidária</h3>
+        <p>Quem precisa de ir ao hospital e não tem como pagar um táxi não fica em casa. Ligue, marque a corrida, e vamos buscar a pessoa a casa e levá-la ao hospital. Não se paga nada.</p>
+        <ul class="option-list">
+          <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Grávidas</li>
+          <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Idosos</li>
+          <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Pessoas sem condições para pagar</li>
+        </ul>
+        <a class="btn btn-primary" href="tel:+244945786313">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          Marcar corrida grátis
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="solidaria">
+  <div class="wrap">
+    <div class="split-cta">
+      <div>
+        <h2>Quem pode pedir a corrida grátis</h2>
+        <p>Não é preciso aplicação nem internet. Basta um telefone. A corrida grátis é só para serviços hospitalares: consultas, maternidade e partos, urgências, exames e tratamentos.</p>
+        <a class="btn btn-primary" href="tel:+244945786313">Marcar corrida grátis</a>
+      </div>
+      <div class="earn-card">
+        <div class="earn-row">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></svg></span>
+          <span><b>Grávidas</b>Consultas de acompanhamento, exames e a ida para a maternidade na hora do parto.</span>
+        </div>
+        <div class="earn-row">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span>
+          <span><b>Idosos</b>Consultas, tratamentos e exames, sem ter de depender de boleias.</span>
+        </div>
+        <div class="earn-row">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>
+          <span><b>Pessoas sem condições</b>Quem não tem dinheiro para o táxi não deixa de ir ao hospital por causa disso.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="coverage">
+      <span class="lbl">Serve para:</span>
+      <span class="tag"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>Consultas</span>
+      <span class="tag"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>Maternidade e partos</span>
+      <span class="tag"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>Urgências</span>
+      <span class="tag"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>Exames e tratamentos</span>
+    </div>
+    <p class="coverage-note">A corrida grátis é só para serviços hospitalares.</p>
+  </div>
+</section>
+
+<section id="porque" style="background:var(--bg-soft);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Porquê</span>
+      <h2>Porque é que a SilvaGo faz isto</h2>
+      <p>A SilvaGo é uma empresa do Huambo, ao serviço do Huambo. Prestar este serviço às comunidades onde trabalhamos faz parte da nossa responsabilidade social como empresa — não é uma promoção, é um compromisso.</p>
+    </div>
+    <div class="steps reveal-group">
+      <div class="step reveal-item">
+        <div class="num-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </div>
+        <h3>Responsabilidade social</h3>
+        <p>Quem tem táxis na estrada do Huambo tem também a responsabilidade de ajudar quem mais precisa a chegar ao hospital. Para a SilvaGo, isso não é opcional — faz parte de ser uma empresa desta comunidade.</p>
+      </div>
+      <div class="step reveal-item">
+        <div class="num-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        </div>
+        <h3>Compromisso com a comunidade</h3>
+        <p>Somos uma empresa local. Vivemos e trabalhamos no Huambo, e a Corrida Solidária é a forma de devolvermos algo à comunidade que nos sustenta todos os dias.</p>
+      </div>
+      <div class="step reveal-item">
+        <div class="num-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h3>Sem letras pequenas</h3>
+        <p>A corrida é mesmo grátis, sempre que é para o hospital. Sem custos escondidos, sem condições — basta ligar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contacto" class="app-section">
+  <div class="wrap">
+    <div class="phone-mock">
+      <div class="phone-screen">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+        <span>945 786 313</span>
+      </div>
+    </div>
+    <div>
+      <span class="kicker" style="color:var(--brand);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;">Contacto</span>
+      <h2 style="font-size:clamp(26px,3.4vw,38px);letter-spacing:-.02em;margin:10px 0 12px;">Precisa de uma corrida?</h2>
+      <p style="color:var(--ink-soft);font-size:16px;max-width:440px;margin:0 0 24px;">Para o dia a dia ou para chegar ao hospital — a chamada é a mesma.</p>
+      <div class="store-badges">
+        <a class="store-badge primary" href="tel:+244945786313">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          945 786 313
+        </a>
+        <a class="store-badge" href="mailto:geral@hsilva.app">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity="0"/><path d="m3 7 9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg></span>
+          geral@hsilva.app
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom:12px;">
+          <span class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+          </span>
+          Silva<span class="go">Go</span>
+        </div>
+        <p style="color:var(--ink-soft);font-size:14.5px;max-width:280px;">Táxi e Corrida Solidária no Huambo, Angola.</p>
+        <p style="color:var(--ink-soft);font-size:14.5px;max-width:280px;">Corrida grátis para serviços hospitalares: grávidas, idosos e pessoas sem condições.</p>
+      </div>
+      <div>
+        <h4>Serviços</h4>
+        <ul>
+          <li><a href="#servicos">Táxi SilvaGo</a></li>
+          <li><a href="#solidaria">Corrida Solidária</a></li>
+          <li><a href="#como-funciona">Como funciona</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <ul>
+          <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><a href="tel:+244945786313">945 786 313</a></li>
+          <li><a href="mailto:geral@hsilva.app">geral@hsilva.app</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 SilvaGo — Táxi &amp; Corrida Solidária, Huambo, Angola.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  var navToggle = document.querySelector('.nav-toggle');
+  var navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks) {
+    navToggle.addEventListener('click', function(){
+      navLinks.classList.toggle('open');
+    });
+  }
+
+  var header = document.querySelector('header');
+  if (header) {
+    var onScroll = function(){
+      header.classList.toggle('scrolled', window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  if ('IntersectionObserver' in window) {
+    var revealObserver = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal, .reveal-group').forEach(function(el){
+      revealObserver.observe(el);
+    });
+  } else {
+    document.querySelectorAll('.reveal, .reveal-group').forEach(function(el){
+      el.classList.add('in-view');
+    });
+  }
+</script>
+
+</body>
 </html>

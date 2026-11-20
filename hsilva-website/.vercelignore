@@ -1,0 +1,11 @@
+node_modules
+node_modules.nosync
+node_modules.icloud-old
+dist
+.claude
+.env*
+*.tsbuildinfo
+playwright-*
+*.rtf
+/*.jpg
+/*.jpeg
